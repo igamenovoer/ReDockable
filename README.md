@@ -33,8 +33,8 @@ build:
 |----------------------|----------------------------------------------------------------|-------------------------------------|
 | BASE_IMAGE           | the base image used to build the image                         | nvidia/cuda:12.3.2-base-ubuntu22.04 |
 | WITH_SSH             | install openssh-server                                         | true                                |
-| WITH_ESSENTIAL_APPS  | install apps by running initscripts/install-essentials.sh      | true                                |
-| WITH_ADDITIONAL_APPS | install apps by running initscripts/install-additional-apps.sh | true                                |
+| WITH_ESSENTIAL_APPS  | install apps by running /initscripts/install-essentials.sh      | true                                |
+| WITH_ADDITIONAL_APPS | install apps by running /initscripts/install-additional-apps.sh | true                                |
 | SSH_USER_NAME        | if ssh is installed, specify ssh user name                     | myssh                               |
 | SSH_USER_PASSWORD    | if ssh is installed, specify ssh password                      | 123456                              |
 | APT_SOURCE_FILE      | apt repo file that will replace /etc/apt/sources.list          | /initscripts/sources-tsinghua.list  |
