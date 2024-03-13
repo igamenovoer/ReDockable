@@ -11,8 +11,20 @@ To do so, just create a docker compose file like the template, and set environme
 
 ## Example
 
+To build image and start container
 ```Shell
+# build it, and see all output
 docker compose build nv-cu118 --no-cache --progress=plain
+
+# start it
+docker compose up nv-cu118
+```
+
+Then, you can ssh into it from host
+```Shell
+# container:22 is mapped to host:62222, in docker-compose file
+# default password is 123456
+ssh myuser@127.0.0.1 -p 62222
 ```
 
 ## Arguments
@@ -39,5 +51,6 @@ build:
 | SSH_USER_PASSWORD    | if ssh is installed, specify ssh password                      | 123456                              |
 | APT_SOURCE_FILE      | apt repo file that will replace /etc/apt/sources.list          | /initscripts/sources-tsinghua.list  |
 | APT_HTTP_PROXY       | http proxy to be used by apt                                   | http://host.docker.internal:7890    |
+| APT_RETAIN_HTTP_PROXY | keep http proxy for apt in the image, so that future containers use this proxy | false |
 | SHELL_HTTP_PROXY     | http proxy to be used by shell commands                        | http://host.docker.internal:7890    |
 | OPTIONAL_HTTP_PROXY  | http proxy that will be used by other scripts when needed      | http://host.docker.internal:7890    |

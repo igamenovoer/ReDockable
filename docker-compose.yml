@@ -4,6 +4,8 @@ version: '3'
 x-build: &default-build
   context: .
   dockerfile: main.Dockerfile
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
   args: &default-args
     BASE_IMAGE: nvidia/cuda:12.3.2-base-ubuntu22.04
     WITH_SSH: true
@@ -11,8 +13,9 @@ x-build: &default-build
     WITH_ADDITIONAL_APPS: true
     SSH_USER_NAME: myssh # default ssh user name
     SSH_USER_PASSWORD: 123456  # default ssh user password
-    APT_SOURCE_FILE: /initscripts/sources-tsinghua.list  # change apt repo source file
+    # APT_SOURCE_FILE: /initscripts/sources-tsinghua.list  # change apt repo source file
     # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
+    # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
     # SHELL_HTTP_PROXY: http://host.docker.internal:30080 # http proxy in shell
     # OPTIONAL_HTTP_PROXY: http://host.docker.internal:30080 # optional http proxy used when needed
 
@@ -39,13 +42,20 @@ services:
   nv-cu118:
     <<: *gpu-image
     image: mydev:cu118
+    container_name: mydev-cu118
+    ports:
+      - "62222:22"  # expose ssh port for access in host
     build:
-      context: .
-      dockerfile: main.Dockerfile
+      <<: *default-build
       args:
         <<: *default-args
         BASE_IMAGE: nvidia/cuda:11.8.0-base-ubuntu22.04
         APT_SOURCE_FILE: /initscripts/sources-tsinghua.list
-        OPTIONAL_HTTP_PROXY: http://host.docker.internal:30080
-
+        WITH_SSH: true
+        WITH_ESSENTIAL_APPS: false
+        WITH_ADDITIONAL_APPS: false
+        SSH_USER_NAME: myuser # default ssh user name
+        SSH_USER_PASSWORD: 123456  # default ssh user password
+        # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
+        # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
     

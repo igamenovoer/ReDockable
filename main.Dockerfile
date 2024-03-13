@@ -7,12 +7,15 @@ FROM ${BASE_IMAGE}
 
 # installation parts on/off
 ARG WITH_ESSENTIAL_APPS=false
-ARG WITH_ADDITIONAL_APPs=false
+ARG WITH_ADDITIONAL_APPS=false
 ARG WITH_SSH=false
 
 # if you want to use proxy for apt, set this to host proxy
 # like http://host.docker.internal:7890
 ARG APT_HTTP_PROXY
+
+# keep the http proxy for apt after installation?
+ARG APT_RETAIN_HTTP_PROXY=false
 
 # use other apt source?
 ARG APT_SOURCE_FILE
@@ -25,7 +28,7 @@ ARG OPTIONAL_HTTP_PROXY
 
 # ssh user and password
 ARG SSH_USER_NAME
-ARG SSH_PASSWORD
+ARG SSH_USER_PASSWORD
 
 # -------------------------------------------
 
@@ -50,3 +53,9 @@ RUN /initscripts/install-essentials.sh
 
 # install additional apps
 RUN /initscripts/install-additional-apps.sh
+
+# clean up
+RUN /initscripts/cleanup.sh
+
+# setup entrypoint
+ENTRYPOINT ["/initscripts/entrypoint.sh"]
