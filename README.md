@@ -24,7 +24,10 @@ Then, you can ssh into it from host
 ```Shell
 # container:22 is mapped to host:62222, in docker-compose file
 # default password is 123456
-ssh myuser@127.0.0.1 -p 62222
+ssh me@127.0.0.1 -p 62222
+
+# if ssh key file is added to the container, you can use it
+ssh -i path_to_private_key me@127.0.0.1 -p 62222
 ```
 
 ## Arguments
