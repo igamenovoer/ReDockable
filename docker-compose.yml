@@ -39,25 +39,28 @@ x-cpu-image: &cpu-image
   tty: true
   command: /bin/bash
 
+x-example-image: &example-image
+  <<: *gpu-image
+  image: mydev:cu118
+  container_name: mydev-cu118
+  ports:
+    - "62222:22"  # expose ssh port for access in host
+  build:
+    <<: *default-build
+    args:
+      <<: *default-args
+      BASE_IMAGE: nvidia/cuda:11.8.0-base-ubuntu22.04
+      APT_SOURCE_FILE: /initscripts/sources-tsinghua.list
+      WITH_SSH: true
+      WITH_ESSENTIAL_APPS: false
+      WITH_ADDITIONAL_APPS: false
+      SSH_USER_NAME: me # default ssh user name
+      SSH_USER_PASSWORD: 123456  # default ssh user password
+      SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub  # ssh public key file
+      # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
+      # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
+
 services:
   nv-cu118:
-    <<: *gpu-image
-    image: mydev:cu118
-    container_name: mydev-cu118
-    ports:
-      - "62222:22"  # expose ssh port for access in host
-    build:
-      <<: *default-build
-      args:
-        <<: *default-args
-        BASE_IMAGE: nvidia/cuda:11.8.0-base-ubuntu22.04
-        APT_SOURCE_FILE: /initscripts/sources-tsinghua.list
-        WITH_SSH: true
-        WITH_ESSENTIAL_APPS: false
-        WITH_ADDITIONAL_APPS: false
-        SSH_USER_NAME: me # default ssh user name
-        SSH_USER_PASSWORD: 123456  # default ssh user password
-        SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub  # ssh public key file
-        # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
-        # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
+    <<: *example-image
     
