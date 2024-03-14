@@ -13,7 +13,7 @@ To do so, just create a docker compose file like the template, and set environme
 
 To build image and start container
 ```Shell
-# build it, and see all output
+# build it, use --progress=plain and see all output
 docker compose build nv-cu118 --no-cache --progress=plain
 
 # start it
@@ -47,8 +47,9 @@ build:
 | WITH_SSH             | install openssh-server                                         | true                                |
 | WITH_ESSENTIAL_APPS  | install apps by running /initscripts/install-essentials.sh      | true                                |
 | WITH_ADDITIONAL_APPS | install apps by running /initscripts/install-additional-apps.sh | true                                |
-| SSH_USER_NAME        | if ssh is installed, specify ssh user name                     | myssh                               |
+| SSH_USER_NAME        | if ssh is installed, specify ssh user name                     | me                               |
 | SSH_USER_PASSWORD    | if ssh is installed, specify ssh password                      | 123456                              |
+| SSH_PUBKEY_FILE    | add existing pubkey to the container, for SSH_USER_NAME         | /initscripts/sshkey/mykey.rsa.pub   |
 | APT_SOURCE_FILE      | apt repo file that will replace /etc/apt/sources.list          | /initscripts/sources-tsinghua.list  |
 | APT_HTTP_PROXY       | http proxy to be used by apt                                   | http://host.docker.internal:7890    |
 | APT_RETAIN_HTTP_PROXY | keep http proxy for apt in the image, so that future containers use this proxy | false |

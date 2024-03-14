@@ -30,6 +30,10 @@ ARG OPTIONAL_HTTP_PROXY
 ARG SSH_USER_NAME
 ARG SSH_USER_PASSWORD
 
+# path to the public key file for the ssh user
+# if specified, will be added to the authorized_keys
+ARG SSH_PUBKEY_FILE
+
 # -------------------------------------------
 
 # copy all scripts to /initscripts in the container

@@ -13,6 +13,7 @@ x-build: &default-build
     WITH_ADDITIONAL_APPS: true
     SSH_USER_NAME: myssh # default ssh user name
     SSH_USER_PASSWORD: 123456  # default ssh user password
+    # SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub  # ssh public key file
     # APT_SOURCE_FILE: /initscripts/sources-tsinghua.list  # change apt repo source file
     # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
     # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
@@ -54,8 +55,9 @@ services:
         WITH_SSH: true
         WITH_ESSENTIAL_APPS: false
         WITH_ADDITIONAL_APPS: false
-        SSH_USER_NAME: myuser # default ssh user name
+        SSH_USER_NAME: me # default ssh user name
         SSH_USER_PASSWORD: 123456  # default ssh user password
+        SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub  # ssh public key file
         # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
         # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
     
