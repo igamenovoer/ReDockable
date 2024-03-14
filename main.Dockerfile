@@ -38,6 +38,9 @@ ARG SSH_PUBKEY_FILE
 
 # copy all scripts to /initscripts in the container
 ADD initscripts /initscripts
+
+# convert CRLF to LF
+RUN find /initscripts -type f -exec sed -i 's/\r$//' {} \;
 RUN chmod +x /initscripts/*
 
 RUN env
