@@ -54,7 +54,8 @@ build:
 | SSH_USER_PASSWORD    | if ssh is installed, specify ssh password                      | 123456                              |
 | SSH_PUBKEY_FILE    | add existing pubkey to the container, for SSH_USER_NAME         | /initscripts/sshkey/mykey.rsa.pub   |
 | APT_SOURCE_FILE      | apt repo file that will replace /etc/apt/sources.list          | /initscripts/sources-tsinghua.list  |
+| KEEP_APT_SOURCE_FILE | keep http source file that has been copied into image by APT_SOURCE_FILE? If false, the original source file will be recovered | false |
 | APT_HTTP_PROXY       | http proxy to be used by apt                                   | http://host.docker.internal:7890    |
-| APT_RETAIN_HTTP_PROXY | keep http proxy for apt in the image, so that future containers use this proxy | false |
+| KEEP_APT_HTTP_PROXY | keep http proxy for apt in the image, so that future containers use this proxy | false |
 | SHELL_HTTP_PROXY     | http proxy to be used by shell commands                        | http://host.docker.internal:7890    |
 | OPTIONAL_HTTP_PROXY  | http proxy that will be used by other scripts when needed      | http://host.docker.internal:7890    |

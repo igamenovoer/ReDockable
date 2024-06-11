@@ -16,7 +16,7 @@ x-build: &default-build
     # SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub  # ssh public key file
     # APT_SOURCE_FILE: /initscripts/sources-tsinghua.list  # change apt repo source file
     # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
-    # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
+    # KEEP_APT_HTTP_PROXY: false  # retain http proxy settings in apt after build?
     # SHELL_HTTP_PROXY: http://host.docker.internal:30080 # http proxy in shell
     # OPTIONAL_HTTP_PROXY: http://host.docker.internal:30080 # optional http proxy used when needed
 
@@ -58,9 +58,63 @@ x-example-image: &example-image
       SSH_USER_PASSWORD: 123456  # default ssh user password
       SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub  # ssh public key file
       # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
-      # APT_RETAIN_HTTP_PROXY: false  # retain http proxy settings in apt after build?
+      # KEEP_APT_HTTP_PROXY: false  # retain http proxy settings in apt after build?
 
 services:
-  nv-cu118:
-    <<: *example-image
+  nv-cuda-dev:
+    image: cuda-dev:latest
+    container_name: cuda-dev
+
+    # automatic start bash
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+    # use gpu?
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+
+    # expose ssh port for access in host
+    ports:
+      - "62222:22"
+    build:
+      context: .
+      dockerfile: main.Dockerfile
+
+      # required to use proxy
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+
+      args:
+        BASE_IMAGE: nvidia/cuda:12.3.2-base-ubuntu22.04
+
+        # install essential apps, by executing /initscripts/install-essential-apps.sh
+        WITH_ESSENTIAL_APPS: true
+
+        # install additional apps, by executing /initscripts/install-additional-apps.sh
+        WITH_ADDITIONAL_APPS: false
+
+        # install openssh-server, and set up ssh user, password, public key (optional)
+        WITH_SSH: true
+        SSH_USER_NAME: me # default ssh user name
+        SSH_USER_PASSWORD: 123456  # default ssh user password
+        SSH_PUBKEY_FILE: /initscripts/sshkey/mykey.rsa.pub # ssh public key file, if not set, password will be used
+
+        # replace apt source file?
+        APT_SOURCE_FILE: /initscripts/sources-tsinghua.list
+        KEEP_APT_SOURCE_FILE: true  # retain apt source file after build? If false, source file will be removed after build
+
+        # use http proxy for apt?
+        APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
+        KEEP_APT_HTTP_PROXY: false  # retain http proxy settings in apt after build? If false, proxy will be removed after build
+
+        # use http proxy for shell?
+        # SHELL_HTTP_PROXY: http://host.docker.internal:7890 # http proxy in shell
+
+        # just record http proxy here for use in custom scripts?
+        # OPTIONAL_HTTP_PROXY: http://host.docker.internal:7890 # optional http proxy used when needed
     

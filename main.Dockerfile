@@ -15,10 +15,13 @@ ARG WITH_SSH=false
 ARG APT_HTTP_PROXY
 
 # keep the http proxy for apt after installation?
-ARG APT_RETAIN_HTTP_PROXY=false
+ARG KEEP_APT_HTTP_PROXY=false
 
 # use other apt source?
 ARG APT_SOURCE_FILE
+
+# keep the apt source file after installation?
+ARG KEEP_APT_SOURCE_FILE=false
 
 # if you want the container to use proxy for shell, set this to host proxy
 ARG SHELL_HTTP_PROXY

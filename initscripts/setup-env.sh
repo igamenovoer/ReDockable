@@ -17,5 +17,10 @@ fi
 # if APT_SOURCE_FILE is set, use it to replace /etc/apt/sources.list
 if [ -n "$APT_SOURCE_FILE" ]; then
   echo "Using $APT_SOURCE_FILE as /etc/apt/sources.list"
+
+  # backup the original sources.list
+  cp /etc/apt/sources.list /etc/apt/sources.list.bak
+
+  # copy the new sources.list
   cp $APT_SOURCE_FILE /etc/apt/sources.list
 fi
