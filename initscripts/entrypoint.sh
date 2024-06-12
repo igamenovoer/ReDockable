@@ -7,4 +7,5 @@ if [ -f /etc/ssh/sshd_config ]; then
 fi
 
 echo "Starting the shell..."
-/bin/sh
+export SHELL=/bin/bash
+/bin/bash
