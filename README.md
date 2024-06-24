@@ -32,7 +32,7 @@ ssh -i path_to_private_key me@127.0.0.1 -p 62222
 
 ## Arguments
 
-NOTE: The folder **installation/scripts** will be copied to **/installation/scripts** in container, so to access those files, use **/installation/scripts/filename**.
+NOTE: The folder **installation** will be copied to **/installation** in container, so to access those files, use **/installation/path-to-file**.
 
 Use these in docker-compose.yml, in build section:
 
