@@ -3,7 +3,7 @@
 # the base image
 # FROM nvidia/cuda:11.8.0-base-ubuntu22.04
 ARG BASE_IMAGE=nvidia/cuda:12.3.2-base-ubuntu22.04
-FROM ${BASE_IMAGE}
+FROM ${BASE_IMAGE} AS base
 
 # installation parts on/off
 ARG WITH_ESSENTIAL_APPS=false
@@ -39,33 +39,49 @@ ARG SSH_PUBKEY_FILE
 
 # -------------------------------------------
 
-# copy all scripts to /initscripts in the container
-ADD initscripts /initscripts
+# create directories for later use
+
+# create volume and copy everything there
+# VOLUME [ "/installation" ]
+ADD installation /installation
 
 # convert CRLF to LF
-RUN find /initscripts -type f -exec sed -i 's/\r$//' {} \;
-RUN chmod +x /initscripts/*
+RUN find /installation/scripts -type f -exec sed -i 's/\r$//' {} \;
+RUN chmod +x /installation/scripts/*
 
 RUN env
 
 # set up container environment
-RUN /initscripts/setup-env.sh
+RUN /installation/scripts/setup-env.sh
 
 # set up apt
 RUN apt update
 RUN apt-get install --reinstall -y ca-certificates
 
 # setup ssh
-RUN /initscripts/setup-ssh.sh
+RUN /installation/scripts/setup-ssh.sh
 
 # install essentials
-RUN /initscripts/install-essentials.sh
+RUN /installation/scripts/install-essentials.sh
 
 # install additional apps
-RUN /initscripts/install-additional-apps.sh
+RUN /installation/scripts/install-additional-apps.sh
 
 # clean up
-RUN /initscripts/cleanup.sh
+RUN /installation/scripts/cleanup.sh
 
 # setup entrypoint
-ENTRYPOINT ["/initscripts/entrypoint.sh"]
+ENTRYPOINT ["/installation/scripts/entrypoint.sh"]
+
+# install apps to the image
+FROM base AS install-apps-to-image
+RUN echo "installing apps to image, in /apps"
+RUN mkdir -p /apps
+RUN /installation/scripts/on-first-run.sh
+ENV CHECK_AND_DO_INIT=false
+
+# install apps to a volume on first run
+FROM base AS install-apps-to-volume
+RUN echo "apps will be installed to a volume /apps on first run"
+VOLUME [ "/apps" ]
+ENV CHECK_AND_DO_INIT=true
