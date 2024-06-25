@@ -3,9 +3,15 @@
 export DEBIAN_FRONTEND=noninteractive
 
 CONDA_INSTALL_PATH="/apps/miniconda3"
+
 # install miniconda3 to /apps/miniconda3
 sh /installation/packages/Miniconda3-latest-Linux-x86_64.sh -b -p $CONDA_INSTALL_PATH
 
+# make conda installation read/write for all users
+echo "setting permissions for $CONDA_INSTALL_PATH ..."
+chmod -R 777 $CONDA_INSTALL_PATH
+
+echo "initializing conda for all users ..."
 USER_LIST="root"
 
 # add all user names to USER_LIST
