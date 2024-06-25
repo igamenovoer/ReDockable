@@ -19,8 +19,12 @@ echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 # permit password authentication
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 
+# create a user group named users
+groupadd ssh_users
+
 adduser --gecos "" --disabled-password $SSH_USER_NAME
 usermod -aG sudo $SSH_USER_NAME
+usermod -aG ssh_users $SSH_USER_NAME
 echo "$SSH_USER_NAME:$SSH_USER_PASSWORD" | chpasswd
 
 # generate ssh key for user

@@ -36,10 +36,8 @@ ARG SSH_USER_PASSWORD
 # path to the public key file for the ssh user
 # if specified, will be added to the authorized_keys
 ARG SSH_PUBKEY_FILE
-
+ARG WORKSPACE_PATH="/workspace"
 # -------------------------------------------
-
-# create directories for later use
 
 # create volume and copy everything there
 # VOLUME [ "/installation" ]
@@ -71,17 +69,28 @@ RUN /installation/scripts/install-additional-apps.sh
 RUN /installation/scripts/cleanup.sh
 
 # setup entrypoint
-ENTRYPOINT ["/installation/scripts/entrypoint.sh"]
+ENTRYPOINT ["/installation/scripts/entrypoint-default.sh"]
 
-# install apps to the image
-FROM base AS install-apps-to-image
-RUN echo "installing apps to image, in /apps"
-RUN mkdir -p /apps
-RUN /installation/scripts/on-first-run.sh
-ENV CHECK_AND_DO_INIT=false
 
-# install apps to a volume on first run
-FROM base AS install-apps-to-volume
-RUN echo "apps will be installed to a volume /apps on first run"
-VOLUME [ "/apps" ]
-ENV CHECK_AND_DO_INIT=true
+# create workspace for user
+# create workspace folder
+RUN mkdir -p $WORKSPACE_PATH
+# allow all access
+RUN chmod -R 777 $WORKSPACE_PATH
+
+# bind a volume to the workspace
+VOLUME ${WORKSPACE_PATH}
+RUN echo "user workspace is at ${WORKSPACE_PATH}, save your work there"
+
+# # install apps to the image
+# FROM base AS install-apps-to-image
+# RUN echo "installing apps to image, in /apps"
+# RUN mkdir -p /apps
+# RUN /installation/scripts/on-first-run.sh
+# ENV CHECK_AND_DO_INIT=false
+
+# # install apps to a volume on first run
+# FROM base AS install-apps-to-volume
+# RUN echo "apps will be installed to a volume /apps on first run"
+# VOLUME [ "/apps" ]
+# ENV CHECK_AND_DO_INIT=true

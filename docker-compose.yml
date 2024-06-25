@@ -1,14 +1,19 @@
 version: '3'
 
 services:
-  my-service:
-    image: dev-mmlab:latest
-    container_name: dev-mmlab
+  my-work:
+    image: dev-mmlab:work
+    container_name: dev-mmlab-work
 
     # automatic start bash
     stdin_open: true
     tty: true
     command: /bin/bash
+
+    volumes:
+      - ./installation:/mnt/local
+      # - apps:/apps
+      # - workspace:/workspace
 
     # use gpu?
     deploy:
@@ -18,16 +23,42 @@ services:
             - driver: nvidia
               capabilities: [gpu]
 
-    volumes:
-      - ./installation:/mnt/local
-
     # expose ssh port for access in host
     ports:
       - "62222:22"
+
+    depends_on:
+      - my-base
+
     build:
       context: .
-      dockerfile: main.Dockerfile
+      dockerfile: stage_runtime.Dockerfile
       target: install-apps-to-volume  # apps will be installed in a separate volume mounted to /apps
+      # target: install-apps-to-image # apps will be installed in a directory /apps in the image itself
+
+      # required to use proxy
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+
+      args:
+        BASE_IMAGE: dev-mmlab:base
+
+        # use http proxy for apt?
+        # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
+        # KEEP_APT_HTTP_PROXY: false  # retain http proxy settings in apt after build? If false, proxy will be removed after build
+
+        # use http proxy for shell?
+        # SHELL_HTTP_PROXY: http://host.docker.internal:7890 # http proxy in shell
+
+        # just record http proxy here for use in custom scripts?
+        # OPTIONAL_HTTP_PROXY: http://host.docker.internal:7890 # optional http proxy used when needed
+
+  my-base:
+    image: dev-mmlab:base
+    build:
+      context: .
+      dockerfile: stage_base.Dockerfile
+      # target: install-apps-to-volume  # apps will be installed in a separate volume mounted to /apps
       # target: install-apps-to-image # apps will be installed in a directory /apps in the image itself
 
       # required to use proxy
@@ -62,4 +93,7 @@ services:
 
         # just record http proxy here for use in custom scripts?
         # OPTIONAL_HTTP_PROXY: http://host.docker.internal:7890 # optional http proxy used when needed
-    
+
+volumes:
+  apps:
+  workspace:
