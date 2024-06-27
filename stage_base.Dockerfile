@@ -43,9 +43,16 @@ ARG SSH_PUBKEY_FILE
 # VOLUME [ "/installation" ]
 ADD installation /installation
 
+# for any script in /installation, including subdirs, except for /installation/packages
 # convert CRLF to LF
-RUN find /installation/scripts -type f -exec sed -i 's/\r$//' {} \;
-RUN chmod +x /installation/scripts/*
+RUN find /installation -type f -not -path "/installation/packages/*" -exec sed -i 's/\r$//' {} \;
+
+# add chmod+x to all scripts, including all subdirs
+RUN find /installation -type f -name "*.sh" -exec chmod +x {} \;
+
+# # convert CRLF to LF
+# RUN find /installation/scripts -type f -exec sed -i 's/\r$//' {} \;
+# RUN chmod +x /installation/scripts/*
 
 RUN env
 

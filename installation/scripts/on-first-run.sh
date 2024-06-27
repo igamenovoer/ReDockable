@@ -18,10 +18,6 @@ export DEBIAN_FRONTEND=noninteractive
 echo "Running custom-first-run.sh ..."
 bash /installation/custom-scripts/custom-first-run.sh
 
-# install conda
-# echo "Installing Miniconda"
-# sh /installation/conda/install-miniconda.sh
-
 # write the config.yaml file to /apps
 echo "Writing $init_check_file_path"
 cat <<EOF > $init_check_file_path
