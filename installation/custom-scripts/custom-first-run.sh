@@ -5,8 +5,8 @@
 
 # add your own first-run commands here
 
-echo "empty custom-first-run.sh, add your own commands here"
+# echo "empty custom-first-run.sh, add your own commands here"
 
 # install conda
-# echo "Installing Miniconda"
-# bash /installation/conda/install-miniconda.sh
+echo "Installing Miniconda"
+bash /installation/conda/install-miniconda.sh
