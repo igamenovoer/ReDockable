@@ -24,3 +24,24 @@ if [ -n "$APT_SOURCE_FILE" ]; then
   # copy the new sources.list
   cp $APT_SOURCE_FILE /etc/apt/sources.list
 fi
+
+# create a list containing contents of environment variables
+# X_PATH_APPS, X_PATH_DATA, X_PATH_WORKSPACE
+dirs_to_create="$X_PATH_SOFT_BASE/$X_PREFIX_APPS" \
+  "$X_PATH_SOFT_BASE/$X_PREFIX_DATA" \
+  "$X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE" \
+  "$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS" \
+  "$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA" \
+  "$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE" \
+  "$X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE"
+
+# for each dir in soft_dirs, create it if it doesn't exist
+for dir in $dirs_to_create; do
+  if [ ! -d "$dir" ]; then
+    echo "Creating $dir"
+    mkdir -p $dir
+
+    # allow anyone to read, write, and execute
+    chmod -R 777 $dir
+  fi
+done

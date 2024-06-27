@@ -36,7 +36,7 @@ ARG SSH_USER_PASSWORD
 # path to the public key file for the ssh user
 # if specified, will be added to the authorized_keys
 ARG SSH_PUBKEY_FILE
-ARG WORKSPACE_PATH="/workspace"
+
 # -------------------------------------------
 
 # create volume and copy everything there
@@ -70,17 +70,6 @@ RUN /installation/scripts/cleanup.sh
 
 # setup entrypoint
 ENTRYPOINT ["/installation/scripts/entrypoint-default.sh"]
-
-
-# create workspace for user
-# create workspace folder
-RUN mkdir -p $WORKSPACE_PATH
-# allow all access
-RUN chmod -R 777 $WORKSPACE_PATH
-
-# bind a volume to the workspace
-VOLUME ${WORKSPACE_PATH}
-RUN echo "user workspace is at ${WORKSPACE_PATH}, save your work there"
 
 # # install apps to the image
 # FROM base AS install-apps-to-image

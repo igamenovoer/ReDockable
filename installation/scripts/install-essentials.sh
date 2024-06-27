@@ -12,7 +12,12 @@ fi
 
 # apt-get install sudo nano mc ne software-properties-common -y
 apt-get install sudo nano -y
-apt-get install openssh-server git net-tools curl tmux -y
+apt-get install openssh-server -y
+
+# FIXME: skipping all the other installations for now
+exit 0
+
+apt-get install git net-tools curl tmux -y
 apt-get install cmake cmake-curses-gui pkg-config -y
 
 # for x11 remote

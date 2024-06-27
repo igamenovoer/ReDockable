@@ -2,7 +2,7 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
-CONDA_INSTALL_PATH="/apps/miniconda3"
+CONDA_INSTALL_PATH="$X_PATH_BASE/$X_PREFIX_APPS/miniconda3"
 
 # install miniconda3 to /apps/miniconda3
 sh /installation/packages/Miniconda3-latest-Linux-x86_64.sh -b -p $CONDA_INSTALL_PATH

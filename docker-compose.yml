@@ -33,8 +33,7 @@ services:
     build:
       context: .
       dockerfile: stage_runtime.Dockerfile
-      target: install-apps-to-volume  # apps will be installed in a separate volume mounted to /apps
-      # target: install-apps-to-image # apps will be installed in a directory /apps in the image itself
+      target: with-built-in-volume
 
       # required to use proxy
       extra_hosts:

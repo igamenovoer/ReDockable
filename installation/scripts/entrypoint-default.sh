@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # check if ssh is installed, if yes, start the service
 if [ -f /etc/ssh/sshd_config ]; then
@@ -6,6 +6,7 @@ if [ -f /etc/ssh/sshd_config ]; then
     service ssh start
 fi
 
-echo "Starting the shell..."
+# start shell
+echo "Shell started."
 export SHELL=/bin/bash
 /bin/bash
