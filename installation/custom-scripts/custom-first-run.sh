@@ -5,7 +5,8 @@
 
 # add your own first-run commands here
 
-# echo "empty custom-first-run.sh, add your own commands here"
+echo "Running first-run custom commands..."
+echo "You can add your own first-run commands to custom-first-run.sh"
 
 # install conda
 echo "Installing Miniconda"

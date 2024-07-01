@@ -7,15 +7,15 @@ FROM ${BASE_IMAGE} AS base
 
 # installation parts on/off
 ARG WITH_ESSENTIAL_APPS=false
-ARG WITH_ADDITIONAL_APPS=false
+ARG WITH_CUSTOM_APPS=false
 ARG WITH_SSH=false
 
 # if you want to use proxy for apt, set this to host proxy
 # like http://host.docker.internal:7890
-ARG APT_HTTP_PROXY
+ARG APT_USE_PROXY
 
 # keep the http proxy for apt after installation?
-ARG KEEP_APT_HTTP_PROXY=false
+ARG APT_KEEP_PROXY
 
 # use other apt source?
 ARG APT_SOURCE_FILE
@@ -37,7 +37,14 @@ ARG SSH_USER_PASSWORD
 # if specified, will be added to the authorized_keys
 ARG SSH_PUBKEY_FILE
 
+# user provided proxy
+ARG USER_HTTP_PROXY
+ARG USER_HTTPS_PROXY
+
 # -------------------------------------------
+
+ENV USER_HTTP_PROXY=${USER_HTTP_PROXY}
+ENV USER_HTTPS_PROXY=${USER_HTTPS_PROXY}
 
 # create volume and copy everything there
 # VOLUME [ "/installation" ]
@@ -70,7 +77,7 @@ RUN /installation/scripts/setup-ssh.sh
 RUN /installation/scripts/install-essentials.sh
 
 # install additional apps
-RUN /installation/scripts/install-additional-apps.sh
+RUN /installation/custom-scripts/custom-install-apps.sh
 
 # clean up
 RUN /installation/scripts/cleanup.sh

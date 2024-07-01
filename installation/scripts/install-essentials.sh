@@ -17,6 +17,7 @@ apt-get install openssh-server -y
 # FIXME: skipping all the other installations for now
 exit 0
 
+# for general development
 apt-get install git net-tools curl tmux -y
 apt-get install cmake cmake-curses-gui pkg-config -y
 

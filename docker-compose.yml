@@ -44,7 +44,7 @@ services:
 
         # use http proxy for apt?
         # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
-        # KEEP_APT_HTTP_PROXY: false  # retain http proxy settings in apt after build? If false, proxy will be removed after build
+        # APT_KEEP_PROXY: false  # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
         # use http proxy for shell?
         # SHELL_HTTP_PROXY: http://host.docker.internal:7890 # http proxy in shell
@@ -70,8 +70,8 @@ services:
         # install essential apps, by executing /installation/scripts/install-essential-apps.sh
         WITH_ESSENTIAL_APPS: true
 
-        # install additional apps, by executing /installation/scripts/install-additional-apps.sh
-        WITH_ADDITIONAL_APPS: true
+        # install additional apps, by executing /installation/custom-scripts/custom-install-apps.sh
+        WITH_CUSTOM_APPS: true
 
         # install openssh-server, and set up ssh user, password, public key (optional)
         WITH_SSH: true
@@ -85,7 +85,7 @@ services:
 
         # use http proxy for apt?
         # APT_HTTP_PROXY: http://host.docker.internal:30080  # http proxy used for apt install
-        # KEEP_APT_HTTP_PROXY: false  # retain http proxy settings in apt after build? If false, proxy will be removed after build
+        # APT_KEEP_PROXY: false  # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
         # use http proxy for shell?
         # SHELL_HTTP_PROXY: http://host.docker.internal:7890 # http proxy in shell

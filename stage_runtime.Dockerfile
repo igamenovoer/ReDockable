@@ -9,7 +9,7 @@ ARG BASE_IMAGE
 ARG APT_HTTP_PROXY
 
 # keep the http proxy for apt after installation?
-ARG KEEP_APT_HTTP_PROXY=false
+ARG APT_KEEP_PROXY=false
 
 # if you want the container to use proxy for shell, set this to host proxy
 ARG SHELL_HTTP_PROXY

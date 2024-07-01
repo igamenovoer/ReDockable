@@ -1,8 +1,8 @@
 #!/bin/sh
 # clean up intermediate files
 
-# if KEEP_APT_HTTP_PROXY is not equal to true, remove the proxy settings
-if [ "$KEEP_APT_HTTP_PROXY" != "true" ]; then
+# if APT_KEEP_PROXY is not equal to true, remove the proxy settings file
+if [ "$APT_KEEP_PROXY" != "true" ]; then
     # check if the proxy settings file exists
     if [ -f /etc/apt/apt.conf.d/proxy.conf ]; then
         echo "Removing proxy settings from /etc/apt/apt.conf.d/proxy.conf..."
