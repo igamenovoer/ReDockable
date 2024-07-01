@@ -4,7 +4,7 @@
 
 # if APT_USE_PROXY is true, set up proxy for apt
 # the proxy is given in USER_HTTP_PROXY and USER_HTTPS_PROXY
-if [ -n "$APT_USE_PROXY" ]; then
+if [ "$APT_USE_PROXY" = "true" ]; then
   # if USER_HTTP_PROXY is not set, or USER_HTTPS_PROXY is not set
   # skip
   if [ -z "$USER_HTTP_PROXY" ] || [ -z "$USER_HTTPS_PROXY" ]; then
@@ -35,21 +35,26 @@ fi
 
 # create a list containing contents of environment variables
 # X_PATH_APPS, X_PATH_DATA, X_PATH_WORKSPACE
-dirs_to_create="$X_PATH_SOFT_BASE/$X_PREFIX_APPS" \
-  "$X_PATH_SOFT_BASE/$X_PREFIX_DATA" \
-  "$X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE" \
-  "$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS" \
-  "$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA" \
-  "$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE" \
-  "$X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE"
+# p1="$X_PATH_SOFT_BASE/$X_PREFIX_APPS"
+# p2="$X_PATH_SOFT_BASE/$X_PREFIX_DATA"
+# p3="$X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE"
+# p4="$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS"
+# p5="$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA"
+# p6="$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE"
+# p7="$X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE"
 
-# for each dir in soft_dirs, create it if it doesn't exist
-for dir in $dirs_to_create; do
-  if [ ! -d "$dir" ]; then
-    echo "Creating $dir"
-    mkdir -p $dir
+# # create a list of directories to create
+# dirs_to_create="$p1 $p2 $p3 $p4 $p5 $p6 $p7"
 
-    # allow anyone to read, write, and execute
-    chmod -R 777 $dir
-  fi
-done
+# echo dirs_to_create: $dirs_to_create
+
+# # for each dir in soft_dirs, create it if it doesn't exist
+# for dir in $dirs_to_create; do
+#   if [ ! -d "$dir" ]; then
+#     echo "Creating $dir"
+#     mkdir -p $dir
+
+#     # allow anyone to read, write, and execute
+#     chmod -R 777 $dir
+#   fi
+# done

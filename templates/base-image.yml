@@ -2,7 +2,7 @@ version: '3'
 
 x-config:
   # built image name and tag
-  output_image_name: my-image
+  output_image_name: my_image
   output_image_tag: base
 
   # base image
@@ -21,9 +21,13 @@ x-config:
     username: me
     password: 123456
 
+    # port mapping for ssh
+    port_in_image: 22
+    port_in_host: 12222
+
     # ssh public key file, if not set, password will be used
-    # you can set it like this
-    # ssh_pubkey_file: /installation/ssh/keys/mykey.rsa.pub
+    # if you want to use your own key, copy the key to /installation/ssh/keys/ and set the file name here, like this
+    # pubkey_file: /installation/ssh/keys/mykey.rsa.pub
     pubkey_file: ''
 
   proxy:
@@ -31,9 +35,10 @@ x-config:
     # and you can optionally use it for apt, shell, or custom scripts
     proxy_port: 7890
     proxy_address: host.docker.internal
-    # deduced http proxy settings
-    _proxy_http: http://${proxy_address}:${proxy_port}
-    _proxy_https: https//${proxy_address}:${proxy_port}
+
+    # deduced http proxy settings, you do not have to touch this
+    _proxy_http: http://${.proxy_address}:${.proxy_port}
+    _proxy_https: http://${.proxy_address}:${.proxy_port}
 
   # apt settings
   apt:
@@ -47,8 +52,18 @@ x-config:
 
 
 services:
-  my-base:
+  my_service:
     image: ${x-config.output_image_name}:${x-config.output_image_tag}
+
+    # automatic start bash in ssh
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+    # port mapping
+    ports:
+      - "${x-config.ssh.port_in_host}:${x-config.ssh.port_in_image}"
+
     build:
       context: .
       dockerfile: stage_base.Dockerfile
@@ -69,8 +84,8 @@ services:
         # install openssh-server, and set up ssh user, password, public key (optional)
         WITH_SSH: ${x-config.ssh.with_ssh}
         SSH_USER_NAME: ${x-config.ssh.username} # default ssh user name
-        SSH_USER_PASSWORD: ${x-config.password}  # default ssh user password
-        SSH_PUBKEY_FILE: ${x-config.pubkey_file} # ssh public key file, if not set, password will be used
+        SSH_USER_PASSWORD: ${x-config.ssh.password}  # default ssh user password
+        SSH_PUBKEY_FILE: ${x-config.ssh.pubkey_file} # ssh public key file, if not set, password will be used
 
         # replace apt source file?
         APT_SOURCE_FILE: ${x-config.apt.source_file}
@@ -81,7 +96,3 @@ services:
         # given proxies
         USER_HTTP_PROXY: ${x-config.proxy._proxy_http}
         USER_HTTPS_PROXY: ${x-config.proxy._proxy_https}
-
-volumes:
-  apps:
-  workspace:
