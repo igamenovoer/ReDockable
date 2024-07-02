@@ -1,58 +1,66 @@
 version: '3'
 
-x-build-cfg:
-  # built image name and tag
-  output_image_name: my_image
-  output_image_tag: base
+x-cfg-stage-1:
 
-  # base image
-  base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
+  # ./installation will be copied to /init-me in the container
+  # all paths specified in cfg are the in-container paths
+  paths:
+    _root_dir_host: ./installation/stage-1
+    _root_dir_container: /init-me/stage-1
 
-  apps:
-    # install essential apps, by executing /installation/scripts/install-essential-apps.sh
-    with_essential_apps: true
+  build:
+    # built image name and tag
+    output_image_name: my_image
+    output_image_tag: base
 
-    # install additional apps, by executing /installation/custom-scripts/custom-install-apps.sh
-    with_comstom_apps: true
+    # base image
+    base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
 
-  # ssh configurations
-  ssh:
-    with_ssh: true
-    username: me
-    password: 123456
-    port : 22 # ssh port in container
+    apps:
+      # install essential apps, by executing /init-me/stage-1/internals/install-essential-apps.sh
+      with_essential_apps: true
 
-    # ssh public key file, if not set, password will be used
-    # if you want to use your own key, copy the key to /installation/ssh/keys/ and set the file name here, like this
-    # pubkey_file: /installation/ssh/keys/mykey.rsa.pub
-    pubkey_file: ''
+      # install additional apps, by executing /init-me/stage-1/custom/custom-install-apps.sh
+      with_comstom_apps: true
 
-  proxy:
-    # proxy configurations, the proxy will be exposed in the container
-    # and you can optionally use it for apt, shell, or custom scripts
-    proxy_port: 7890
-    proxy_address: host.docker.internal
+    # ssh configurations
+    ssh:
+      with_ssh: true
+      username: me
+      password: 123456
+      port : 22 # ssh port in container
 
-    # deduced http proxy settings, you do not have to touch this
-    _proxy_http: http://${.proxy_address}:${.proxy_port}
-    _proxy_https: http://${.proxy_address}:${.proxy_port}
+      # ssh public key file, if not set, password will be used
+      # if you want to use your own key, copy the key to system/ssh/keys and set the file name here, like this
+      # pubkey_file: /init-me/stage-1/system/ssh/keys/mykey.rsa.pub
+      pubkey_file: ''
 
-  # apt settings
-  apt:
-    # replace apt source file?
-    source_file: /installation/apt/sources-tsinghua.list
-    keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
+    proxy:
+      # proxy configurations, the proxy will be exposed in the container
+      # and you can optionally use it for apt, shell, or custom scripts
+      proxy_port: 7890
+      proxy_address: host.docker.internal
 
-    # use http proxy for apt? 
-    use_proxy: false # use proxy for apt install ?
-    keep_proxy: false # retain http proxy settings in apt after build? If false, proxy will be removed after build
+      # deduced http proxy settings, you do not have to touch this
+      _proxy_http: http://${.proxy_address}:${.proxy_port}
+      _proxy_https: http://${.proxy_address}:${.proxy_port}
 
-# runtime configuration
-x-run-cfg:
-  ssh:
-    host_port: 12222
-  device: cpu  # can be gpu, cpu, mps
-  environment: {}
+    # apt settings
+    apt:
+      # replace apt source file?
+      source_file: "/init-me/stage-1/system/apt/sources-tsinghua.list"
+      keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
+
+      # use http proxy for apt? 
+      use_proxy: false # use proxy for apt install ?
+      keep_proxy: false # retain http proxy settings in apt after build? If false, proxy will be removed after build
+
+  run:
+    ssh:
+      host_port: 12222
+    device: cpu  # can be gpu, cpu, mps
+    environment: {}
+
 
 x-sections:
   run-with-device:
@@ -64,8 +72,8 @@ x-sections:
     mps:  []
 
 services:
-  my_service:
-    image: ${x-build-cfg.output_image_name}:${x-build-cfg.output_image_tag}
+  stage_1:
+    image: ${x-cfg-stage-1.build.output_image_name}:${x-cfg-stage-1.build.output_image_tag}
 
     # automatic start bash in ssh
     stdin_open: true
@@ -74,46 +82,50 @@ services:
 
     # port mapping
     ports:
-      - "${x-run-cfg.ssh.host_port}:${x-build-cfg.ssh.port}"
+      - "${x-cfg-stage-1.run.ssh.host_port}:${x-cfg-stage-1.build.ssh.port}"
 
     # use gpu?
     deploy:
       resources:
         reservations:
-          devices: ${x-sections.run-with-device[${x-run-cfg.device}]}
+          devices: ${x-sections.run-with-device[${x-cfg-stage-1.run.device}]}
 
     # user provided environments
-    environment: ${x-run-cfg.environment}
+    environment: ${x-cfg-stage-1.run.environment}
 
     build:
       context: .
-      dockerfile: stage_base.Dockerfile
+      dockerfile: stage_1.Dockerfile
 
       # required to use proxy
       extra_hosts:
         - "host.docker.internal:host-gateway"
 
       args:
-        BASE_IMAGE: ${x-build-cfg.base_image}
+        BASE_IMAGE: ${x-cfg-stage-1.build.base_image}
 
         # install essential apps, by executing /installation/scripts/install-essential-apps.sh
-        WITH_ESSENTIAL_APPS: ${x-build-cfg.apps.with_essential_apps}
+        WITH_ESSENTIAL_APPS: ${x-cfg-stage-1.build.apps.with_essential_apps}
 
         # install additional apps, by executing /installation/custom-scripts/custom-install-apps.sh
-        WITH_CUSTOM_APPS: ${x-build-cfg.apps.with_comstom_apps}
+        WITH_CUSTOM_APPS: ${x-cfg-stage-1.build.apps.with_comstom_apps}
 
         # install openssh-server, and set up ssh user, password, public key (optional)
-        WITH_SSH: ${x-build-cfg.ssh.with_ssh}
-        SSH_USER_NAME: ${x-build-cfg.ssh.username} # default ssh user name
-        SSH_USER_PASSWORD: ${x-build-cfg.ssh.password}  # default ssh user password
-        SSH_PUBKEY_FILE: ${x-build-cfg.ssh.pubkey_file} # ssh public key file, if not set, password will be used
+        WITH_SSH: ${x-cfg-stage-1.build.ssh.with_ssh}
+        SSH_USER_NAME: ${x-cfg-stage-1.build.ssh.username} # default ssh user name
+        SSH_USER_PASSWORD: ${x-cfg-stage-1.build.ssh.password}  # default ssh user password
+        SSH_PUBKEY_FILE: ${x-cfg-stage-1.build.ssh.pubkey_file} # ssh public key file, if not set, password will be used
 
         # replace apt source file?
-        APT_SOURCE_FILE: ${x-build-cfg.apt.source_file}
-        KEEP_APT_SOURCE_FILE: ${x-build-cfg.apt.keep_source_file}  # retain apt source file after build? If false, source file will be removed after build
-        APT_USE_PROXY: ${x-build-cfg.apt.use_proxy} # use proxy for apt install ?
-        APT_KEEP_PROXY: ${x-build-cfg.apt.keep_proxy} # retain http proxy settings in apt after build? If false, proxy will be removed after build
+        APT_SOURCE_FILE: ${x-cfg-stage-1.build.apt.source_file}
+        KEEP_APT_SOURCE_FILE: ${x-cfg-stage-1.build.apt.keep_source_file}  # retain apt source file after build? If false, source file will be removed after build
+        APT_USE_PROXY: ${x-cfg-stage-1.build.apt.use_proxy} # use proxy for apt install ?
+        APT_KEEP_PROXY: ${x-cfg-stage-1.build.apt.keep_proxy} # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
         # given proxies
-        USER_HTTP_PROXY: ${x-build-cfg.proxy._proxy_http}
-        USER_HTTPS_PROXY: ${x-build-cfg.proxy._proxy_https}
+        USER_HTTP_PROXY: ${x-cfg-stage-1.build.proxy._proxy_http}
+        USER_HTTPS_PROXY: ${x-cfg-stage-1.build.proxy._proxy_https}
+
+        # installation dirs
+        INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths._root_dir_host}
+        INSTALL_DIR_CONTAINER_1: ${x-cfg-stage-1.paths._root_dir_container}

@@ -4,13 +4,17 @@ from rich import print
 fn_template = r'templates\base-image.yml'
 fn_output = r'docker-compose.yml'
 cfg_source = oc.OmegaConf.load(fn_template)
-cfg_source['x-run-cfg'].device='gpu'
-# cfg_source['x-build-cfg'].apt.source_file=''
+cfg_source['x-cfg-stage-1'].run.device='cpu'
 cfg = cfg_source.copy()
 oc.OmegaConf.resolve(cfg)
-del cfg['x-build-cfg']
-del cfg['x-run-cfg']
-del cfg['x-sections']
+
+# keys_to_del = []
+# for k in cfg.keys():
+#     if k.startswith('x_') or k.startswith('x-'):
+#         keys_to_del.append(k)
+        
+# for k in keys_to_del:
+#     del cfg[k]
 
 cfg_yaml = oc.OmegaConf.to_yaml(cfg)
 print(cfg_yaml)

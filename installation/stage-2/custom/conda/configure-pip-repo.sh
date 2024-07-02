@@ -4,7 +4,7 @@
 
 # if conda is not activated, activate it
 if [ -z "$CONDA_DEFAULT_ENV" ]; then
-    source /apps/miniconda3/bin/activate
+    source $X_APPS/miniconda3/bin/activate
 fi
 
 # configure pip

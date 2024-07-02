@@ -2,7 +2,7 @@
 
 echo "Running on-first-run.sh for initialization ..."
 
-init_check_file_path=$X_PATH_SOFT_BASE/init-done.yaml
+init_check_file_path=$X_PATH_SOFT_BASE/stage-1-init-done
 
 # check if the initialization has been done
 # if yes, just return, otherwise, install the pre-configured apps
@@ -11,13 +11,13 @@ if [ -f $init_check_file_path ]; then
     exit
 fi
 
-echo "$init_check_file_path not found, installing pre-configured apps"
+echo "$init_check_file_path not found, run the first run tasks ..."
 
 export DEBIAN_FRONTEND=noninteractive
 
-echo "Running custom-first-run.sh ..."
-bash /installation/custom-scripts/custom-first-run.sh
+# do the first run tasks
+bash $INSTALL_DIR_CONTAINER_1/custom/custom-first-run.sh
 
-# write the config.yaml file to /apps
+# write the init signature file to /apps
 echo "Writing $init_check_file_path"
-cat <<EOF > $init_check_file_path
+echo "stage-1 is initialized" > $init_check_file_path

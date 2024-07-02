@@ -1,6 +1,46 @@
 version: '3'
+x-cfg-stage-1:
+  paths:
+    _root_dir_host: ./installation/stage-1
+    _root_dir_container: /init-me/stage-1
+  build:
+    output_image_name: my_image
+    output_image_tag: base
+    base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
+    apps:
+      with_essential_apps: true
+      with_comstom_apps: true
+    ssh:
+      with_ssh: true
+      username: me
+      password: 123456
+      port: 22
+      pubkey_file: ''
+    proxy:
+      proxy_port: 7890
+      proxy_address: host.docker.internal
+      _proxy_http: http://host.docker.internal:7890
+      _proxy_https: http://host.docker.internal:7890
+    apt:
+      source_file: /init-me/stage-1/system/apt/sources-tsinghua.list
+      keep_source_file: true
+      use_proxy: false
+      keep_proxy: false
+  run:
+    ssh:
+      host_port: 12222
+    device: cpu
+    environment: {}
+x-sections:
+  run-with-device:
+    gpu:
+    - driver: nvidia
+      capabilities:
+      - gpu
+    cpu: []
+    mps: []
 services:
-  my_service:
+  stage_1:
     image: my_image:base
     stdin_open: true
     tty: true
@@ -10,14 +50,11 @@ services:
     deploy:
       resources:
         reservations:
-          devices:
-          - driver: nvidia
-            capabilities:
-            - gpu
+          devices: []
     environment: {}
     build:
       context: .
-      dockerfile: stage_base.Dockerfile
+      dockerfile: stage_1.Dockerfile
       extra_hosts:
       - host.docker.internal:host-gateway
       args:
@@ -28,9 +65,11 @@ services:
         SSH_USER_NAME: me
         SSH_USER_PASSWORD: 123456
         SSH_PUBKEY_FILE: ''
-        APT_SOURCE_FILE: /installation/apt/sources-tsinghua.list
+        APT_SOURCE_FILE: /init-me/stage-1/system/apt/sources-tsinghua.list
         KEEP_APT_SOURCE_FILE: true
         APT_USE_PROXY: false
         APT_KEEP_PROXY: false
         USER_HTTP_PROXY: http://host.docker.internal:7890
         USER_HTTPS_PROXY: http://host.docker.internal:7890
+        INSTALL_DIR_HOST_1: ./installation/stage-1
+        INSTALL_DIR_CONTAINER_1: /init-me/stage-1

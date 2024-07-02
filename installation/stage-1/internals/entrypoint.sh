@@ -1,5 +1,13 @@
 #!/bin/bash
 
+script_dir=$INSTALL_DIR_CONTAINER_1/internals
+
+# create links
+bash $script_dir/create-links.sh
+
+# do first run tasks
+bash $script_dir/on-first-run.sh
+
 # check if ssh is installed, if yes, start the service
 if [ -f /etc/ssh/sshd_config ]; then
     echo "Starting ssh service..."
