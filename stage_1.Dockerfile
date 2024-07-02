@@ -47,7 +47,7 @@ ENV INSTALL_DIR_CONTAINER_1=${INSTALL_DIR_CONTAINER_1}
 # copy the installation scripts to the image
 ADD ${INSTALL_DIR_HOST_1} ${INSTALL_DIR_CONTAINER_1}
 
-# for any script in /init-me, including subdirs, except for packages folder
+# for any script in INSTALL_DIR_CONTAINER_1, including subdirs, except for packages folder
 # convert CRLF to LF
 RUN find $INSTALL_DIR_CONTAINER_1 -type f -not -path "$INSTALL_DIR_CONTAINER_1/packages/*" -exec sed -i 's/\r$//' {} \;
 
@@ -95,30 +95,6 @@ RUN $INSTALL_DIR_CONTAINER_1/internals/create-dirs.sh
 ENV X_APPS="${X_PATH_SOFT_BASE}/${X_PREFIX_APPS}"
 ENV X_DATA="${X_PATH_SOFT_BASE}/${X_PREFIX_DATA}"
 ENV X_WORKSPACE="${X_PATH_SOFT_BASE}/${X_PREFIX_WORKSPACE}"
-
-# # create soft directory
-# RUN mkdir -p $X_PATH_SOFT_BASE &&\
-#     chmod 777 $X_PATH_SOFT_BASE
-
-# # create in-image storage paths
-# RUN echo "creating hard storage directories"
-# RUN mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS &&\
-#     chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS &&\
-#     mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA &&\
-#     chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA &&\
-#     mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE &&\
-#     chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE &&\
-#     mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE &&\
-#     chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE
-
-# # creating soft directories
-# RUN echo "creating soft storage directories"
-# RUN mkdir -p $X_PATH_SOFT_BASE/$X_PREFIX_APPS &&\
-#     chmod 777 $X_PATH_SOFT_BASE/$X_PREFIX_APPS &&\
-#     mkdir -p $X_PATH_SOFT_BASE/$X_PREFIX_DATA &&\
-#     chmod 777 $X_PATH_SOFT_BASE/$X_PREFIX_DATA &&\
-#     mkdir -p $X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE &&\
-#     chmod 777 $X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE
 
 # setup entrypoint
 RUN cp $INSTALL_DIR_CONTAINER_1/internals/entrypoint.sh /entrypoint.sh &&\

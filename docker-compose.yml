@@ -1,47 +1,34 @@
 version: '3'
-x-cfg-stage-1:
-  paths:
-    _root_dir_host: ./installation/stage-1
-    _root_dir_container: /init-me/stage-1
-  build:
-    output_image_name: my_image
-    output_image_tag: base
-    base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
-    apps:
-      with_essential_apps: true
-      with_comstom_apps: true
-    ssh:
-      with_ssh: true
-      username: me
-      password: 123456
-      port: 22
-      pubkey_file: ''
-    proxy:
-      proxy_port: 7890
-      proxy_address: host.docker.internal
-      _proxy_http: http://host.docker.internal:7890
-      _proxy_https: http://host.docker.internal:7890
-    apt:
-      source_file: /init-me/stage-1/system/apt/sources-tsinghua.list
-      keep_source_file: true
-      use_proxy: false
-      keep_proxy: false
-  run:
-    ssh:
-      host_port: 12222
-    device: cpu
-    environment: {}
-x-sections:
-  run-with-device:
-    gpu:
-    - driver: nvidia
-      capabilities:
-      - gpu
-    cpu: []
-    mps: []
 services:
+  stage_2:
+    image: my_image:stage-2
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    ports:
+    - '12222:22'
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities:
+            - gpu
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    build:
+      context: .
+      dockerfile: stage_2.Dockerfile
+      extra_hosts:
+      - host.docker.internal:host-gateway
+      args:
+        BASE_IMAGE: my_image:stage-1
+        WITH_ESSENTIAL_APPS: true
+        WITH_CUSTOM_APPS: true
+        INSTALL_DIR_HOST_2: ./installation/stage-2
+        INSTALL_DIR_CONTAINER_2: /init-me/stage-2
   stage_1:
-    image: my_image:base
+    image: my_image:stage-1
     stdin_open: true
     tty: true
     command: /bin/bash
@@ -52,6 +39,8 @@ services:
         reservations:
           devices: []
     environment: {}
+    extra_hosts:
+    - host.docker.internal:host-gateway
     build:
       context: .
       dockerfile: stage_1.Dockerfile

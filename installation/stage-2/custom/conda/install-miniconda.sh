@@ -2,17 +2,25 @@
 
 export DEBIAN_FRONTEND=noninteractive
 
-CONDA_INSTALL_PATH="$X_PATH_BASE/$X_PREFIX_APPS/miniconda3"
+CONDA_INSTALL_DIR="$X_APPS/miniconda3"
+CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/packages/Miniconda3-latest-Linux-x86_64.sh"
+CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/custom/conda"
+INSTALL_FOR_ROOT="false"
 
 # install miniconda3 to /apps/miniconda3
-sh /installation/packages/Miniconda3-latest-Linux-x86_64.sh -b -p $CONDA_INSTALL_PATH
+sh $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users
-echo "setting permissions for $CONDA_INSTALL_PATH ..."
-chmod -R 777 $CONDA_INSTALL_PATH
+echo "setting permissions for $CONDA_INSTALL_DIR ..."
+chmod -R 777 $CONDA_INSTALL_DIR
 
 echo "initializing conda for all users ..."
-USER_LIST="root"
+
+if [ "$INSTALL_FOR_ROOT" = "true" ]; then
+  USER_LIST="root"
+else
+  USER_LIST=""
+fi
 
 # add all user names to USER_LIST
 for user in $(ls /home); do
@@ -21,7 +29,7 @@ done
 
 # for each user in USERS, initialize conda
 for user in $USER_LIST; do
-  su - $user -c "$CONDA_INSTALL_PATH/bin/conda init"
+  su - $user -c "$CONDA_INSTALL_DIR/bin/conda init"
 
   # if user is root, set home_dir to /root, otherwise /home/$user
   if [ "$user" = "root" ]; then
@@ -31,16 +39,8 @@ for user in $USER_LIST; do
   fi
 
   # replace .condarc with the pre-configured /installation/conda/conda-tsinghua.txt
-  su - $user -c "cp /installation/conda/conda-tsinghua.txt $home_dir/.condarc"
+  su - $user -c "cp $CONDA_SCRIPT_DIR/conda-tsinghua.txt $home_dir/.condarc"
 
   # call configure-pip-repo.sh
-  su - $user -c "bash /installation/conda/configure-pip-repo.sh"
+  su - $user -c "bash $CONDA_SCRIPT_DIR/configure-pip-repo.sh"
 done
-
-# initialize conda for all users
-# for user in $(ls /home); do
-#   su - $user -c "$CONDA_INSTALL_PATH/bin/conda init"
-# done
-
-# # also for root
-# $CONDA_INSTALL_PATH/bin/conda init

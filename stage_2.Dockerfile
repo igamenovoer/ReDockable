@@ -1,106 +1,43 @@
 # syntax=docker/dockerfile:1
 
 # the base image
-# FROM nvidia/cuda:11.8.0-base-ubuntu22.04
 ARG BASE_IMAGE
-
-# if you want to use proxy for apt, set this to host proxy
-# like http://host.docker.internal:7890
-ARG APT_HTTP_PROXY
-
-# keep the http proxy for apt after installation?
-ARG APT_KEEP_PROXY=false
-
-# if you want the container to use proxy for shell, set this to host proxy
-ARG SHELL_HTTP_PROXY
-
-# optional http proxy, used when accessing blocked sites whenever needed
-ARG OPTIONAL_HTTP_PROXY
 
 # -------------------------------------------
 # create workspace for user
 FROM ${BASE_IMAGE} AS default
 
-# directories
-# things are stored in hard paths, but linked by soft paths
+# paths
+ARG INSTALL_DIR_HOST_2
+ARG INSTALL_DIR_CONTAINER_2
+ARG WITH_ESSENTIAL_APPS=false
+ARG WITH_CUSTOM_APPS=false
 
-# hard path is like this:
-# X_PATH_HARD_BASE/X_PREFIX_IMAGE_STORAGE/X_PREFIX_APPS
-# X_PATH_HARD_BASE/X_PREFIX_VOLUME_STORAGE/X_PREFIX_APPS
+ENV INSTALL_DIR_CONTAINER_2=${INSTALL_DIR_CONTAINER_2}
 
-# soft path is like this:
-# X_PATH_SOFT_BASE/X_PREFIX_APPS
+# copy the installation scripts to the image
+ADD ${INSTALL_DIR_HOST_2} ${INSTALL_DIR_CONTAINER_2}
 
-ENV X_PATH_HARD_BASE="/hard"
-ENV X_PATH_SOFT_BASE="/soft"
+# convert CRLF to LF
+RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/packages/*" -exec sed -i 's/\r$//' {} \;
 
-ENV X_PREFIX_APPS="apps"
-ENV X_PREFIX_DATA="data"
-ENV X_PREFIX_WORKSPACE="workspace"
+# add chmod+x to all scripts, including all subdirs
+RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
 
-# subdirectories under this path is external mounted volumes
-ENV X_PREFIX_VOLUME_STORAGE="volume"
+# show env
+RUN env
 
-# subdirectories under this path is internal to the image
-ENV X_PREFIX_IMAGE_STORAGE="image"
+# install essentials and custom apps
+RUN $INSTALL_DIR_CONTAINER_2/internals/install-essentials.sh &&\
+    $INSTALL_DIR_CONTAINER_2/custom/custom-install-apps.sh &&\
+    $INSTALL_DIR_CONTAINER_2/internals/cleanup.sh
 
-# install apps on first run
-ENTRYPOINT [ "/installation/scripts/entrypoint-runtime.sh" ]
-
-# create soft directory
-RUN mkdir -p $X_PATH_SOFT_BASE &&\
-    chmod 777 $X_PATH_SOFT_BASE
-
-# create in-image storage paths
-RUN echo "creating in-image storage paths"
-RUN mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS &&\
-    chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_APPS &&\
-    mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA &&\
-    chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_DATA &&\
-    mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE &&\
-    chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$X_PREFIX_WORKSPACE
-
-# creating soft directories
-RUN echo "creating soft directories"
-RUN mkdir -p $X_PATH_SOFT_BASE/$X_PREFIX_APPS &&\
-    chmod 777 $X_PATH_SOFT_BASE/$X_PREFIX_APPS &&\
-    mkdir -p $X_PATH_SOFT_BASE/$X_PREFIX_DATA &&\
-    chmod 777 $X_PATH_SOFT_BASE/$X_PREFIX_DATA &&\
-    mkdir -p $X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE &&\
-    chmod 777 $X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE
-
-# storage choice, can be
-# volume_first, image_first, volume_only, image_only
-# volume_first: use volume if exists, otherwise use image
-# image_first: use image if exists, otherwise use volume
-# volume_only: use volume only
-# image_only: use image only
-
-ENV X_STORAGE_CHOICE="volume_first"
-
-# -------------------------------------------
-
-# install apps to automatically created docker volume, you can create your own in docker-compose
-FROM default AS with-built-in-volume
-
-# create all sub dirs with anonymous volume
-RUN echo "creating anonymous volume for apps, data, and workspace"
-RUN mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_APPS &&\
-    chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_APPS &&\
-    mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_DATA &&\
-    chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_DATA &&\
-    mkdir -p $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_WORKSPACE &&\
-    chmod 777 $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_WORKSPACE
-
-VOLUME $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_APPS
-VOLUME $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_DATA
-VOLUME $X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$X_PREFIX_WORKSPACE
+# override the entrypoint
+RUN cp $INSTALL_DIR_CONTAINER_2/internals/entrypoint.sh /entrypoint.sh &&\
+    chmod +x /entrypoint.sh
+ENTRYPOINT [ "/entrypoint.sh" ]
 
 # install apps to the image
-FROM default AS store-in-image
-ENV X_STORAGE_CHOICE="image_only"
-RUN /installation/scripts/create-links.sh
-
-# install apps only to volume
-# FROM default AS store-in-volume
-# ENV X_STORAGE_CHOICE="volume_only"
+# FROM default AS store-in-image
+# ENV X_STORAGE_CHOICE="image_first"
+# RUN /installation/scripts/create-links.sh

@@ -11,7 +11,7 @@ x-cfg-stage-1:
   build:
     # built image name and tag
     output_image_name: my_image
-    output_image_tag: base
+    output_image_tag: stage-1
 
     # base image
     base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
@@ -54,13 +54,28 @@ x-cfg-stage-1:
       # use http proxy for apt? 
       use_proxy: false # use proxy for apt install ?
       keep_proxy: false # retain http proxy settings in apt after build? If false, proxy will be removed after build
-
-  run:
+  run: &stage-1-run
     ssh:
       host_port: 12222
     device: cpu  # can be gpu, cpu, mps
     environment: {}
 
+x-cfg-stage-2:
+  paths:
+    _root_dir_host: ./installation/stage-2
+    _root_dir_container: /init-me/stage-2
+
+  build:
+    output_image_name: my_image
+    output_image_tag: stage-2
+    base_image: my_image:stage-1
+
+    apps:
+      with_essential_apps: true
+      with_comstom_apps: true
+
+  run:
+    <<: *stage-1-run
 
 x-sections:
   run-with-device:
@@ -72,6 +87,49 @@ x-sections:
     mps:  []
 
 services:
+  stage_2:
+    image: ${x-cfg-stage-2.build.output_image_name}:${x-cfg-stage-2.build.output_image_tag}
+
+    # automatic start bash in ssh
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+    # port mapping
+    ports:
+      - "${x-cfg-stage-2.run.ssh.host_port}:${x-cfg-stage-1.build.ssh.port}"
+    
+    # use gpu?
+    deploy:
+      resources:
+        reservations:
+          devices: ${x-sections.run-with-device[${x-cfg-stage-2.run.device}]}
+
+    # required to use proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    build:
+      context: .
+      dockerfile: stage_2.Dockerfile
+
+      # required to use proxy
+      extra_hosts:
+        - "host.docker.internal:host-gateway"
+
+      args:
+        BASE_IMAGE: ${x-cfg-stage-2.build.base_image}
+
+        # install essential apps, by executing /installation/scripts/install-essential-apps.sh
+        WITH_ESSENTIAL_APPS: ${x-cfg-stage-2.build.apps.with_essential_apps}
+
+        # install additional apps, by executing /installation/custom-scripts/custom-install-apps.sh
+        WITH_CUSTOM_APPS: ${x-cfg-stage-2.build.apps.with_comstom_apps}
+
+        # installation dirs
+        INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths._root_dir_host}
+        INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._root_dir_container}
+
   stage_1:
     image: ${x-cfg-stage-1.build.output_image_name}:${x-cfg-stage-1.build.output_image_tag}
 
@@ -92,6 +150,10 @@ services:
 
     # user provided environments
     environment: ${x-cfg-stage-1.run.environment}
+
+    # required to use proxy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
     build:
       context: .
