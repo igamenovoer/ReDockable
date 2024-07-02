@@ -1,6 +1,6 @@
 version: '3'
 
-x-config:
+x-build-cfg:
   # built image name and tag
   output_image_name: my_image
   output_image_tag: base
@@ -20,10 +20,7 @@ x-config:
     with_ssh: true
     username: me
     password: 123456
-
-    # port mapping for ssh
-    port_in_image: 22
-    port_in_host: 12222
+    port : 22 # ssh port in container
 
     # ssh public key file, if not set, password will be used
     # if you want to use your own key, copy the key to /installation/ssh/keys/ and set the file name here, like this
@@ -50,10 +47,25 @@ x-config:
     use_proxy: false # use proxy for apt install ?
     keep_proxy: false # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
+# runtime configuration
+x-run-cfg:
+  ssh:
+    host_port: 12222
+  device: cpu  # can be gpu, cpu, mps
+  environment: {}
+
+x-sections:
+  run-with-device:
+    # use in deploy.resources.reservations.devices
+    gpu:
+      - driver: nvidia
+        capabilities: [gpu]
+    cpu:  []
+    mps:  []
 
 services:
   my_service:
-    image: ${x-config.output_image_name}:${x-config.output_image_tag}
+    image: ${x-build-cfg.output_image_name}:${x-build-cfg.output_image_tag}
 
     # automatic start bash in ssh
     stdin_open: true
@@ -62,7 +74,16 @@ services:
 
     # port mapping
     ports:
-      - "${x-config.ssh.port_in_host}:${x-config.ssh.port_in_image}"
+      - "${x-run-cfg.ssh.host_port}:${x-build-cfg.ssh.port}"
+
+    # use gpu?
+    deploy:
+      resources:
+        reservations:
+          devices: ${x-sections.run-with-device[${x-run-cfg.device}]}
+
+    # user provided environments
+    environment: ${x-run-cfg.environment}
 
     build:
       context: .
@@ -73,26 +94,26 @@ services:
         - "host.docker.internal:host-gateway"
 
       args:
-        BASE_IMAGE: ${x-config.base_image}
+        BASE_IMAGE: ${x-build-cfg.base_image}
 
         # install essential apps, by executing /installation/scripts/install-essential-apps.sh
-        WITH_ESSENTIAL_APPS: ${x-config.apps.with_essential_apps}
+        WITH_ESSENTIAL_APPS: ${x-build-cfg.apps.with_essential_apps}
 
         # install additional apps, by executing /installation/custom-scripts/custom-install-apps.sh
-        WITH_CUSTOM_APPS: ${x-config.apps.with_comstom_apps}
+        WITH_CUSTOM_APPS: ${x-build-cfg.apps.with_comstom_apps}
 
         # install openssh-server, and set up ssh user, password, public key (optional)
-        WITH_SSH: ${x-config.ssh.with_ssh}
-        SSH_USER_NAME: ${x-config.ssh.username} # default ssh user name
-        SSH_USER_PASSWORD: ${x-config.ssh.password}  # default ssh user password
-        SSH_PUBKEY_FILE: ${x-config.ssh.pubkey_file} # ssh public key file, if not set, password will be used
+        WITH_SSH: ${x-build-cfg.ssh.with_ssh}
+        SSH_USER_NAME: ${x-build-cfg.ssh.username} # default ssh user name
+        SSH_USER_PASSWORD: ${x-build-cfg.ssh.password}  # default ssh user password
+        SSH_PUBKEY_FILE: ${x-build-cfg.ssh.pubkey_file} # ssh public key file, if not set, password will be used
 
         # replace apt source file?
-        APT_SOURCE_FILE: ${x-config.apt.source_file}
-        KEEP_APT_SOURCE_FILE: ${x-config.apt.keep_source_file}  # retain apt source file after build? If false, source file will be removed after build
-        APT_USE_PROXY: ${x-config.apt.use_proxy} # use proxy for apt install ?
-        APT_KEEP_PROXY: ${x-config.apt.keep_proxy} # retain http proxy settings in apt after build? If false, proxy will be removed after build
+        APT_SOURCE_FILE: ${x-build-cfg.apt.source_file}
+        KEEP_APT_SOURCE_FILE: ${x-build-cfg.apt.keep_source_file}  # retain apt source file after build? If false, source file will be removed after build
+        APT_USE_PROXY: ${x-build-cfg.apt.use_proxy} # use proxy for apt install ?
+        APT_KEEP_PROXY: ${x-build-cfg.apt.keep_proxy} # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
         # given proxies
-        USER_HTTP_PROXY: ${x-config.proxy._proxy_http}
-        USER_HTTPS_PROXY: ${x-config.proxy._proxy_https}
+        USER_HTTP_PROXY: ${x-build-cfg.proxy._proxy_http}
+        USER_HTTPS_PROXY: ${x-build-cfg.proxy._proxy_https}
