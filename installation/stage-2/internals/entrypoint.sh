@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# print all env
-echo "All env:"
-env
-
 # stage 2 entrypoint, part of the content is from stage 1 entrypoint
 
 script_dir_1=$INSTALL_DIR_CONTAINER_1/internals

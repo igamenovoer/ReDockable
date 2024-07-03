@@ -10,35 +10,26 @@ for source in $link_source; do
     target_volume="$X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$(basename $source)"
     target_image="$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$(basename $source)"
 
-    # if source exists, skip
+    # if source exists, remove it if it is a link, report error if it is a directory
     if [ -e $source ]; then
-        echo "$source exists, skipping"
-        continue
+        if [ -L $source ]; then
+            echo "Removing existing link $source ..."
+            rm $source
+        elif [ -d $source ]; then
+            echo "Error: $source is a directory, please remove it manually"
+            continue
+        fi
     fi
 
     echo "Creating link for $source ..."
 
-    # # if X_STORAGE_CHOICE is volume_only, link source to target_volume if target_volume exists
-    # if [ "$X_STORAGE_CHOICE" == "volume_only" ]; then
-    #     if [ -d "$target_volume" ]; then
-    #         echo "Linking $source to $target_volume"
-    #         ln -s $target_volume $source
-    #     else
-    #         echo "Target volume $target_volume not found, skipping"
-    #     fi
-    #     continue
-    # fi
-
-    # # if X_STORAGE_CHOICE is image_only, link source to target_image if target_image exists
-    # if [ "$X_STORAGE_CHOICE" == "image_only" ]; then
-    #     if [ -d "$target_image" ]; then
-    #         echo "Linking $source to $target_image"
-    #         ln -s $target_image $source
-    #     else
-    #         echo "Target image $target_image not found, skipping"
-    #     fi
-    #     continue
-    # fi
+    # if target volume permission is not 777, change it
+    if [ -d "$target_volume" ]; then
+        if [ "$(stat -c %a $target_volume)" != "777" ]; then
+            echo "Changing permission of $target_volume to 777"
+            chmod 777 -R $target_volume
+        fi
+    fi
 
     # if X_STORAGE_CHOICE is volume_first, link source to target_volume if target_volume exists,
     # otherwise link source to target_image

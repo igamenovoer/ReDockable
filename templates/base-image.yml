@@ -50,8 +50,9 @@ x-cfg-stage-1:
     # apt settings
     apt:
       # replace apt source file?
-      # source_file: "/init-me/stage-1/system/apt/sources-tsinghua.list"
-      source_file: '/init-me/stage-1/system/apt/ubuntu-22.04-arm.list'
+      # use empty string to retain the default source file
+      # source_file: ''
+      source_file: '/init-me/stage-1/system/apt/ubuntu-22.04-x86_64.list'
       keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
 
       # use http proxy for apt? 
@@ -68,6 +69,11 @@ x-cfg-stage-2:
     _root_dir_host: ./installation/stage-2
     _root_dir_container: /init-me/stage-2
 
+    # in-container paths
+    _hard_apps: /hard/volume/apps
+    _hard_data: /hard/volume/data
+    _hard_workspace: /hard/volume/workspace
+
   build:
     output_image_name: my_image
     output_image_tag: stage-2
@@ -80,6 +86,27 @@ x-cfg-stage-2:
   run:
     <<: *stage-1-run
 
+  storage:
+    # storage type can be auto-volume, external-volume, host, image
+    # auto-volume: automatically created volumes by docker compose, you need to remove them manually
+    # external-volume: external volumes manually created using "docker volume create", you have to set the names in external_volume_names
+    # host: directories in host that will be mounted to the container, you have set the paths in host_dirs
+    # image: in-image storage, nothing to mount
+    type: image 
+
+    # directories in host that will be mounted to the container
+    host_dirs: 
+      apps: null   # to be mounted to /hard/volume/app
+      data: null   # to be mounted to /hard/volume/data
+      workspace: null  # to be mounted to /hard/volume/workspace
+
+    # external volumes created using docker volume create
+    # you must explicitly create these volumes and write the names here
+    external_volume_names:
+      apps: null   # to be mounted to /hard/volume/app
+      data: null # to be mounted to /hard/volume/data
+      workspace: null  # to be mounted to /hard/volume/workspace
+        
 x-sections:
   run-with-device:
     # use in deploy.resources.reservations.devices
@@ -88,6 +115,51 @@ x-sections:
         capabilities: [gpu]
     cpu:  []
     mps:  []
+
+  mount:
+    # automatically created volumes by docker compose, you need to remove them manually
+    auto-volume:
+      # append to docker compose volume section
+      volumes:
+        app:
+        data:
+        workspace:
+
+      # append to docker compose services section
+      runtime-mount:
+        - "app:${x-cfg-stage-2.paths._hard_apps}"
+        - "data:${x-cfg-stage-2.paths._hard_data}"
+        - "workspace:${x-cfg-stage-2.paths._hard_workspace}"
+    
+    external-volume:
+      # append to docker compose volume section
+      volumes:
+        app:
+          external: true
+          name: ${x-cfg-stage-2.storage.external_volume_names.apps}
+        data:
+          external: true
+          name: ${x-cfg-stage-2.storage.external_volume_names.data}
+        workspace:
+          external: true
+          name: ${x-cfg-stage-2.storage.external_volume_names.workspace}
+      runtime-mount:
+        - "app:${x-cfg-stage-2.paths._hard_apps}"
+        - "data:${x-cfg-stage-2.paths._hard_data}"
+        - "workspace:${x-cfg-stage-2.paths._hard_workspace}"
+
+    host:
+      # append to docker compose volume section
+      volumes: {}
+      runtime-mount:
+        - "${x-cfg-stage-2.storage.host_dirs.apps}:${x-cfg-stage-2.paths._hard_apps}"
+        - "${x-cfg-stage-2.storage.host_dirs.data}:${x-cfg-stage-2.paths._hard_data}"
+        - "${x-cfg-stage-2.storage.host_dirs.workspace}:${x-cfg-stage-2.paths._hard_workspace}"
+    
+    image:
+      # in-image storage, nothing to mount
+      volumes: {}
+      runtime-mount: []
 
 services:
   stage_2:
@@ -111,6 +183,9 @@ services:
     # required to use proxy
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
+    # mount volumes
+    volumes: ${x-sections.mount[${x-cfg-stage-2.storage.type}].runtime-mount}
 
     build:
       context: .
@@ -197,3 +272,6 @@ services:
 
         # ssh port in container
         ROOT_PASSWORD: ${x-cfg-stage-1.build.root_password}
+
+# create volumes if needed in stage 2
+volumes: ${x-sections.mount[${x-cfg-stage-2.storage.type}].volumes}

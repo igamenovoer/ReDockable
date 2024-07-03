@@ -12,7 +12,7 @@ else
   CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/tmp/Miniconda3-latest-Linux-x86_64.sh"
 fi
 
-CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/custom/conda"
+CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/system/conda"
 INSTALL_FOR_ROOT="false"
 
 # install miniconda3 to /apps/miniconda3

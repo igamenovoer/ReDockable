@@ -5,8 +5,9 @@ fn_template = r'templates/base-image.yml'
 fn_output = r'docker-compose.yml'
 cfg_source = oc.OmegaConf.load(fn_template)
 cfg_source['x-cfg-stage-1'].run.device='cpu'
-cfg = cfg_source.copy()
-oc.OmegaConf.resolve(cfg)
+cfg_source['x-cfg-stage-2'].storage.type='external-volume'
+# cfg = cfg_source.copy()
+cfg = oc.OmegaConf.to_container(cfg_source, resolve=True, throw_on_missing=False)
 
 keys_to_del = []
 for k in cfg.keys():

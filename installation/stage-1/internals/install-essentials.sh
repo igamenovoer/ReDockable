@@ -13,6 +13,7 @@ fi
 # apt-get install sudo nano mc ne software-properties-common -y
 apt-get install sudo nano -y
 apt-get install openssh-server -y
+apt-get install python3 python3-pip -y
 
 # FIXME: skipping all the other installations for now
 exit 0
