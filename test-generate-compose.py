@@ -1,11 +1,10 @@
 import omegaconf as oc
 from rich import print
 
-fn_template = r'templates\base-image.yml'
+fn_template = r'templates/base-image.yml'
 fn_output = r'docker-compose.yml'
 cfg_source = oc.OmegaConf.load(fn_template)
 cfg_source['x-cfg-stage-1'].run.device='cpu'
-cfg_source['x-cfg-stage-2'].run.device='gpu'
 cfg = cfg_source.copy()
 oc.OmegaConf.resolve(cfg)
 

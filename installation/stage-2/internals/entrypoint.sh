@@ -1,15 +1,19 @@
 #!/bin/bash
 
+# print all env
+echo "All env:"
+env
+
 # stage 2 entrypoint, part of the content is from stage 1 entrypoint
 
 script_dir_1=$INSTALL_DIR_CONTAINER_1/internals
 script_dir_2=$INSTALL_DIR_CONTAINER_2/internals
 
-# create links
-bash $script_dir_1/create-links.sh
-
 # do first run tasks
 bash $script_dir_1/on-first-run.sh
+
+# create links
+bash $script_dir_2/create-links.sh
 
 # do first run tasks in stage 2
 bash $script_dir_2/on-first-run.sh

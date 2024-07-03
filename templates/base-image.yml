@@ -14,7 +14,9 @@ x-cfg-stage-1:
     output_image_tag: stage-1
 
     # base image
-    base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
+    # base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
+    base_image: ubuntu:22.04
+    root_password: ''
 
     apps:
       # install essential apps, by executing /init-me/stage-1/internals/install-essential-apps.sh
@@ -48,7 +50,8 @@ x-cfg-stage-1:
     # apt settings
     apt:
       # replace apt source file?
-      source_file: "/init-me/stage-1/system/apt/sources-tsinghua.list"
+      # source_file: "/init-me/stage-1/system/apt/sources-tsinghua.list"
+      source_file: '/init-me/stage-1/system/apt/ubuntu-22.04-arm.list'
       keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
 
       # use http proxy for apt? 
@@ -191,3 +194,6 @@ services:
         # installation dirs
         INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths._root_dir_host}
         INSTALL_DIR_CONTAINER_1: ${x-cfg-stage-1.paths._root_dir_container}
+
+        # ssh port in container
+        ROOT_PASSWORD: ${x-cfg-stage-1.build.root_password}

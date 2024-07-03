@@ -2,6 +2,12 @@
 # this script sets up all environment variables, as well as configuration files
 # based on the environment variables
 
+# set root password as ROOT_PASSWORD if it is not empty
+if [ -n "$ROOT_PASSWORD" ]; then
+  echo "Setting root password as $ROOT_PASSWORD"
+  echo "root:$ROOT_PASSWORD" | chpasswd
+fi
+
 # if APT_USE_PROXY is true, set up proxy for apt
 # the proxy is given in USER_HTTP_PROXY and USER_HTTPS_PROXY
 if [ "$APT_USE_PROXY" = "true" ]; then

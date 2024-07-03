@@ -10,10 +10,7 @@ services:
     deploy:
       resources:
         reservations:
-          devices:
-          - driver: nvidia
-            capabilities:
-            - gpu
+          devices: []
     extra_hosts:
     - host.docker.internal:host-gateway
     build:
@@ -47,18 +44,19 @@ services:
       extra_hosts:
       - host.docker.internal:host-gateway
       args:
-        BASE_IMAGE: nvidia/cuda:12.3.2-base-ubuntu22.04
+        BASE_IMAGE: ubuntu:22.04
         WITH_ESSENTIAL_APPS: true
         WITH_CUSTOM_APPS: true
         WITH_SSH: true
         SSH_USER_NAME: me
         SSH_USER_PASSWORD: 123456
         SSH_PUBKEY_FILE: ''
-        APT_SOURCE_FILE: /init-me/stage-1/system/apt/sources-tsinghua.list
+        APT_SOURCE_FILE: /init-me/stage-1/system/apt/ubuntu-22.04-arm.list
         KEEP_APT_SOURCE_FILE: true
         APT_USE_PROXY: false
         APT_KEEP_PROXY: false
-        USER_HTTP_PROXY: http://host.docker.internal:7890
-        USER_HTTPS_PROXY: http://host.docker.internal:7890
+        USER_HTTP_PROXY: http://host.docker.internal:30080
+        USER_HTTPS_PROXY: http://host.docker.internal:30080
         INSTALL_DIR_HOST_1: ./installation/stage-1
         INSTALL_DIR_CONTAINER_1: /init-me/stage-1
+        ROOT_PASSWORD: root

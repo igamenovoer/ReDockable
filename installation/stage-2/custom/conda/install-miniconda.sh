@@ -3,7 +3,15 @@
 export DEBIAN_FRONTEND=noninteractive
 
 CONDA_INSTALL_DIR="$X_APPS/miniconda3"
-CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/packages/Miniconda3-latest-Linux-x86_64.sh"
+
+# check if the cpu is arm64, if yes, use tmp/Miniconda3-latest-Linux-aarch64.sh
+# else use tmp/Miniconda3-latest-Linux-x86_64.sh
+if [ "$(uname -m)" = "aarch64" ]; then
+  CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/tmp/Miniconda3-latest-Linux-aarch64.sh"
+else
+  CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/tmp/Miniconda3-latest-Linux-x86_64.sh"
+fi
+
 CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/custom/conda"
 INSTALL_FOR_ROOT="false"
 
@@ -41,6 +49,7 @@ for user in $USER_LIST; do
   # replace .condarc with the pre-configured /installation/conda/conda-tsinghua.txt
   su - $user -c "cp $CONDA_SCRIPT_DIR/conda-tsinghua.txt $home_dir/.condarc"
 
-  # call configure-pip-repo.sh
-  su - $user -c "bash $CONDA_SCRIPT_DIR/configure-pip-repo.sh"
+  # activate conda and call configure-pip-repo.sh
+  su - $user -c "source $CONDA_INSTALL_DIR/bin/activate && bash $CONDA_SCRIPT_DIR/configure-pip-repo.sh"
+
 done

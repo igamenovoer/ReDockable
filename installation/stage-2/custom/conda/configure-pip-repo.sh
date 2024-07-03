@@ -2,9 +2,10 @@
 
 # configure pip to user tsinghua mirror
 
-# if conda is not activated, activate it
+# if conda is not activated, skip
 if [ -z "$CONDA_DEFAULT_ENV" ]; then
-    source $X_APPS/miniconda3/bin/activate
+    echo "Conda is not activated, skipping pip configuration for user $USER"
+    exit
 fi
 
 # configure pip

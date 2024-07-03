@@ -1,1 +1,0 @@
-downloaded installation packages such as .deb, .exe, .whl

@@ -2,7 +2,7 @@
 
 echo "Running on-first-run.sh for initialization ..."
 
-init_check_file_path=$X_PATH_SOFT_BASE/stage-1-init-done
+init_check_file_path=/stage-1-init-done
 
 # check if the initialization has been done
 # if yes, just return, otherwise, install the pre-configured apps
