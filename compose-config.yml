@@ -1,0 +1,114 @@
+# all paths are relative to /installation directory
+
+stage_1:
+  # input/output image settings
+  image:
+    base: ubuntu:22.04
+    output: my_image:stage-1
+
+  # ssh settings
+  ssh:
+    enable: true
+    port: 22  # port in container
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: 123456
+        pubkey_file: null
+      you:
+        password: 654321
+        pubkey_file: null
+      root: # you can configure root user here
+        password: root
+        pubkey_file: null
+
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+
+  # apt settings
+  apt:
+    repo_source: 'stage-1/system/apt/ubuntu-22.04-x86_64.list'
+    keep_repo_after_build: true # keep the apt source file after build?
+    use_proxy: false  # use proxy for apt?
+    keep_proxy_after_build: false # keep proxy settings after build?
+
+  # additional environment variables
+  # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+  environment:
+    EXAMPLE_VAR_STAGE_1: 'example env var'
+
+  # port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports:
+    - "12222:22"
+
+  # device settings
+  device:
+    type: cpu # can be cpu or gpu
+
+  # custom scripts
+  custom:
+    # the shell to use for scripts, default to sh, can be bash
+    shell: sh
+
+    # scripts run during build
+    on_build: 
+      - 'stage-1/custom/my-build-1.sh'
+      - 'stage-1/custom/my-build-2.sh'
+
+    # scripts run on first start
+    on_first_start:
+      - 'stage-1/custom/my-on-first-start-1.sh'
+      - 'stage-1/custom/my-on-first-start-2.sh'
+
+    # scripts run on every start
+    on_every_start:
+      - 'stage-1/custom/my-on-every-start-1.sh'
+      - 'stage-1/custom/my-on-every-start-2.sh'
+    
+stage_2:
+
+  # input/output image settings
+  image:
+    base: my_image:stage-1
+    output: my_image:stage-2
+
+  # additional environment variables
+  # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+  environment:
+    EXAMPLE_VAR_STAGE_2: 'example env var'
+
+  # port mapping, will be appended to the stage-1 port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports: []    
+
+  # device settings, will override the stage-1 device settings
+  device:
+    type: cpu # can be cpu or gpu
+
+  # custom scripts in stage-2
+  custom:
+    # the shell to use for scripts, default to sh, can be bash
+    shell: sh
+
+    # scripts run during build
+    on_build: 
+      - 'stage-2/custom/my-build-1.sh'
+      - 'stage-2/custom/my-build-2.sh'
+
+    # scripts run on first start
+    override_on_first_start: false  # whether to ignore on_first_start scripts in previous stages
+    on_first_start:
+      - 'stage-2/custom/my-on-first-start-1.sh'
+      - 'stage-2/custom/my-on-first-start-2.sh'
+
+    # scripts run on every start
+    override_on_every_start: false  # whether to ignore on_every_start scripts in previous stages
+    on_every_start:
+      - 'stage-2/custom/my-on-every-start-1.sh'
+      - 'stage-2/custom/my-on-every-start-2.sh'
