@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # if WITH_CUSTOM_APPS is not true, exit
 if [ "$WITH_CUSTOM_APPS" != "true" ]; then

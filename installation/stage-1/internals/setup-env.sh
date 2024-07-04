@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # this script sets up all environment variables, as well as configuration files
 # based on the environment variables
 

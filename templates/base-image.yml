@@ -11,7 +11,6 @@ x-cfg-stage-1:
   build:
     # built image name and tag
     output_image_name: my_image
-    output_image_tag: stage-1
 
     # base image
     # base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
@@ -52,7 +51,7 @@ x-cfg-stage-1:
       # replace apt source file?
       # use empty string to retain the default source file
       # source_file: ''
-      source_file: '/init-me/stage-1/system/apt/ubuntu-22.04-x86_64.list'
+      source_file: '/init-me/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
       keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
 
       # use http proxy for apt? 
@@ -75,8 +74,7 @@ x-cfg-stage-2:
     _hard_workspace: /hard/volume/workspace
 
   build:
-    output_image_name: my_image
-    output_image_tag: stage-2
+    output_image_name: my_image:stage-1
     base_image: my_image:stage-1
 
     apps:
@@ -163,7 +161,7 @@ x-sections:
 
 services:
   stage_2:
-    image: ${x-cfg-stage-2.build.output_image_name}:${x-cfg-stage-2.build.output_image_tag}
+    image: ${x-cfg-stage-2.build.output_image_name}
 
     # automatic start bash in ssh
     stdin_open: true
@@ -209,7 +207,7 @@ services:
         INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._root_dir_container}
 
   stage_1:
-    image: ${x-cfg-stage-1.build.output_image_name}:${x-cfg-stage-1.build.output_image_tag}
+    image: ${x-cfg-stage-1.build.output_image_name}
 
     # automatic start bash in ssh
     stdin_open: true

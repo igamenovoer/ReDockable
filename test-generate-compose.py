@@ -4,8 +4,9 @@ from rich import print
 fn_template = r'templates/base-image.yml'
 fn_output = r'docker-compose.yml'
 cfg_source = oc.OmegaConf.load(fn_template)
-cfg_source['x-cfg-stage-1'].run.device='cpu'
-cfg_source['x-cfg-stage-2'].storage.type='external-volume'
+stage_1 = cfg_source['x-cfg-stage-1']
+stage_1.run.device='cpu'
+# cfg_source['x-cfg-stage-2'].storage.type='auto-volume'
 # cfg = cfg_source.copy()
 cfg = oc.OmegaConf.to_container(cfg_source, resolve=True, throw_on_missing=False)
 

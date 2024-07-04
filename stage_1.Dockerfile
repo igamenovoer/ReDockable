@@ -44,6 +44,10 @@ ENV USER_HTTP_PROXY=${USER_HTTP_PROXY}
 ENV USER_HTTPS_PROXY=${USER_HTTPS_PROXY}
 ENV INSTALL_DIR_CONTAINER_1=${INSTALL_DIR_CONTAINER_1}
 
+# create a dir called redockable in root, to store logs
+RUN mkdir -p /redockable
+ENV REDOCKABLE_DIR="/redockable"
+
 # copy the installation scripts to the image
 ADD ${INSTALL_DIR_HOST_1} ${INSTALL_DIR_CONTAINER_1}
 
@@ -64,9 +68,9 @@ RUN apt update
 RUN apt-get install --reinstall -y ca-certificates
 
 # setup ssh and install essentials
-RUN $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh &&\
-    $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
-    $INSTALL_DIR_CONTAINER_1/custom/custom-install-apps.sh &&\
+RUN $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
+    $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh &&\
+    $INSTALL_DIR_CONTAINER_1/internals/custom-on-build.sh &&\
     $INSTALL_DIR_CONTAINER_1/internals/cleanup.sh
 
 # setup entrypoint

@@ -32,7 +32,7 @@ stage_1:
 
   # apt settings
   apt:
-    repo_source: 'stage-1/system/apt/ubuntu-22.04-x86_64.list'
+    repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
     keep_repo_after_build: true # keep the apt source file after build?
     use_proxy: false  # use proxy for apt?
     keep_proxy_after_build: false # keep proxy settings after build?
@@ -61,13 +61,13 @@ stage_1:
       - 'stage-1/custom/my-build-1.sh'
       - 'stage-1/custom/my-build-2.sh'
 
-    # scripts run on first start
-    on_first_start:
+    # scripts run on first run
+    on_first_run:
       - 'stage-1/custom/my-on-first-start-1.sh'
       - 'stage-1/custom/my-on-first-start-2.sh'
 
-    # scripts run on every start
-    on_every_start:
+    # scripts run on every run
+    on_every_run:
       - 'stage-1/custom/my-on-every-start-1.sh'
       - 'stage-1/custom/my-on-every-start-2.sh'
     
@@ -93,22 +93,19 @@ stage_2:
 
   # custom scripts in stage-2
   custom:
-    # the shell to use for scripts, default to sh, can be bash
-    shell: sh
-
     # scripts run during build
     on_build: 
       - 'stage-2/custom/my-build-1.sh'
       - 'stage-2/custom/my-build-2.sh'
 
     # scripts run on first start
-    override_on_first_start: false  # whether to ignore on_first_start scripts in previous stages
-    on_first_start:
+    override_previous_first_run: false  # whether to ignore scripts in previous stages
+    on_first_run:
       - 'stage-2/custom/my-on-first-start-1.sh'
       - 'stage-2/custom/my-on-first-start-2.sh'
 
     # scripts run on every start
-    override_on_every_start: false  # whether to ignore on_every_start scripts in previous stages
-    on_every_start:
+    override_previous_every_run: false  # whether to ignore scripts in previous stages
+    on_every_run:
       - 'stage-2/custom/my-on-every-start-1.sh'
       - 'stage-2/custom/my-on-every-start-2.sh'

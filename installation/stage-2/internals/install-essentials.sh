@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export DEBIAN_FRONTEND=noninteractive
 
 # if WITH_ESSENTIAL_APPS is false or not set, exit

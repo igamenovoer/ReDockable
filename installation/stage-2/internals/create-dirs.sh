@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # create in-image storage paths
 echo "creating hard storage directories"

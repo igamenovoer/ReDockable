@@ -1,13 +1,19 @@
-#!/bin/sh
+#!/bin/bash
 
 # if WITH_SSH is false or not set, exit
 if [ "$WITH_SSH" != "true" ]; then
   exit 0
 fi
 
+# if openssh server is not installed, skip it
+if [ ! -f /etc/ssh/sshd_config ]; then
+  echo "openssh-server is not installed, skipping ssh setup"
+  exit 0
+fi
+
 # install ssh first
 # apt update
-apt-get install openssh-server -y
+# apt-get install openssh-server -y
 
 # setup
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak

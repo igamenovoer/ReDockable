@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # clean up intermediate files
 
 # if APT_KEEP_PROXY is not equal to true, remove the proxy settings file

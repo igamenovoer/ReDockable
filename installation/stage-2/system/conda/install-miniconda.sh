@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 export DEBIAN_FRONTEND=noninteractive
 
@@ -16,7 +16,7 @@ CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/system/conda"
 INSTALL_FOR_ROOT="false"
 
 # install miniconda3 to /apps/miniconda3
-sh $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
+bash $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users
 echo "setting permissions for $CONDA_INSTALL_DIR ..."

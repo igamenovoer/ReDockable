@@ -1,6 +1,6 @@
-#!/bin/sh
+#!/bin/bash
 
-echo "Running on-first-run.sh for initialization ..."
+echo "Running on-first-run.bash for initialization ..."
 
 init_check_file_path=/stage-2-init-done
 
