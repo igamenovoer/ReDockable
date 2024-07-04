@@ -1,4 +1,5 @@
 #!/bin/bash
 
-echo "Stage 2 cleanup script started."
-echo "This is run at the end of the stage 2 build process."
+# get current directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "Executing $DIR/cleanup.sh ..."

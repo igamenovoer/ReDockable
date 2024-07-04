@@ -10,7 +10,7 @@ x-cfg-stage-1:
 
   build:
     # built image name and tag
-    output_image_name: my_image
+    output_image_name: my_image:stage-1
 
     # base image
     # base_image: nvidia/cuda:12.3.2-base-ubuntu22.04
@@ -74,7 +74,7 @@ x-cfg-stage-2:
     _hard_workspace: /hard/volume/workspace
 
   build:
-    output_image_name: my_image:stage-1
+    output_image_name: my_image:stage-2
     base_image: my_image:stage-1
 
     apps:

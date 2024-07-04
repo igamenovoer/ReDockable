@@ -58,7 +58,7 @@ RUN $INSTALL_DIR_CONTAINER_2/internals/create-dirs.sh
 
 # install essentials and custom apps
 RUN $INSTALL_DIR_CONTAINER_2/internals/install-essentials.sh &&\
-    $INSTALL_DIR_CONTAINER_2/custom/custom-install-apps.sh &&\
+    $INSTALL_DIR_CONTAINER_2/internals/custom-on-build.sh &&\
     $INSTALL_DIR_CONTAINER_2/internals/cleanup.sh
 
 # override the entrypoint

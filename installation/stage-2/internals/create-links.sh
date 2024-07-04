@@ -2,6 +2,10 @@
 
 # create links in soft/ based on configuration
 
+# get current directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "Executing $DIR/create-links.sh ..."
+
 # create links
 link_source="$X_PATH_SOFT_BASE/$X_PREFIX_APPS $X_PATH_SOFT_BASE/$X_PREFIX_DATA $X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE"
 

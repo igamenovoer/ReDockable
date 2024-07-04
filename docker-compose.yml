@@ -1,7 +1,7 @@
 version: '3'
 services:
   stage_2:
-    image: my_image:stage-1
+    image: my_image:stage-2
     stdin_open: true
     tty: true
     command: /bin/bash
@@ -26,7 +26,7 @@ services:
         INSTALL_DIR_HOST_2: ./installation/stage-2
         INSTALL_DIR_CONTAINER_2: /init-me/stage-2
   stage_1:
-    image: my_image
+    image: my_image:stage-1
     stdin_open: true
     tty: true
     command: /bin/bash

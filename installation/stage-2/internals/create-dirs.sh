@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# get current directory
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+echo "Executing $DIR/create-dirs.sh ..."
+
 # create in-image storage paths
 echo "creating hard storage directories"
 

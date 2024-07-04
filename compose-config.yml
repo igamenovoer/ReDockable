@@ -91,7 +91,7 @@ stage_2:
   device:
     type: cpu # can be cpu or gpu
 
-  # custom scripts in stage-2
+  # custom scripts in stage-2, run after stage-1 custom scripts
   custom:
     # scripts run during build
     on_build: 
@@ -99,13 +99,11 @@ stage_2:
       - 'stage-2/custom/my-build-2.sh'
 
     # scripts run on first start
-    override_previous_first_run: false  # whether to ignore scripts in previous stages
     on_first_run:
       - 'stage-2/custom/my-on-first-start-1.sh'
       - 'stage-2/custom/my-on-first-start-2.sh'
 
     # scripts run on every start
-    override_previous_every_run: false  # whether to ignore scripts in previous stages
     on_every_run:
       - 'stage-2/custom/my-on-every-start-1.sh'
       - 'stage-2/custom/my-on-every-start-2.sh'
