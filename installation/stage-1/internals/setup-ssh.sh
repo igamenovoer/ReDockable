@@ -11,9 +11,11 @@ if [ ! -f /etc/ssh/sshd_config ]; then
   exit 0
 fi
 
-# install ssh first
-# apt update
-# apt-get install openssh-server -y
+# if SSH_USER_NAME is not set, exit
+if [ -z "$SSH_USER_NAME" ]; then
+  echo "SSH_USER_NAME is not set, exiting"
+  exit 0
+fi
 
 # setup
 cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
@@ -28,35 +30,42 @@ sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_
 # create a user group named users
 groupadd ssh_users
 
-adduser --gecos "" --disabled-password $SSH_USER_NAME
-usermod -aG sudo $SSH_USER_NAME
-usermod -aG ssh_users $SSH_USER_NAME
-echo "$SSH_USER_NAME:$SSH_USER_PASSWORD" | chpasswd
+# SSH_USER_NAME contains a list of users separated by comma
+# SSH_USER_PASSWORD contains a list of passwords separated by comma
+# SSH_PUBKEY_FILE contains a list of public keys separated by comma
+# for each user, configure it
+IFS=',' read -ra users <<< "$SSH_USER_NAME"
+IFS=',' read -ra passwords <<< "$SSH_USER_PASSWORD"
+IFS=',' read -ra pubkey_files <<< "$SSH_PUBKEY_FILE"
+for i in "${!users[@]}"; do
+  user=${users[$i]}
+  password=${passwords[$i]}
+  pubkey_file=${pubkey_files[$i]}
+  if [ -z "$user" ]; then
+    continue
+  fi
+  echo "Configuring user $user"
+  adduser --gecos "" --disabled-password $user
+  usermod -aG sudo $user
+  usermod -aG ssh_users $user
+  echo "$user:$password" | chpasswd
 
-# generate ssh key for user
-mkdir -p /home/$SSH_USER_NAME/.ssh
-ssh-keygen -t rsa -C "$SSH_USER_NAME" -f /home/$SSH_USER_NAME/.ssh/id_rsa -N ""
-chown -R $SSH_USER_NAME:$SSH_USER_NAME /home/$SSH_USER_NAME/.ssh
+  # generate ssh key for user
+  mkdir -p /home/$user/.ssh
+  ssh-keygen -t rsa -C "$user" -f /home/$user/.ssh/id_rsa -N ""
+  chown -R $user:$user /home/$user/.ssh
+  
+  # print the private key
+  echo "generated ssh private key for $user:"
+  cat /home/$user/.ssh/id_rsa
 
-# add public key to authorized_keys
-cat /home/$SSH_USER_NAME/.ssh/id_rsa.pub >> /home/$SSH_USER_NAME/.ssh/authorized_keys
-
-# if pubkey is given in SSH_PUBKEY_FILE, also add it to authorized_keys
-if [ -n "$SSH_PUBKEY_FILE" ]; then
-  echo "Adding public key from $SSH_PUBKEY_FILE to authorized_keys"
-  cat $SSH_PUBKEY_FILE >> /home/$SSH_USER_NAME/.ssh/authorized_keys
-fi
+  # add public key to authorized_keys
+  cat /home/$user/.ssh/id_rsa.pub >> /home/$user/.ssh/authorized_keys
+  if [ -n "$pubkey_file" ]; then
+    echo "Adding public key from $pubkey_file to authorized_keys"
+    cat $pubkey_file >> /home/$user/.ssh/authorized_keys
+  fi
+done
 
 # generate ssh key for host
 ssh-keygen -A
-
-echo "ssh user: $SSH_USER_NAME"
-echo "ssh password: $SSH_USER_PASSWORD"
-
-# print its private key
-echo "generated ssh private key:"
-cat /home/$SSH_USER_NAME/.ssh/id_rsa
-
-# print its public key
-echo "generated ssh public key:"
-cat /home/$SSH_USER_NAME/.ssh/id_rsa.pub

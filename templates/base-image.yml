@@ -85,22 +85,22 @@ x-cfg-stage-2:
     <<: *stage-1-run
 
   storage:
-    # storage type can be auto-volume, external-volume, host, image
+    # storage type can be auto-volume, manual-volume, host, image
     # auto-volume: automatically created volumes by docker compose, you need to remove them manually
-    # external-volume: external volumes manually created using "docker volume create", you have to set the names in external_volume_names
-    # host: directories in host that will be mounted to the container, you have set the paths in host_dirs
+    # manual-volume: external volumes manually created using "docker volume create", you have to set the names in manual-volume-names
+    # host: directories in host that will be mounted to the container, you have set the paths in host-dirs
     # image: in-image storage, nothing to mount
     type: image 
 
     # directories in host that will be mounted to the container
-    host_dirs: 
+    host-dirs: 
       apps: null   # to be mounted to /hard/volume/app
       data: null   # to be mounted to /hard/volume/data
       workspace: null  # to be mounted to /hard/volume/workspace
 
     # external volumes created using docker volume create
     # you must explicitly create these volumes and write the names here
-    external_volume_names:
+    manual-volume-names:
       apps: null   # to be mounted to /hard/volume/app
       data: null # to be mounted to /hard/volume/data
       workspace: null  # to be mounted to /hard/volume/workspace
@@ -131,18 +131,18 @@ x-sections:
         - "workspace:${x-cfg-stage-2.paths._hard_workspace}"
         - "apt-cache:/var/cache/apt/archives"
     
-    external-volume:
+    manual-volume:
       # append to docker compose volume section
       volumes:
         app:
           external: true
-          name: ${x-cfg-stage-2.storage.external_volume_names.apps}
+          name: ${x-cfg-stage-2.storage.manual-volume-names.apps}
         data:
           external: true
-          name: ${x-cfg-stage-2.storage.external_volume_names.data}
+          name: ${x-cfg-stage-2.storage.manual-volume-names.data}
         workspace:
           external: true
-          name: ${x-cfg-stage-2.storage.external_volume_names.workspace}
+          name: ${x-cfg-stage-2.storage.manual-volume-names.workspace}
         apt-cache: # always temp
       runtime-mount:
         - "app:${x-cfg-stage-2.paths._hard_apps}"
@@ -155,9 +155,9 @@ x-sections:
       volumes: 
         apt-cache:
       runtime-mount:
-        - "${x-cfg-stage-2.storage.host_dirs.apps}:${x-cfg-stage-2.paths._hard_apps}"
-        - "${x-cfg-stage-2.storage.host_dirs.data}:${x-cfg-stage-2.paths._hard_data}"
-        - "${x-cfg-stage-2.storage.host_dirs.workspace}:${x-cfg-stage-2.paths._hard_workspace}"
+        - "${x-cfg-stage-2.storage.host-dirs.apps}:${x-cfg-stage-2.paths._hard_apps}"
+        - "${x-cfg-stage-2.storage.host-dirs.data}:${x-cfg-stage-2.paths._hard_data}"
+        - "${x-cfg-stage-2.storage.host-dirs.workspace}:${x-cfg-stage-2.paths._hard_workspace}"
         - "apt-cache:/var/cache/apt/archives"
     
     image:
@@ -168,7 +168,7 @@ x-sections:
         - "apt-cache:/var/cache/apt/archives"
 
 services:
-  stage_2:
+  stage-2:
     image: ${x-cfg-stage-2.build.output_image_name}
 
     # automatic start bash in ssh
@@ -195,7 +195,7 @@ services:
 
     build:
       context: .
-      dockerfile: stage_2.Dockerfile
+      dockerfile: stage-2.Dockerfile
 
       # required to use proxy
       extra_hosts:
@@ -214,7 +214,7 @@ services:
         INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths._root_dir_host}
         INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._root_dir_container}
 
-  stage_1:
+  stage-1:
     image: ${x-cfg-stage-1.build.output_image_name}
 
     # automatic start bash in ssh
@@ -241,7 +241,7 @@ services:
 
     build:
       context: .
-      dockerfile: stage_1.Dockerfile
+      dockerfile: stage-1.Dockerfile
 
       # required to use proxy
       extra_hosts:

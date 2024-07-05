@@ -1,6 +1,6 @@
 # all paths are relative to /installation directory
 
-stage_1:
+stage-1:
   # input/output image settings
   image:
     base: ubuntu:22.04
@@ -57,21 +57,21 @@ stage_1:
     shell: sh
 
     # scripts run during build
-    on_build: 
+    on-build: 
       - 'stage-1/custom/my-build-1.sh'
       - 'stage-1/custom/my-build-2.sh'
 
     # scripts run on first run
-    on_first_run:
+    on-first-run:
       - 'stage-1/custom/my-on-first-start-1.sh'
       - 'stage-1/custom/my-on-first-start-2.sh'
 
     # scripts run on every run
-    on_every_run:
+    on-every-run:
       - 'stage-1/custom/my-on-every-start-1.sh'
       - 'stage-1/custom/my-on-every-start-2.sh'
     
-stage_2:
+stage-2:
 
   # input/output image settings
   image:
@@ -91,19 +91,34 @@ stage_2:
   device:
     type: cpu # can be cpu or gpu
 
+  # storage configurations
+  storage:
+    app:
+      type: auto-volume # auto-volume, manual-volume, host, image
+      host-dir: null # host directory to be mounted, in effect when type=host
+      volume-name: null # volume name, in effect when type=manual-volume
+    data:
+      type: auto-volume
+      host-dir: null
+      volume-name: null
+    workspace:
+      type: auto-volume
+      host-dir: null
+      volume-name: null
+
   # custom scripts in stage-2, run after stage-1 custom scripts
   custom:
     # scripts run during build
-    on_build: 
+    on-build: 
       - 'stage-2/custom/my-build-1.sh'
       - 'stage-2/custom/my-build-2.sh'
 
     # scripts run on first start
-    on_first_run:
+    on-first-run:
       - 'stage-2/custom/my-on-first-start-1.sh'
       - 'stage-2/custom/my-on-first-start-2.sh'
 
     # scripts run on every start
-    on_every_run:
+    on-every-run:
       - 'stage-2/custom/my-on-every-start-1.sh'
       - 'stage-2/custom/my-on-every-start-2.sh'

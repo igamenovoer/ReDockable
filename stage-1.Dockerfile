@@ -24,11 +24,13 @@ ARG APT_SOURCE_FILE
 ARG KEEP_APT_SOURCE_FILE=false
 
 # ssh user and password
+# can be a list of users and passwords, separated by comma
 ARG SSH_USER_NAME
 ARG SSH_USER_PASSWORD
 
 # path to the public key file for the ssh user
 # if specified, will be added to the authorized_keys
+# if multiple users, separate the keys by comma
 ARG SSH_PUBKEY_FILE
 
 # user provided proxy

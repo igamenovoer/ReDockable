@@ -1,6 +1,6 @@
 version: '3'
 services:
-  stage_2:
+  stage-2:
     image: my_image:stage-2
     stdin_open: true
     tty: true
@@ -17,7 +17,7 @@ services:
     - apt-cache:/var/cache/apt/archives
     build:
       context: .
-      dockerfile: stage_2.Dockerfile
+      dockerfile: stage-2.Dockerfile
       extra_hosts:
       - host.docker.internal:host-gateway
       args:
@@ -26,7 +26,7 @@ services:
         WITH_CUSTOM_APPS: true
         INSTALL_DIR_HOST_2: ./installation/stage-2
         INSTALL_DIR_CONTAINER_2: /init-me/stage-2
-  stage_1:
+  stage-1:
     image: my_image:stage-1
     stdin_open: true
     tty: true
@@ -42,7 +42,7 @@ services:
     - host.docker.internal:host-gateway
     build:
       context: .
-      dockerfile: stage_1.Dockerfile
+      dockerfile: stage-1.Dockerfile
       extra_hosts:
       - host.docker.internal:host-gateway
       args:
