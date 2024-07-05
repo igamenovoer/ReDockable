@@ -41,10 +41,14 @@ ENV X_WORKSPACE="${X_PATH_SOFT_BASE}/${X_PREFIX_WORKSPACE}"
 
 ENV INSTALL_DIR_CONTAINER_2=${INSTALL_DIR_CONTAINER_2}
 
-# copy the installation scripts to the image
-ADD ${INSTALL_DIR_HOST_2} ${INSTALL_DIR_CONTAINER_2}
+# -------------------------------------------
+# install essentials
 
-# convert CRLF to LF
+# copy installation/internals and installation/system to the image, do apt installs first
+ADD ${INSTALL_DIR_HOST_2}/internals ${INSTALL_DIR_CONTAINER_2}/internals
+ADD ${INSTALL_DIR_HOST_2}/system ${INSTALL_DIR_CONTAINER_2}/system
+
+# convert CRLF to LF for scripts in internals and system
 RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
 
 # add chmod+x to all scripts, including all subdirs
@@ -56,8 +60,26 @@ RUN env
 # create soft and hard directories
 RUN $INSTALL_DIR_CONTAINER_2/internals/create-dirs.sh
 
-# install essentials and custom apps
-RUN $INSTALL_DIR_CONTAINER_2/internals/install-essentials.sh &&\
+# install things
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    $INSTALL_DIR_CONTAINER_2/internals/install-essentials.sh
+
+# -------------------------------------------
+# run custom scripts
+
+# copy the installation scripts to the image
+ADD ${INSTALL_DIR_HOST_2}/custom ${INSTALL_DIR_CONTAINER_2}/custom
+ADD ${INSTALL_DIR_HOST_2}/generated ${INSTALL_DIR_CONTAINER_2}/generated
+ADD ${INSTALL_DIR_HOST_2}/tmp ${INSTALL_DIR_CONTAINER_2}/tmp
+
+# convert CRLF to LF
+RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+
+# add chmod+x to all scripts, including all subdirs
+RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
+
+# install custom apps
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $INSTALL_DIR_CONTAINER_2/internals/custom-on-build.sh &&\
     $INSTALL_DIR_CONTAINER_2/internals/cleanup.sh
 

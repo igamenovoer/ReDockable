@@ -122,12 +122,14 @@ x-sections:
         app:
         data:
         workspace:
+        apt-cache:
 
       # append to docker compose services section
       runtime-mount:
         - "app:${x-cfg-stage-2.paths._hard_apps}"
         - "data:${x-cfg-stage-2.paths._hard_data}"
         - "workspace:${x-cfg-stage-2.paths._hard_workspace}"
+        - "apt-cache:/var/cache/apt/archives"
     
     external-volume:
       # append to docker compose volume section
@@ -141,23 +143,29 @@ x-sections:
         workspace:
           external: true
           name: ${x-cfg-stage-2.storage.external_volume_names.workspace}
+        apt-cache: # always temp
       runtime-mount:
         - "app:${x-cfg-stage-2.paths._hard_apps}"
         - "data:${x-cfg-stage-2.paths._hard_data}"
         - "workspace:${x-cfg-stage-2.paths._hard_workspace}"
+        - "apt-cache:/var/cache/apt/archives"
 
     host:
       # append to docker compose volume section
-      volumes: {}
+      volumes: 
+        apt-cache:
       runtime-mount:
         - "${x-cfg-stage-2.storage.host_dirs.apps}:${x-cfg-stage-2.paths._hard_apps}"
         - "${x-cfg-stage-2.storage.host_dirs.data}:${x-cfg-stage-2.paths._hard_data}"
         - "${x-cfg-stage-2.storage.host_dirs.workspace}:${x-cfg-stage-2.paths._hard_workspace}"
+        - "apt-cache:/var/cache/apt/archives"
     
     image:
       # in-image storage, nothing to mount
-      volumes: {}
-      runtime-mount: []
+      volumes: 
+        apt-cache:
+      runtime-mount:
+        - "apt-cache:/var/cache/apt/archives"
 
 services:
   stage_2:

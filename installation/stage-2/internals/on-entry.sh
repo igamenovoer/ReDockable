@@ -10,7 +10,7 @@ echo "Executing $DIR/on-entry.sh ..."
 bash "$DIR/create-links.sh"
 
 # first run
-first_run_signature_file=$REDOCKABLE_DIR/stage-2-init-done
+first_run_signature_file=$PEI_DOCKER_DIR/stage-2-init-done
 
 # if first run signature file exists, skip the first run tasks
 # otherwise, run the first run tasks

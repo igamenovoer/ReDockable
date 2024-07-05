@@ -44,12 +44,13 @@ ENV USER_HTTP_PROXY=${USER_HTTP_PROXY}
 ENV USER_HTTPS_PROXY=${USER_HTTPS_PROXY}
 ENV INSTALL_DIR_CONTAINER_1=${INSTALL_DIR_CONTAINER_1}
 
-# create a dir called redockable in root, to store logs
-RUN mkdir -p /redockable
-ENV REDOCKABLE_DIR="/redockable"
+# create a dir called pei-docker in root, to store logs
+RUN mkdir -p /pei-docker
+ENV PEI_DOCKER_DIR="/pei-docker"
 
-# copy the installation scripts to the image
-ADD ${INSTALL_DIR_HOST_1} ${INSTALL_DIR_CONTAINER_1}
+# copy installation/internals and installation/system to the image, do apt installs first
+ADD ${INSTALL_DIR_HOST_1}/internals ${INSTALL_DIR_CONTAINER_1}/internals
+ADD ${INSTALL_DIR_HOST_1}/system ${INSTALL_DIR_CONTAINER_1}/system
 
 # for any script in INSTALL_DIR_CONTAINER_1, including subdirs, except for packages folder
 # convert CRLF to LF
@@ -58,18 +59,35 @@ RUN find $INSTALL_DIR_CONTAINER_1 -type f -not -path "$INSTALL_DIR_CONTAINER_1/t
 # add chmod+x to all scripts, including all subdirs
 RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
 
-RUN env
-
 # set up container environment
 RUN $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh
 
-# set up apt
+# prepare apt
 RUN apt update
 RUN apt-get install --reinstall -y ca-certificates
 
-# setup ssh and install essentials
-RUN $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
-    $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh &&\
+# show env
+RUN env
+
+# install things
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
+    $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh
+
+# copy the other scripts to the image
+ADD ${INSTALL_DIR_HOST_1}/custom ${INSTALL_DIR_CONTAINER_1}/custom
+ADD ${INSTALL_DIR_HOST_1}/generated ${INSTALL_DIR_CONTAINER_1}/generated
+ADD ${INSTALL_DIR_HOST_1}/tmp ${INSTALL_DIR_CONTAINER_1}/tmp
+
+# for any script in INSTALL_DIR_CONTAINER_1, including subdirs, except for packages folder
+# convert CRLF to LF
+RUN find $INSTALL_DIR_CONTAINER_1 -type f -not -path "$INSTALL_DIR_CONTAINER_1/tmp/*" -exec sed -i 's/\r$//' {} \;
+
+# add chmod+x to all scripts, including all subdirs
+RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
+
+# install custom apps and clean up
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $INSTALL_DIR_CONTAINER_1/internals/custom-on-build.sh &&\
     $INSTALL_DIR_CONTAINER_1/internals/cleanup.sh
 

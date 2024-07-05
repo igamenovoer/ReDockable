@@ -13,7 +13,8 @@ services:
           devices: []
     extra_hosts:
     - host.docker.internal:host-gateway
-    volumes: []
+    volumes:
+    - apt-cache:/var/cache/apt/archives
     build:
       context: .
       dockerfile: stage_2.Dockerfile
@@ -61,4 +62,5 @@ services:
         INSTALL_DIR_HOST_1: ./installation/stage-1
         INSTALL_DIR_CONTAINER_1: /init-me/stage-1
         ROOT_PASSWORD: ''
-volumes: {}
+volumes:
+  apt-cache: null

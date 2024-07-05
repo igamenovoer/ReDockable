@@ -5,7 +5,7 @@ script_dir=$INSTALL_DIR_CONTAINER_1/internals
 # run on-entry tasks
 bash "$script_dir/on-entry.sh"
 
-# first_run_signature_file=$REDOCKABLE_DIR/stage-1-init-done
+# first_run_signature_file=$PEI_DOCKER_DIR/stage-1-init-done
 
 # # if first run signature file exists, skip the first run tasks
 # # otherwise, run the first run tasks
