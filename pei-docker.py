@@ -33,7 +33,13 @@ class PeiConfigProcessor:
     def process(self):
         ''' process the config and compose template to generate the compose output
         '''
-        #TODO: here
+        cfg = self.m_config
+        compose = self.m_compose_template.copy()
+        
+        # stage-1
+        # 
+        
+        
         pass
         
     
