@@ -74,12 +74,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
     $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh
 
-# copy the other scripts to the image
-ADD ${INSTALL_DIR_HOST_1}/custom ${INSTALL_DIR_CONTAINER_1}/custom
-ADD ${INSTALL_DIR_HOST_1}/generated ${INSTALL_DIR_CONTAINER_1}/generated
-ADD ${INSTALL_DIR_HOST_1}/tmp ${INSTALL_DIR_CONTAINER_1}/tmp
+# copy the everything to the image
+# ADD ${INSTALL_DIR_HOST_1}/custom ${INSTALL_DIR_CONTAINER_1}/custom
+# ADD ${INSTALL_DIR_HOST_1}/generated ${INSTALL_DIR_CONTAINER_1}/generated
+# ADD ${INSTALL_DIR_HOST_1}/tmp ${INSTALL_DIR_CONTAINER_1}/tmp
+ADD ${INSTALL_DIR_HOST_1} ${INSTALL_DIR_CONTAINER_1}
 
-# for any script in INSTALL_DIR_CONTAINER_1, including subdirs, except for packages folder
 # convert CRLF to LF
 RUN find $INSTALL_DIR_CONTAINER_1 -type f -not -path "$INSTALL_DIR_CONTAINER_1/tmp/*" -exec sed -i 's/\r$//' {} \;
 

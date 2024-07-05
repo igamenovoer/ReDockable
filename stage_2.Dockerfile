@@ -68,9 +68,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # run custom scripts
 
 # copy the installation scripts to the image
-ADD ${INSTALL_DIR_HOST_2}/custom ${INSTALL_DIR_CONTAINER_2}/custom
-ADD ${INSTALL_DIR_HOST_2}/generated ${INSTALL_DIR_CONTAINER_2}/generated
-ADD ${INSTALL_DIR_HOST_2}/tmp ${INSTALL_DIR_CONTAINER_2}/tmp
+# ADD ${INSTALL_DIR_HOST_2}/custom ${INSTALL_DIR_CONTAINER_2}/custom
+# ADD ${INSTALL_DIR_HOST_2}/generated ${INSTALL_DIR_CONTAINER_2}/generated
+# ADD ${INSTALL_DIR_HOST_2}/tmp ${INSTALL_DIR_CONTAINER_2}/tmp
+ADD ${INSTALL_DIR_HOST_2} ${INSTALL_DIR_CONTAINER_2}
 
 # convert CRLF to LF
 RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
