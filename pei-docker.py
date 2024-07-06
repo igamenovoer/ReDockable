@@ -5,6 +5,7 @@ import click
 import os
 import shutil
 import logging
+from rich import print
 logging.basicConfig(level=logging.INFO)
 
 # def get_script_path():
@@ -16,6 +17,7 @@ class Defaults:
     OutputConfigName='config.yml'
     OutputComposeName='docker-compose.yml'
     BuildDir='build'
+    
     
 class PeiConfigProcessor:
     def __init__(self) -> None:
@@ -33,11 +35,22 @@ class PeiConfigProcessor:
     def process(self):
         ''' process the config and compose template to generate the compose output
         '''
-        cfg = self.m_config
-        compose = self.m_compose_template.copy()
+        # user_cfg = self.m_config
+        # compose_cfg = self.m_compose_template.copy()
+        
+        # read files for test
+        fn_template = r'templates/base-image.yml'
+        fn_config = r'templates/config-template-full.yml'
+        user_cfg = oc.OmegaConf.load(fn_config)
+        compose_cfg = oc.OmegaConf.load(fn_template)
+        
+        oc_get = oc.OmegaConf.select
+        oc_set = oc.OmegaConf.update
         
         # stage-1
-        # 
+        # set image name
+        s1_output_image_name : str = oc_get(user_cfg, 'stage-1.image.output')
+        oc_set(compose_cfg, 'x-cfg-stage-1.build.output_image_name', s1_output_image_name)
         
         
         pass
