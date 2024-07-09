@@ -10,14 +10,15 @@ stage-1:
   ssh:
     enable: true
     port: 22  # port in container
+    host_port: 2222  # port in host
 
     # ssh users, the key is user name, value is user info
     users:
       me:
-        password: 123456
+        password: '123456'
         pubkey_file: null
       you:
-        password: 654321
+        # password: '654321'
         pubkey_file: null
       root: # you can configure root user here
         password: root
@@ -42,10 +43,9 @@ stage-1:
   environment:
     EXAMPLE_VAR_STAGE_1: 'example env var'
 
-  # port mapping
+  # additional port mapping
   # see https://docs.docker.com/compose/networking/
-  ports:
-    - "12222:22"
+  ports: []
 
   # device settings
   device:
@@ -53,9 +53,6 @@ stage-1:
 
   # custom scripts
   custom:
-    # the shell to use for scripts, default to sh, can be bash
-    shell: sh
-
     # scripts run during build
     on-build: 
       - 'stage-1/custom/my-build-1.sh'
@@ -95,15 +92,15 @@ stage-2:
   storage:
     app:
       type: auto-volume # auto-volume, manual-volume, host, image
-      host-dir: null # host directory to be mounted, in effect when type=host
+      host-path: null # host directory to be mounted, in effect when type=host
       volume-name: null # volume name, in effect when type=manual-volume
     data:
       type: auto-volume
-      host-dir: null
+      host-path: null
       volume-name: null
     workspace:
       type: auto-volume
-      host-dir: null
+      host-path: null
       volume-name: null
 
   # custom scripts in stage-2, run after stage-1 custom scripts

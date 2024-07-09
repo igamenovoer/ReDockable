@@ -39,12 +39,12 @@ x-cfg-stage-1:
     proxy:
       # proxy configurations, the proxy will be exposed in the container
       # and you can optionally use it for apt, shell, or custom scripts
-      proxy_port: 7890
-      proxy_address: host.docker.internal
+      port: 7890
+      address: host.docker.internal
 
       # deduced http proxy settings, you do not have to touch this
-      _proxy_http: http://${.proxy_address}:${.proxy_port}
-      _proxy_https: http://${.proxy_address}:${.proxy_port}
+      _proxy_http: http://${.address}:${.port}
+      _proxy_https: http://${.address}:${.port}
 
     # apt settings
     apt:
