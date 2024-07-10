@@ -257,38 +257,45 @@ class PeiConfigProcessor:
         oc_set = oc.OmegaConf.update
         oc_asdict = oc.OmegaConf.to_container
         
-        # stage-1
-        # set image name
-        s1_output_image_name : str = oc_get(user_cfg, 'stage-1.image.output')
-        oc_set(compose_cfg, 'x-cfg-stage-1.build.output_image_name', s1_output_image_name)
+        user_compose_obj = [
+            (oc_get(user_cfg, 'stage-1'), oc_get(compose_cfg, 'x-cfg-stage-1'), self.m_stage_1),
+            (oc_get(user_cfg, 'stage-2'), oc_get(compose_cfg, 'x-cfg-stage-2'), self.m_stage_2),
+        ]
         
-        # ssh
-        ssh_config = oc_get(user_cfg, 'stage-1.ssh')
-        ssh_compose = oc_get(compose_cfg, 'x-cfg-stage-1.build.ssh')
-        if ssh_config is not None:
-            self._process_ssh(ssh_config, ssh_compose, self.m_stage_1)
-        
-        # proxy
-        proxy_config = oc_get(user_cfg, 'stage-1.proxy')
-        proxy_compose = oc_get(compose_cfg, 'x-cfg-stage-1.build.proxy')
-        if proxy_config is not None:
-            self._process_proxy(proxy_config, proxy_compose)
-        
-        # environment
-        env_config = oc_get(user_cfg, 'stage-1.environment')
-        if env_config is not None:
-            self._process_env(env_config, self.m_stage_1)
+        for ith_stage, _configs in enumerate(user_compose_obj):
+            _user, _compose, _obj = _configs
+            output_image_name : str = oc_get(cfg, 'image.output')
+            _obj.output_image_name = output_image_name
             
-        # additional port mapping
-        port_mapping = oc_get(user_cfg, 'stage-1.ports')
-        if port_mapping is not None:
-            self._process_port_mapping(port_mapping, self.m_stage_1)
+            # only for stage 1
+            if ith_stage == 0:
+                # ssh
+                ssh_config = oc_get(_user, 'ssh')
+                ssh_compose = oc_get(_compose, 'build.ssh')
+                if ssh_config is not None:
+                    self._process_ssh(ssh_config, ssh_compose, _obj)
             
-        # device
-        device = oc_get(user_cfg, 'stage-1.device.type')
-        self.m_stage_1.device = device
-        
-        # TODO: here we need to process the storage options
+                # proxy
+                proxy_config = oc_get(_user, 'proxy')
+                proxy_compose = oc_get(_compose, 'build.proxy')
+                if proxy_config is not None:
+                    self._process_proxy(proxy_config, proxy_compose)
+            
+            # environment
+            env_config = oc_get(_user, 'environment')
+            if env_config is not None:
+                self._process_env(env_config, _obj)
+                
+            # additional port mapping
+            port_mapping = oc_get(_user, 'ports')
+            if port_mapping is not None:
+                self._process_port_mapping(port_mapping, _obj)
+                
+            # device
+            device = oc_get(_user, 'device.type')
+            _obj.device = device
+            
+            # TODO: storage
         
         return compose_cfg
     
