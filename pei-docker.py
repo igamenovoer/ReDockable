@@ -8,9 +8,33 @@ import shutil
 import logging
 from rich import print
 logging.basicConfig(level=logging.INFO)
+import sys
 
-# def get_script_path():
-#     return os.path.dirname(os.path.realpath(sys.argv[0]))
+class StorageTypes:
+    AutoVolume = 'auto-volume'
+    ManualVolume = 'manual-volume'
+    Host = 'host'
+    Image = 'image'
+    
+    @classmethod
+    def get_all_types(cls) -> list[str]:
+        return [cls.AutoVolume, cls.ManualVolume, cls.Host, cls.Image]
+    
+class StoragePrefixes:
+    App = 'app'
+    Data = 'data'
+    Workspace = 'workspace'
+    
+    @classmethod
+    def get_all_prefixes(cls) -> list[str]:
+        return [cls.App, cls.Data, cls.Workspace]
+    
+class StoragePaths:
+    ''' In-container storage paths
+    '''
+    Soft = '/soft'
+    HardImage = '/hard/image'
+    HardVolume = '/hard/volume'
 
 class Defaults:
     ConfigTemplatePath='templates/config-template-full.yml'
@@ -22,12 +46,17 @@ class Defaults:
     HostInstallationRoot='./installation'
     Stage1_ImageName='pei-image:stage-1'
     Stage2_ImageName='pei-image:stage-2'
+    Stage1_BaseImageName='ubuntu:22.04'
     
-@dataclass
+    
+@dataclass(kw_only=True)
 class StorageOption:
     ''' storage options for the container
     '''
-    storage_type : str = field(default='auto-volume')
+    # prefix for the dir name, such as app, data, workspace
+    prefix : str = field()
+    
+    storage_type : str = field(default=StorageTypes.AutoVolume)   # auto-volume, manual-volume, host, image
     
     # path to the host directory
     host_path : str | None = field(default=None)
@@ -35,17 +64,38 @@ class StorageOption:
     # path to the container directory
     volume_name : str | None = field(default=None)
     
+    @property
+    def hard_path(self) -> str:
+        ''' hard storage path in container
+        '''
+        assert self.prefix is not None, 'Prefix must be set for storage option'
+        
+        if self.storage_type == 'image':
+            return f'{StoragePaths.HardImage}/{self.prefix}'
+        else:
+            return f'{StoragePaths.HardVolume}/{self.prefix}'
+        
+    @property
+    def soft_path(self) -> str:
+        ''' soft storage path in container
+        '''
+        assert self.prefix is not None, 'Prefix must be set for storage option'
+        return f'{StoragePaths.Soft}/{self.prefix}'
+    
     def __post_init__(self):
         # storage type must be one of the following: auto-volume, manual-volume, host, image
-        if self.storage_type not in ['auto-volume', 'manual-volume', 'host', 'image']:
+        if self.storage_type not in StorageTypes.get_all_types():
             raise ValueError(f'Invalid storage type {self.storage_type}')
 
-@dataclass
+@dataclass(kw_only=True)
 class StageConfig:
     ''' configuration for each stage
     '''
+    # base image name
+    base_image : str = field()
+    
     # image name for the output
-    output_image_name : str = field()
+    output_image : str = field()
     
     # environment variables
     environment : dict[str, str] = field(default_factory=dict)
@@ -57,7 +107,7 @@ class StageConfig:
     device : str | None = field(default=None)
     
     # storage options
-    storage : StorageOption | None = field(default=None)
+    storage : dict[str, StorageOption] = field(default_factory=dict)
     
     # scripts to run
     on_build_scripts : list[str] = field(default_factory=list)
@@ -71,8 +121,15 @@ class PeiConfigProcessor:
         self.m_compose_output : DictConfig = None
         
         # collect from all stages
-        self.m_stage_1 : StageConfig = StageConfig('pei-image:stage-1')
-        self.m_stage_2 : StageConfig = StageConfig('pei-image:stage-2')
+        self.m_stage_1 : StageConfig = StageConfig(base_image=Defaults.Stage1_BaseImageName, output_image=Defaults.Stage1_ImageName)
+        self.m_stage_2 : StageConfig = StageConfig(base_image=Defaults.Stage1_ImageName, output_image=Defaults.Stage2_ImageName)
+        
+        # root of installation in host
+        self.m_host_dir = os.getcwd() +'/' + Defaults.HostInstallationRoot
+        assert os.path.exists(self.m_host_dir), f'Host installation root {self.m_host_dir} not found'
+        self.m_host_dir = os.path.abspath(self.m_host_dir).replace('\\', '/')
+        
+        self.m_container_dir = Defaults.ContainerInstallationRoot
         
     @classmethod
     def from_config(cls, config : DictConfig, compose_template : DictConfig) -> 'PeiConfigProcessor':
@@ -81,7 +138,48 @@ class PeiConfigProcessor:
         self.m_compose_template = compose_template
         return self
     
-    def _process_env(self, env_config : DictConfig, stage_config : StageConfig):
+    def _collect_custom_scripts(self, custom_config : DictConfig, stage_config : StageConfig):
+        ''' collect the custom scripts and save to the stage configuration object
+        
+        parameters
+        -------------
+        custom_config: DictConfig
+            the custom script section from the user config, path is 'stage-?.scripts'
+        stage_config: StageConfig
+            the stage configuration object to store the scripts
+        '''
+        
+        oc_get = oc.OmegaConf.select
+        
+        on_build_scripts : list[str] = oc_get(custom_config, 'on-build')
+        if on_build_scripts is not None:
+            # check if all files listed in on_build_scripts exist
+            for script in on_build_scripts:
+                host_path = self.m_host_dir + '/' + script
+                if not os.path.exists(host_path):
+                    raise FileNotFoundError(f'Script {host_path} not found')
+            stage_config.on_build_scripts = on_build_scripts
+            
+        on_first_run_scripts : list[str] = oc_get(custom_config, 'on-first-run')
+        if on_first_run_scripts is not None:
+            # check if all files listed in on_first_run_scripts exist
+            for script in on_first_run_scripts:
+                host_path = self.m_host_dir + '/' + script
+                if not os.path.exists(host_path):
+                    raise FileNotFoundError(f'Script {host_path} not found')
+            stage_config.on_first_run_scripts = on_first_run_scripts
+            
+        on_every_run_scripts : list[str] = oc_get(custom_config, 'on-every-run')
+        if on_every_run_scripts is not None:
+            # check if all files listed in on_every_run_scripts exist
+            for script in on_every_run_scripts:
+                host_path = self.m_host_dir + '/' + script
+                if not os.path.exists(host_path):
+                    raise FileNotFoundError(f'Script {host_path} not found')
+            stage_config.on_every_run_scripts = on_every_run_scripts
+        
+    
+    def _collect_env(self, env_config : DictConfig, stage_config : StageConfig):
         ''' process the env configuration from config
         
         parameters
@@ -107,7 +205,7 @@ class PeiConfigProcessor:
         # add to the environment variables
         stage_config.environment.update(envs)
     
-    def _process_apt(self, apt_config : DictConfig, apt_compose : DictConfig):
+    def _apply_apt(self, apt_config : DictConfig, apt_compose : DictConfig):
         ''' process the apt configuration and update the compose template
         
         parameters
@@ -124,12 +222,12 @@ class PeiConfigProcessor:
         repo_source = oc_get(apt_config, 'repo_source')
         
         # check if the repo path exists
-        _repo_path_host = Defaults.HostInstallationRoot + '/' + repo_source
+        _repo_path_host = self.m_host_dir + '/' + repo_source
         if not os.path.exists(_repo_path_host):
             raise FileNotFoundError(f'Repo source path {_repo_path_host} not found')
         
         # set it to the compose template
-        _repo_path_container = Defaults.ContainerInstallationRoot + '/' + repo_source
+        _repo_path_container = self.m_container_dir + '/' + repo_source
         oc_set(apt_compose, 'source_file', _repo_path_container)
         
         # keep repo after build?
@@ -147,7 +245,7 @@ class PeiConfigProcessor:
         keep_proxy = bool(keep_proxy)
         oc_set(apt_compose, 'keep_proxy', keep_proxy)
     
-    def _process_proxy(self, proxy_config : DictConfig, proxy_compose : DictConfig):
+    def _apply_proxy(self, proxy_config : DictConfig, proxy_compose : DictConfig):
         ''' process the proxy configuration and update the compose template
         
         parameters
@@ -167,7 +265,8 @@ class PeiConfigProcessor:
         port = oc_get(proxy_config, 'port')
         oc_set(proxy_compose, 'port', port)
     
-    def _process_ssh(self, ssh_config : DictConfig, ssh_compose : DictConfig, stage_config : StageConfig):
+    def _apply_and_collect_ssh(self, ssh_config : DictConfig, ssh_compose : DictConfig, 
+                     stage_config : StageConfig):
         ''' process the ssh configuration and update the compose template
         
         parameters
@@ -220,7 +319,7 @@ class PeiConfigProcessor:
             oc_set(ssh_compose, 'password', ','.join(_ssh_pwds))
             oc_set(ssh_compose, 'pubkey_file', ','.join(_ssh_pubkeys))
                     
-    def _process_port_mapping(self, port_mapping : list[str], stage_config : StageConfig):
+    def _collect_port_mapping(self, port_mapping : list[str], stage_config : StageConfig):
         ''' process the port mapping configuration and update the compose template
         
         parameters
@@ -240,6 +339,35 @@ class PeiConfigProcessor:
         
         for host_port, container_port in [e.split(':') for e in port_mapping]:
             stage_config.ports[int(host_port)] = int(container_port)
+            
+    def _collect_storage_options(self, storage_config : DictConfig, stage_config : StageConfig):
+        ''' process the storage configuration and collect the storage options
+        
+        parameters
+        -----------
+        storage_config: DictConfig
+            the storage section from the user config, path is 'stage-?.storage'
+        stage_config: StageConfig
+            the stage configuration object, to store the storage options
+        '''
+        
+        oc_get = oc.OmegaConf.select
+        
+        all_prefix = StoragePrefixes.get_all_prefixes()
+        for prefix in all_prefix:
+            prefix_config = oc_get(storage_config, prefix)
+            
+            if prefix_config is None:
+                # default option
+                opt = StorageOption(prefix=prefix)
+                stage_config.storage[prefix] = opt
+            else:
+                storage_type = oc_get(prefix_config, 'type')
+                host_path = oc_get(prefix_config, 'host_path')
+                volume_name = oc_get(prefix_config, 'volume_name')
+                opt = StorageOption(prefix=prefix, storage_type=storage_type, 
+                                    host_path=host_path, volume_name=volume_name)
+                stage_config.storage[prefix] = opt
         
     def process(self):
         ''' process the config and compose template to generate the compose output
@@ -252,10 +380,7 @@ class PeiConfigProcessor:
         fn_config = r'templates/config-template-full.yml'
         user_cfg = oc.OmegaConf.load(fn_config)
         compose_cfg = oc.OmegaConf.load(fn_template)
-        
         oc_get = oc.OmegaConf.select
-        oc_set = oc.OmegaConf.update
-        oc_asdict = oc.OmegaConf.to_container
         
         user_compose_obj = [
             (oc_get(user_cfg, 'stage-1'), oc_get(compose_cfg, 'x-cfg-stage-1'), self.m_stage_1),
@@ -264,39 +389,62 @@ class PeiConfigProcessor:
         
         for ith_stage, _configs in enumerate(user_compose_obj):
             _user, _compose, _obj = _configs
-            output_image_name : str = oc_get(cfg, 'image.output')
-            _obj.output_image_name = output_image_name
             
-            # only for stage 1
-            if ith_stage == 0:
-                # ssh
-                ssh_config = oc_get(_user, 'ssh')
-                ssh_compose = oc_get(_compose, 'build.ssh')
-                if ssh_config is not None:
-                    self._process_ssh(ssh_config, ssh_compose, _obj)
+            output_image_name : str = oc_get(_user, 'image.output')
+            assert output_image_name, 'Output image name must be set'
+            _obj.output_image = output_image_name
             
-                # proxy
-                proxy_config = oc_get(_user, 'proxy')
-                proxy_compose = oc_get(_compose, 'build.proxy')
-                if proxy_config is not None:
-                    self._process_proxy(proxy_config, proxy_compose)
+            base_image : str = oc_get(_user, 'image.base')
+            assert base_image, 'Base image name must be set'
+            _obj.base_image = base_image
+            
+            # ssh
+            ssh_config = oc_get(_user, 'ssh')
+            ssh_compose = oc_get(_compose, 'build.ssh')
+            if ssh_config is not None:
+                assert ith_stage == 0, 'SSH is only available for stage 1'
+                self._apply_and_collect_ssh(ssh_config, ssh_compose, _obj)
+        
+            # proxy
+            proxy_config = oc_get(_user, 'proxy')
+            proxy_compose = oc_get(_compose, 'build.proxy')
+            if proxy_config is not None:
+                assert ith_stage == 0, 'Proxy is only available for stage 1'
+                self._apply_proxy(proxy_config, proxy_compose)
+                
+            # apt
+            apt_config = oc_get(_user, 'apt')
+            apt_compose = oc_get(_compose, 'build.apt')
+            if apt_config is not None:
+                assert ith_stage == 0, 'APT is only available for stage 1'
+                self._apply_apt(apt_config, apt_compose)            
             
             # environment
             env_config = oc_get(_user, 'environment')
             if env_config is not None:
-                self._process_env(env_config, _obj)
+                self._collect_env(env_config, _obj)
                 
             # additional port mapping
             port_mapping = oc_get(_user, 'ports')
             if port_mapping is not None:
-                self._process_port_mapping(port_mapping, _obj)
+                self._collect_port_mapping(port_mapping, _obj)
                 
             # device
             device = oc_get(_user, 'device.type')
             _obj.device = device
             
-            # TODO: storage
+            # custom scripts
+            custom_config = oc_get(_user, 'custom')
+            if custom_config is not None:
+                self._collect_custom_scripts(custom_config, _obj)
+            
+            # storage option, only for stage 2
+            storage_config = oc_get(_user, 'storage')
+            if storage_config is not None:
+                assert ith_stage == 1, 'Storage options are only available for stage 2'
+                self._collect_storage_options(storage_config, _obj)
         
+        # TODO: apply stage config to compose_cfg
         return compose_cfg
     
 cfg = PeiConfigProcessor().process()

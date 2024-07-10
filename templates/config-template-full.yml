@@ -60,13 +60,13 @@ stage-1:
 
     # scripts run on first run
     on-first-run:
-      - 'stage-1/custom/my-on-first-start-1.sh'
-      - 'stage-1/custom/my-on-first-start-2.sh'
+      - 'stage-1/custom/my-on-first-run-1.sh'
+      - 'stage-1/custom/my-on-first-run-2.sh'
 
     # scripts run on every run
     on-every-run:
-      - 'stage-1/custom/my-on-every-start-1.sh'
-      - 'stage-1/custom/my-on-every-start-2.sh'
+      - 'stage-1/custom/my-on-every-run-1.sh'
+      - 'stage-1/custom/my-on-every-run-2.sh'
     
 stage-2:
 
@@ -112,10 +112,10 @@ stage-2:
 
     # scripts run on first start
     on-first-run:
-      - 'stage-2/custom/my-on-first-start-1.sh'
-      - 'stage-2/custom/my-on-first-start-2.sh'
+      - 'stage-2/custom/my-on-first-run-1.sh'
+      - 'stage-2/custom/my-on-first-run-2.sh'
 
     # scripts run on every start
     on-every-run:
-      - 'stage-2/custom/my-on-every-start-1.sh'
-      - 'stage-2/custom/my-on-every-start-2.sh'
+      - 'stage-2/custom/my-on-every-run-1.sh'
+      - 'stage-2/custom/my-on-every-run-2.sh'
