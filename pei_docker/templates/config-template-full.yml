@@ -1,6 +1,6 @@
 # all paths are relative to /installation directory
 
-stage-1:
+stage_1:
   # input/output image settings
   image:
     base: ubuntu:22.04
@@ -18,7 +18,7 @@ stage-1:
         password: '123456'
         pubkey_file: null
       you:
-        # password: '654321'
+        password: '654321'
         pubkey_file: null
       root: # you can configure root user here
         password: root
@@ -54,21 +54,21 @@ stage-1:
   # custom scripts
   custom:
     # scripts run during build
-    on-build: 
+    on_build: 
       - 'stage-1/custom/my-build-1.sh'
       - 'stage-1/custom/my-build-2.sh'
 
     # scripts run on first run
-    on-first-run:
+    on_first_run:
       - 'stage-1/custom/my-on-first-run-1.sh'
       - 'stage-1/custom/my-on-first-run-2.sh'
 
     # scripts run on every run
-    on-every-run:
+    on_every_run:
       - 'stage-1/custom/my-on-every-run-1.sh'
       - 'stage-1/custom/my-on-every-run-2.sh'
     
-stage-2:
+stage_2:
 
   # input/output image settings
   image:
@@ -92,30 +92,30 @@ stage-2:
   storage:
     app:
       type: auto-volume # auto-volume, manual-volume, host, image
-      host-path: null # host directory to be mounted, in effect when type=host
-      volume-name: null # volume name, in effect when type=manual-volume
+      host_path: null # host directory to be mounted, in effect when type=host
+      volume_name: null # volume name, in effect when type=manual-volume
     data:
       type: auto-volume
-      host-path: null
-      volume-name: null
+      host_path: null
+      volume_name: null
     workspace:
       type: auto-volume
-      host-path: null
-      volume-name: null
+      host_path: null
+      volume_name: null
 
   # custom scripts in stage-2, run after stage-1 custom scripts
   custom:
     # scripts run during build
-    on-build: 
+    on_build: 
       - 'stage-2/custom/my-build-1.sh'
       - 'stage-2/custom/my-build-2.sh'
 
     # scripts run on first start
-    on-first-run:
+    on_first_run:
       - 'stage-2/custom/my-on-first-run-1.sh'
       - 'stage-2/custom/my-on-first-run-2.sh'
 
     # scripts run on every start
-    on-every-run:
+    on_every_run:
       - 'stage-2/custom/my-on-every-run-1.sh'
       - 'stage-2/custom/my-on-every-run-2.sh'
