@@ -145,6 +145,18 @@ services:
         INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths.installation_root_host}
         INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths.installation_root_image}
 
+        # prefixes
+        PEI_PREFIX_APPS: ${x-paths.dir_prefix.apps}
+        PEI_PREFIX_DATA: ${x-paths.dir_prefix.data}
+        PEI_PREFIX_WORKSPACE: ${x-paths.dir_prefix.workspace}
+
+        # paths
+        PEI_HARD_STORAGE_VOLUME: ${x-paths.hard_storage.volume}
+        PEI_HARD_STORAGE_IMAGE: ${x-paths.hard_storage.image}
+        PEI_SOFT_STORAGE_APPS: ${x-paths.soft_storage.apps}
+        PEI_SOFT_STORAGE_DATA: ${x-paths.soft_storage.data}
+        PEI_SOFT_STORAGE_WORKSPACE: ${x-paths.soft_storage.workspace}
+
   stage-1:
     image: ${x-cfg-stage-1.build.output_image_name}
 
