@@ -47,6 +47,7 @@ class Defaults:
     Stage1_ImageName='pei-image:stage-1'
     Stage2_ImageName='pei-image:stage-2'
     Stage1_BaseImageName='ubuntu:22.04'
+    RunDevice='cpu'
     
     
 @dataclass(kw_only=True)
@@ -205,15 +206,15 @@ class PeiConfigProcessor:
         # add to the environment variables
         stage_config.environment.update(envs)
     
-    def _apply_apt(self, apt_config : DictConfig, apt_compose : DictConfig):
+    def _apply_apt(self, apt_config : DictConfig, build_compose : DictConfig):
         ''' process the apt configuration and update the compose template
         
         parameters
         -------------
         apt_config: DictConfig
             the apt section from the user config, path is 'stage-1.apt'
-        apt_compose: DictConfig
-            the apt section from the compose template, path is 'x-cfg-stage-?.build.apt'
+        build_compose: DictConfig
+            the build section from the compose template, path is 'x-cfg-stage-?.build'
         '''
         
         oc_get = oc.OmegaConf.select
@@ -228,44 +229,44 @@ class PeiConfigProcessor:
         
         # set it to the compose template
         _repo_path_container = self.m_container_dir + '/' + repo_source
-        oc_set(apt_compose, 'source_file', _repo_path_container)
+        oc_set(build_compose, 'apt.source_file', _repo_path_container)
         
         # keep repo after build?
         keep_repo = oc_get(apt_config, 'keep_repo_after_build')
         keep_repo = bool(keep_repo)
-        oc_set(apt_compose, 'keep_source_file', keep_repo)
+        oc_set(build_compose, 'apt.keep_source_file', keep_repo)
         
         # use proxy?
         use_proxy = oc_get(apt_config, 'use_proxy')
         use_proxy = bool(use_proxy)
-        oc_set(apt_compose, 'use_proxy', use_proxy)
+        oc_set(build_compose, 'apt.use_proxy', use_proxy)
         
         # keep proxy after build?
         keep_proxy = oc_get(apt_config, 'keep_proxy_after_build')
         keep_proxy = bool(keep_proxy)
-        oc_set(apt_compose, 'keep_proxy', keep_proxy)
+        oc_set(build_compose, 'apt.keep_proxy', keep_proxy)
     
-    def _apply_proxy(self, proxy_config : DictConfig, proxy_compose : DictConfig):
+    def _apply_proxy(self, proxy_config : DictConfig, build_compose : DictConfig):
         ''' process the proxy configuration and update the compose template
         
         parameters
         -------------
         proxy_config: DictConfig
             the proxy section from the user config, path is 'stage-1.proxy'
-        proxy_compose: DictConfig
-            the proxy section from the compose template, path is 'x-cfg-stage-?.build.proxy'
+        build_compose: DictConfig
+            the build section from the compose template, path is 'x-cfg-stage-?.build'
         '''
         
         oc_get = oc.OmegaConf.select
         oc_set = oc.OmegaConf.update
         
         adr = oc_get(proxy_config, 'address')
-        oc_set(proxy_compose, 'address', adr)
+        oc_set(build_compose, 'proxy.address', adr)
         
         port = oc_get(proxy_config, 'port')
-        oc_set(proxy_compose, 'port', port)
+        oc_set(build_compose, 'proxy.port', port)
     
-    def _apply_and_collect_ssh(self, ssh_config : DictConfig, ssh_compose : DictConfig, 
+    def _apply_and_collect_ssh(self, ssh_config : DictConfig, build_compose : DictConfig, 
                      stage_config : StageConfig):
         ''' process the ssh configuration and update the compose template
         
@@ -273,8 +274,8 @@ class PeiConfigProcessor:
         -------------
         ssh_config: DictConfig
             the ssh section from the user config, path is 'stage-1.ssh'
-        ssh_compose: DictConfig
-            the ssh section from the compose template, path is 'x-cfg-stage-?.build.ssh'
+        build_compose : DictConfig
+            the build section from the compose template, path is 'x-cfg-stage-?.build'
         stage_config: StageConfig
             the stage configuration object, to store the port mapping
             
@@ -288,7 +289,7 @@ class PeiConfigProcessor:
         if enable_ssh:
             # in-container port
             ssh_port = oc_get(ssh_config, 'port')
-            oc_set(ssh_compose, 'port', ssh_port)
+            oc_set(build_compose, 'ssh.port', ssh_port)
             
             # host port
             host_ssh_port = oc_get(ssh_config, 'host_port')
@@ -315,9 +316,9 @@ class PeiConfigProcessor:
                     _ssh_pubkeys.append(str(pubkey_file))
                     
             # set config
-            oc_set(ssh_compose, 'username', ','.join(_ssh_names))
-            oc_set(ssh_compose, 'password', ','.join(_ssh_pwds))
-            oc_set(ssh_compose, 'pubkey_file', ','.join(_ssh_pubkeys))
+            oc_set(build_compose, 'ssh.username', ','.join(_ssh_names))
+            oc_set(build_compose, 'ssh.password', ','.join(_ssh_pwds))
+            oc_set(build_compose, 'ssh.pubkey_file', ','.join(_ssh_pubkeys))
                     
     def _collect_port_mapping(self, port_mapping : list[str], stage_config : StageConfig):
         ''' process the port mapping configuration and update the compose template
@@ -368,23 +369,58 @@ class PeiConfigProcessor:
                 opt = StorageOption(prefix=prefix, storage_type=storage_type, 
                                     host_path=host_path, volume_name=volume_name)
                 stage_config.storage[prefix] = opt
+                
+    def _apply_and_collect_device_info(self, device_config : DictConfig, run_compose : DictConfig,  stage_config : StageConfig):
+        ''' process the device configuration and update the compose template
         
-    def process(self):
-        ''' process the config and compose template to generate the compose output
+        parameters
+        -------------
+        device_config: DictConfig
+            the device section from the user config, path is 'stage-?.device'
+        run_compose : DictConfig
+            the run section from the compose template, path is 'x-cfg-stage-?.run'
+        stage_config: StageConfig
+            the stage configuration object, to store the device information
         '''
-        # user_cfg = self.m_config
-        # compose_cfg = self.m_compose_template.copy()
-        
-        # read files for test
-        fn_template = r'templates/base-image.yml'
-        fn_config = r'templates/config-template-full.yml'
-        user_cfg = oc.OmegaConf.load(fn_config)
-        compose_cfg = oc.OmegaConf.load(fn_template)
         oc_get = oc.OmegaConf.select
         
+        device_name = oc_get(device_config, 'type')
+        if device_name is None:
+            device_name = Defaults.RunDevice
+            
+        assert device_name in ['cpu', 'gpu'], 'Device type must be either cpu or gpu'
+        
+        # set to compose
+        oc.OmegaConf.update(run_compose, 'run.device', device_name)
+        
+        # collect to stage config
+        stage_config.device = device_name
+        
+    def _process_config_and_apply_x_compose(self, user_config : DictConfig, compose_template : DictConfig) -> tuple[StageConfig, StageConfig]:
+        ''' given user config, collect information about all the stages, and apply to the x-cfg-stage-? in compose template
+        
+        parameters
+        -------------
+        user_config: DictConfig
+            the user configuration for all the stages
+        compose_template: DictConfig
+            the compose template to be updated
+            
+        return
+        ----------
+        tuple[StageConfig, StageConfig]
+            the stage configuration objects for stage 1 and stage 2
+        '''
+        user_cfg = user_config
+        compose_cfg = compose_template
+        oc_get = oc.OmegaConf.select
+        
+        stage_1 : StageConfig = StageConfig(base_image=Defaults.Stage1_BaseImageName, output_image=Defaults.Stage1_ImageName)
+        stage_2 : StageConfig = StageConfig(base_image=Defaults.Stage1_ImageName, output_image=Defaults.Stage2_ImageName)
+        
         user_compose_obj = [
-            (oc_get(user_cfg, 'stage-1'), oc_get(compose_cfg, 'x-cfg-stage-1'), self.m_stage_1),
-            (oc_get(user_cfg, 'stage-2'), oc_get(compose_cfg, 'x-cfg-stage-2'), self.m_stage_2),
+            (oc_get(user_cfg, 'stage-1'), oc_get(compose_cfg, 'x-cfg-stage-1'), stage_1),
+            (oc_get(user_cfg, 'stage-2'), oc_get(compose_cfg, 'x-cfg-stage-2'), stage_2),
         ]
         
         for ith_stage, _configs in enumerate(user_compose_obj):
@@ -398,26 +434,26 @@ class PeiConfigProcessor:
             assert base_image, 'Base image name must be set'
             _obj.base_image = base_image
             
+            build_compose = oc_get(_compose, 'build')
+            run_compose = oc_get(_compose, 'run')
+            
             # ssh
             ssh_config = oc_get(_user, 'ssh')
-            ssh_compose = oc_get(_compose, 'build.ssh')
             if ssh_config is not None:
                 assert ith_stage == 0, 'SSH is only available for stage 1'
-                self._apply_and_collect_ssh(ssh_config, ssh_compose, _obj)
+                self._apply_and_collect_ssh(ssh_config, build_compose = build_compose, stage_config=_obj)
         
             # proxy
             proxy_config = oc_get(_user, 'proxy')
-            proxy_compose = oc_get(_compose, 'build.proxy')
             if proxy_config is not None:
                 assert ith_stage == 0, 'Proxy is only available for stage 1'
-                self._apply_proxy(proxy_config, proxy_compose)
+                self._apply_proxy(proxy_config, build_compose = build_compose)
                 
             # apt
             apt_config = oc_get(_user, 'apt')
-            apt_compose = oc_get(_compose, 'build.apt')
             if apt_config is not None:
                 assert ith_stage == 0, 'APT is only available for stage 1'
-                self._apply_apt(apt_config, apt_compose)            
+                self._apply_apt(apt_config, build_compose=build_compose)            
             
             # environment
             env_config = oc_get(_user, 'environment')
@@ -430,19 +466,35 @@ class PeiConfigProcessor:
                 self._collect_port_mapping(port_mapping, _obj)
                 
             # device
-            device = oc_get(_user, 'device.type')
-            _obj.device = device
+            device_config = oc_get(_user, 'device')
+            if device_config is not None:
+                self._apply_and_collect_device_info(device_config, run_compose=run_compose, stage_config=_obj)
             
             # custom scripts
             custom_config = oc_get(_user, 'custom')
             if custom_config is not None:
-                self._collect_custom_scripts(custom_config, _obj)
+                self._collect_custom_scripts(custom_config, stage_config= _obj)
             
             # storage option, only for stage 2
             storage_config = oc_get(_user, 'storage')
             if storage_config is not None:
                 assert ith_stage == 1, 'Storage options are only available for stage 2'
-                self._collect_storage_options(storage_config, _obj)
+                self._collect_storage_options(storage_config, stage_config=_obj)
+                
+        return stage_1, stage_2
+        
+    def process(self):
+        ''' process the config and compose template to generate the compose output
+        '''
+        # user_cfg = self.m_config
+        # compose_cfg = self.m_compose_template.copy()
+        
+        # read files for test
+        fn_template = r'templates/base-image.yml'
+        fn_config = r'templates/config-template-full.yml'
+        user_cfg = oc.OmegaConf.load(fn_config)
+        compose_cfg = oc.OmegaConf.load(fn_template)
+        stage_1, stage_2 = self._process_config_and_apply_x_compose(user_cfg, compose_cfg)
         
         # TODO: apply stage config to compose_cfg
         return compose_cfg
