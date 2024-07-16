@@ -96,7 +96,7 @@ class StageConfig:
     proxy : ProxyConfig | None = field(default=None)
     apt : AptConfig | None = field(default=None)
     environment : dict[str, str] | None = field(factory=dict)
-    ports : list[int] | None = field(factory=list)
+    ports : list[str] | None = field(factory=list)  # list of port mappings in docker format (e.g. 8080:80)
     device : DeviceConfig | None = field(default=None)
     custom : CustomScriptConfig | None = field(default=None)
     storage : dict[str, StorageOption] | None = field(factory=dict)

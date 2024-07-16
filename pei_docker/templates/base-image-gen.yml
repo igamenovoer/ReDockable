@@ -24,12 +24,9 @@ x-paths:
     workspace: '/soft/${.dir_prefix.workspace}'
 
 x-cfg-stage-1:
-
-  # ./installation will be copied to /init-me in the container
-  # all paths specified in cfg are the in-container paths
   paths:    
-    installation_root_host: '${x-paths.installation_root_host}/stage-1'
-    installation_root_image: '${x-paths.installation_root_image}/stage-1'
+    _installation_root_host: '${x-paths.installation_root_host}/stage-1'
+    _installation_root_image: '${x-paths.installation_root_image}/stage-1'
 
   run:
     device: 'cpu'
@@ -58,8 +55,8 @@ x-cfg-stage-1:
       host_port : 2222 # ssh port in host, if null, no port mapping
 
       # ssh public key file, if not set, password will be used
-      # if you want to use your own key, copy the key to system/ssh/keys and set the file name here, like this
-      # pubkey_file: /init-me/stage-1/system/ssh/keys/mykey.rsa.pub
+      # the file path is the absolute path inside the container
+      # pubkey_file: <installation_root_image>/stage-1/system/ssh/keys/mykey.rsa.pub
       pubkey_file: ''
 
     proxy:
@@ -74,10 +71,8 @@ x-cfg-stage-1:
 
     # apt settings
     apt:
-      # replace apt source file?
-      # use empty string to retain the default source file
-      # source_file: ''
-      # source_file: '${..paths.installation_root_image}/system/apt/ubuntu-22.04-tsinghua-x64.list'
+      # replace apt source file? absolute path inside the container
+      # source_file: '${x-paths.installation_root_image}/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
       source_file: ''
       keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
 
@@ -87,8 +82,8 @@ x-cfg-stage-1:
 
 x-cfg-stage-2:
   paths:
-    installation_root_host: '${x-paths.installation_root_host}/stage-2'
-    installation_root_image: '${x-paths.installation_root_image}/stage-2'
+    _installation_root_host: '${x-paths.installation_root_host}/stage-2'
+    _installation_root_image: '${x-paths.installation_root_image}/stage-2'
 
   run:
     device : '${x-cfg-stage-1.run.device}'
@@ -142,8 +137,8 @@ services:
         WITH_ESSENTIAL_APPS: ${x-cfg-stage-2.build.apps.with_essential_apps}
 
         # installation dirs
-        INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths.installation_root_host}
-        INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths.installation_root_image}
+        INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths._installation_root_host}
+        INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._installation_root_image}
 
         # prefixes
         PEI_PREFIX_APPS: ${x-paths.dir_prefix.apps}
@@ -209,8 +204,8 @@ services:
         USER_HTTPS_PROXY: ${x-cfg-stage-1.build.proxy._proxy_https}
 
         # installation dirs
-        INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths.installation_root_host}
-        INSTALL_DIR_CONTAINER_1: ${x-cfg-stage-1.paths.installation_root_image}
+        INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths._installation_root_host}
+        INSTALL_DIR_CONTAINER_1: ${x-cfg-stage-1.paths._installation_root_image}
 
         # ssh port in container
         ROOT_PASSWORD: ${x-cfg-stage-1.build.root_password}

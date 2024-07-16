@@ -10,6 +10,8 @@ from rich import print
 from pei_docker.user_config import *
 logging.basicConfig(level=logging.INFO)
 import sys
+
+# TODO: use cattrs to convert the yaml to the stage config
     
 class StoragePrefixes:
     App = 'app'
@@ -65,36 +67,32 @@ class PeiConfigProcessor:
         return self
     
     # TODO: changed StageConfig to user_config.StageConfig, modify source to adapt
-    def _collect_custom_scripts(self, custom_config : DictConfig, stage_config : StageConfig):
-        ''' collect the custom scripts and save to the stage configuration object
+    def _check_custom_scripts(self, custom_config : DictConfig, stage_config : StageConfig):
+        ''' check if all custom scripts listed in the config exist, and update the stage config
         
         parameters
         -------------
-        custom_config: DictConfig
-            the custom script section from the user config, path is 'stage-?.scripts'
         stage_config: StageConfig
             the stage configuration object to store the scripts
         '''
         
         oc_get = oc.OmegaConf.select
         
-        on_build_scripts : list[str] = oc_get(custom_config, 'on-build')
+        on_build_scripts = stage_config.custom.on_build
         if on_build_scripts is not None:
-            # check if all files listed in on_build_scripts exist
-            for script in on_build_scripts:
+            # check if all files listed in on_build_scripts exist, and replace it
+            for i, script in enumerate(on_build_scripts):
                 host_path = self.m_host_dir + '/' + script
                 if not os.path.exists(host_path):
                     raise FileNotFoundError(f'Script {host_path} not found')
-            stage_config.on_build_scripts = on_build_scripts
             
-        on_first_run_scripts : list[str] = oc_get(custom_config, 'on-first-run')
+        on_first_run_scripts = stage_config.custom.on_first_run
         if on_first_run_scripts is not None:
             # check if all files listed in on_first_run_scripts exist
-            for script in on_first_run_scripts:
+            for i, script in enumerate(on_first_run_scripts):
                 host_path = self.m_host_dir + '/' + script
                 if not os.path.exists(host_path):
                     raise FileNotFoundError(f'Script {host_path} not found')
-            stage_config.on_first_run_scripts = on_first_run_scripts
             
         on_every_run_scripts : list[str] = oc_get(custom_config, 'on-every-run')
         if on_every_run_scripts is not None:
@@ -103,34 +101,6 @@ class PeiConfigProcessor:
                 host_path = self.m_host_dir + '/' + script
                 if not os.path.exists(host_path):
                     raise FileNotFoundError(f'Script {host_path} not found')
-            stage_config.on_every_run_scripts = on_every_run_scripts
-        
-    
-    def _collect_env(self, env_config : DictConfig, stage_config : StageConfig):
-        ''' process the env configuration from config
-        
-        parameters
-        -------------
-        env_config: DictConfig
-            the env section from the user config, path is 'stage-1.environment'
-        stage_config: StageConfig
-            the stage configuration object to store the environment variables
-        '''
-        
-        oc_get = oc.OmegaConf.select
-        
-        envs = oc_get(env_config, 'environment')
-        
-        if envs is None or len(envs) == 0:
-            return
-        
-        # if it is a list, convert it to a dictionary
-        # each entry is "xxx=yyy", split by '=' and add to the dictionary
-        if isinstance(envs, list):
-            envs = {k:v for k, v in [e.split('=') for e in envs]}
-            
-        # add to the environment variables
-        stage_config.environment.update(envs)
     
     def _apply_apt(self, apt_config : DictConfig, build_compose : DictConfig):
         ''' process the apt configuration and update the compose template
@@ -192,111 +162,59 @@ class PeiConfigProcessor:
         port = oc_get(proxy_config, 'port')
         oc_set(build_compose, 'proxy.port', port)
     
-    def _apply_and_collect_ssh(self, ssh_config : DictConfig, build_compose : DictConfig, 
-                     stage_config : StageConfig):
+    def _apply_ssh_to_x_compose(self, ssh_config : SSHConfig, build_compose : DictConfig):
         ''' process the ssh configuration and update the compose template
         
         parameters
         -------------
-        ssh_config: DictConfig
-            the ssh section from the user config, path is 'stage-1.ssh'
-        build_compose : DictConfig
-            the build section from the compose template, path is 'x-cfg-stage-?.build'
         stage_config: StageConfig
             the stage configuration object, to store the port mapping
-            
+        build_compose : DictConfig
+            the build section from the compose template, path is 'x-cfg-stage-?.build'    
         '''
         
         oc_get = oc.OmegaConf.select
         oc_set = oc.OmegaConf.update
         
         # set ssh
-        enable_ssh = oc_get(ssh_config, 'enable')
+        enable_ssh = ssh_config.enable
         if enable_ssh:
             # in-container port
-            ssh_port = oc_get(ssh_config, 'port')
+            ssh_port = ssh_config.port
             oc_set(build_compose, 'ssh.port', ssh_port)
             
-            # host port
-            host_ssh_port = oc_get(ssh_config, 'host_port')
-            stage_config.ports[host_ssh_port] = ssh_port
-            
             # users
-            ssh_users = oc_get(ssh_config, 'users')
+            ssh_users = ssh_config.users
             _ssh_names : list[str] = []
             _ssh_pwds : list[str] = []
             _ssh_pubkeys : list[str] = []
             for name, info in ssh_users.items():
                 _ssh_names.append(name)
                 
-                pw = oc_get(info, 'password')
+                pw = info.password
                 if pw is None:
                     _ssh_pwds.append('')
                 else:
                     _ssh_pwds.append(str(pw))   # convert to string, in case it's a number
                     
-                pubkey_file = oc_get(info, 'pubkey_file')
+                pubkey_file = info.pubkey_file
+                
+                # check if the pubkey file exists
+                p = self.m_host_dir + '/' + pubkey_file
+                if not os.path.exists(p):
+                    raise FileNotFoundError(f'Pubkey file {p} not found')
+                
                 if pubkey_file is None:
                     _ssh_pubkeys.append('')
                 else:
-                    _ssh_pubkeys.append(str(pubkey_file))
+                    _ssh_pubkeys.append(self.m_container_dir + '/' + pubkey_file)
                     
             # set config
             oc_set(build_compose, 'ssh.username', ','.join(_ssh_names))
             oc_set(build_compose, 'ssh.password', ','.join(_ssh_pwds))
             oc_set(build_compose, 'ssh.pubkey_file', ','.join(_ssh_pubkeys))
-                    
-    def _collect_port_mapping(self, port_mapping : list[str], stage_config : StageConfig):
-        ''' process the port mapping configuration and update the compose template
-        
-        parameters
-        -------------
-        port_mapping: list[str]
-            the port mapping section from the user config, path is 'stage-1.ports',
-            following docker compose format, host:container, e.g. ['8080:80', '8081:81']
-        stage_config: StageConfig
-            the stage configuration object, to store the port mapping
-        '''
-        
-        oc_get = oc.OmegaConf.select
-        oc_set = oc.OmegaConf.update
-        
-        if port_mapping is None or len(port_mapping) == 0:
-            return
-        
-        for host_port, container_port in [e.split(':') for e in port_mapping]:
-            stage_config.ports[int(host_port)] = int(container_port)
-            
-    def _collect_storage_options(self, storage_config : DictConfig, stage_config : StageConfig):
-        ''' process the storage configuration and collect the storage options
-        
-        parameters
-        -----------
-        storage_config: DictConfig
-            the storage section from the user config, path is 'stage-?.storage'
-        stage_config: StageConfig
-            the stage configuration object, to store the storage options
-        '''
-        
-        oc_get = oc.OmegaConf.select
-        
-        all_prefix = StoragePrefixes.get_all_prefixes()
-        for prefix in all_prefix:
-            prefix_config = oc_get(storage_config, prefix)
-            
-            if prefix_config is None:
-                # default option
-                opt = StorageOption(prefix=prefix)
-                stage_config.storage[prefix] = opt
-            else:
-                storage_type = oc_get(prefix_config, 'type')
-                host_path = oc_get(prefix_config, 'host_path')
-                volume_name = oc_get(prefix_config, 'volume_name')
-                opt = StorageOption(prefix=prefix, storage_type=storage_type, 
-                                    host_path=host_path, volume_name=volume_name)
-                stage_config.storage[prefix] = opt
                 
-    def _apply_and_collect_device_info(self, device_config : DictConfig, run_compose : DictConfig,  stage_config : StageConfig):
+    def _apply_and_collect_device_info(self, stage_config : StageConfig, run_compose : DictConfig):
         ''' process the device configuration and update the compose template
         
         parameters
@@ -310,7 +228,7 @@ class PeiConfigProcessor:
         '''
         oc_get = oc.OmegaConf.select
         
-        device_name = oc_get(device_config, 'type')
+        device_name = stage_config.device
         if device_name is None:
             device_name = Defaults.RunDevice
             
@@ -319,23 +237,15 @@ class PeiConfigProcessor:
         # set to compose
         oc.OmegaConf.update(run_compose, 'run.device', device_name)
         
-        # collect to stage config
-        stage_config.device = device_name
-        
-    def _process_config_and_apply_x_compose(self, user_config : DictConfig, compose_template : DictConfig) -> tuple[StageConfig, StageConfig]:
+    def _process_config_and_apply_x_compose(self, user_config : UserConfig, compose_template : DictConfig):
         ''' given user config, collect information about all the stages, and apply to the x-cfg-stage-? in compose template
         
         parameters
         -------------
-        user_config: DictConfig
-            the user configuration for all the stages
+        user_config: UserConfig
+            the user configuration for all the stages, read from the yaml config file
         compose_template: DictConfig
             the compose template to be updated
-            
-        return
-        ----------
-        tuple[StageConfig, StageConfig]
-            the stage configuration objects for stage 1 and stage 2
         '''
         user_cfg = user_config
         compose_cfg = compose_template
@@ -367,7 +277,7 @@ class PeiConfigProcessor:
             ssh_config = oc_get(_user, 'ssh')
             if ssh_config is not None:
                 assert ith_stage == 0, 'SSH is only available for stage 1'
-                self._apply_and_collect_ssh(ssh_config, build_compose = build_compose, stage_config=_obj)
+                self._apply_ssh(ssh_config, build_compose = build_compose, stage_config=_obj)
         
             # proxy
             proxy_config = oc_get(_user, 'proxy')
@@ -399,7 +309,7 @@ class PeiConfigProcessor:
             # custom scripts
             custom_config = oc_get(_user, 'custom')
             if custom_config is not None:
-                self._collect_custom_scripts(custom_config, stage_config= _obj)
+                self._resolve_custom_scripts(custom_config, stage_config= _obj)
             
             # storage option, only for stage 2
             storage_config = oc_get(_user, 'storage')
