@@ -7,18 +7,9 @@ import os
 import shutil
 import logging
 from rich import print
+from pei_docker.user_config import *
 logging.basicConfig(level=logging.INFO)
 import sys
-
-class StorageTypes:
-    AutoVolume = 'auto-volume'
-    ManualVolume = 'manual-volume'
-    Host = 'host'
-    Image = 'image'
-    
-    @classmethod
-    def get_all_types(cls) -> list[str]:
-        return [cls.AutoVolume, cls.ManualVolume, cls.Host, cls.Image]
     
 class StoragePrefixes:
     App = 'app'
@@ -49,72 +40,6 @@ class Defaults:
     Stage1_BaseImageName='ubuntu:22.04'
     RunDevice='cpu'
     
-    
-@dataclass(kw_only=True)
-class StorageOption:
-    ''' storage options for the container
-    '''
-    # prefix for the dir name, such as app, data, workspace
-    prefix : str = field()
-    
-    storage_type : str = field(default=StorageTypes.AutoVolume)   # auto-volume, manual-volume, host, image
-    
-    # path to the host directory
-    host_path : str | None = field(default=None)
-    
-    # path to the container directory
-    volume_name : str | None = field(default=None)
-    
-    @property
-    def hard_path(self) -> str:
-        ''' hard storage path in container
-        '''
-        assert self.prefix is not None, 'Prefix must be set for storage option'
-        
-        if self.storage_type == 'image':
-            return f'{StoragePaths.HardImage}/{self.prefix}'
-        else:
-            return f'{StoragePaths.HardVolume}/{self.prefix}'
-        
-    @property
-    def soft_path(self) -> str:
-        ''' soft storage path in container
-        '''
-        assert self.prefix is not None, 'Prefix must be set for storage option'
-        return f'{StoragePaths.Soft}/{self.prefix}'
-    
-    def __post_init__(self):
-        # storage type must be one of the following: auto-volume, manual-volume, host, image
-        if self.storage_type not in StorageTypes.get_all_types():
-            raise ValueError(f'Invalid storage type {self.storage_type}')
-
-@dataclass(kw_only=True)
-class StageConfig:
-    ''' configuration for each stage
-    '''
-    # base image name
-    base_image : str = field()
-    
-    # image name for the output
-    output_image : str = field()
-    
-    # environment variables
-    environment : dict[str, str] = field(default_factory=dict)
-    
-    # port mapping from host to container
-    ports : dict[int, int] = field(default_factory=dict)
-    
-    # run on which device
-    device : str | None = field(default=None)
-    
-    # storage options
-    storage : dict[str, StorageOption] = field(default_factory=dict)
-    
-    # scripts to run
-    on_build_scripts : list[str] = field(default_factory=list)
-    on_first_run_scripts : list[str] = field(default_factory=list)
-    on_every_run_scripts : list[str] = field(default_factory=list)
-    
 class PeiConfigProcessor:
     def __init__(self) -> None:
         self.m_config : DictConfig = None
@@ -139,6 +64,7 @@ class PeiConfigProcessor:
         self.m_compose_template = compose_template
         return self
     
+    # TODO: changed StageConfig to user_config.StageConfig, modify source to adapt
     def _collect_custom_scripts(self, custom_config : DictConfig, stage_config : StageConfig):
         ''' collect the custom scripts and save to the stage configuration object
         
@@ -483,6 +409,33 @@ class PeiConfigProcessor:
                 
         return stage_1, stage_2
         
+    def _apply_stage_config_to_compose(self, stage_config : StageConfig, stage_compose : DictConfig, base_compose : DictConfig):
+        ''' apply the stage configuration to the compose template of that stage
+        
+        parameters
+        --------------
+        stage_config: StageConfig
+            the stage configuration object
+        stage_compose: DictConfig
+            the compose template for that stage, whose key is 'services.stage-?', which will be modified in place
+        base_compose: DictConfig
+            the base compose template, which is the top-level compose template
+        '''
+        
+        # port mapping
+        port_strings : list[str] = [f'{host}:{container}' for host, container in stage_config.ports.items()]
+        oc.OmegaConf.update(stage_compose, 'ports', port_strings)
+        
+        # environment variables
+        env_strings : list[str] = [f'{k}={v}' for k, v in stage_config.environment.items()]
+        oc.OmegaConf.update(stage_compose, 'environment', env_strings)
+        
+        vol_strings : list[str] = []
+        for prefix, storage_opt in stage_config.storage.items():
+            if storage_opt == StorageTypes.AutoVolume:
+                vol_strings.append(f'{storage_opt}:{storage_opt.soft_path}')
+        
+    
     def process(self):
         ''' process the config and compose template to generate the compose output
         '''
@@ -497,6 +450,13 @@ class PeiConfigProcessor:
         stage_1, stage_2 = self._process_config_and_apply_x_compose(user_cfg, compose_cfg)
         
         # TODO: apply stage config to compose_cfg
+        
+        # resolve the compose file
+        compose_resolved = compose_cfg.copy()
+        oc.OmegaConf.resolve(compose_resolved)
+        
+        # apply stage_1 config
+        
         return compose_cfg
     
 cfg = PeiConfigProcessor().process()

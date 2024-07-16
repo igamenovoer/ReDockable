@@ -4,6 +4,20 @@ import attrs.validators as av
 import cattrs
 from rich import print
 
+__all__ = [
+    'ImageConfig',
+    'SSHUserConfig',
+    'SSHConfig',
+    'ProxyConfig',
+    'AptConfig',
+    'DeviceConfig',
+    'CustomScriptConfig',
+    'StorageOption',
+    'StageConfig',
+    'StorageTypes',
+    'UserConfig',
+]
+
 @define(kw_only=True)
 class ImageConfig:
     base : str = field()
@@ -47,12 +61,22 @@ class CustomScriptConfig:
     on_first_run : list[str] = field(factory=list)
     on_every_run : list[str] = field(factory=list)
     
+class StorageTypes:
+    AutoVolume = 'auto-volume'
+    ManualVolume = 'manual-volume'
+    Host = 'host'
+    Image = 'image'
+    
+    @classmethod
+    def get_all_types(cls) -> list[str]:
+        return [cls.AutoVolume, cls.ManualVolume, cls.Host, cls.Image]
+    
 @define(kw_only=True)
 class StorageOption:
     ''' storage options for the container
     '''
     # auto-volume, manual-volume, host, image
-    type : str = field(validator=av.in_(['auto-volume','manual-volume','host', 'image']))
+    type : str = field(validator=av.in_(StorageTypes.get_all_types()))
     host_path : str | None = field(default=None)
     volume_name : str | None = field(default=None)
     
@@ -61,6 +85,9 @@ class StorageOption:
             raise ValueError('volume_name must be provided for manual-volume storage')
         if self.type == 'host' and self.host_path is None:
             raise ValueError('host_path must be provided for host storage')
+        
+    def get_volume_name(self, prefix : str) -> str:
+        return f'{prefix}-{self.type}'
 
 @define(kw_only=True)
 class StageConfig:
@@ -79,8 +106,8 @@ class UserConfig:
     stage_1 : StageConfig | None = field(default=None)
     stage_2 : StageConfig | None = field(default=None)
     
-fn_config = r'templates/config-template-full.yml'
-cfg = oc.OmegaConf.load(fn_config)
-cfg_dict = oc.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=False)
-# cfg_struct = UserConfig(**cfg_dict)
-cfg_struct = cattrs.structure_attrs_fromdict(cfg_dict, UserConfig)
+# fn_config = r'templates/config-template-full.yml'
+# cfg = oc.OmegaConf.load(fn_config)
+# cfg_dict = oc.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=False)
+# # cfg_struct = UserConfig(**cfg_dict)
+# cfg_struct = cattrs.structure_attrs_fromdict(cfg_dict, UserConfig)
