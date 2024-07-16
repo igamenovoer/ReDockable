@@ -85,9 +85,6 @@ class StorageOption:
             raise ValueError('volume_name must be provided for manual-volume storage')
         if self.type == 'host' and self.host_path is None:
             raise ValueError('host_path must be provided for host storage')
-        
-    def get_volume_name(self, prefix : str) -> str:
-        return f'{prefix}-{self.type}'
 
 @define(kw_only=True)
 class StageConfig:

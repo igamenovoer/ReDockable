@@ -19,9 +19,9 @@ x-paths:
     image: '/hard/image'
   
   soft_storage:
-    apps: '/soft/${.dir_prefix.apps}'
-    data: '/soft/${.dir_prefix.data}'
-    workspace: '/soft/${.dir_prefix.workspace}'
+    apps: '/soft/${..dir_prefix.apps}'
+    data: '/soft/${..dir_prefix.data}'
+    workspace: '/soft/${..dir_prefix.workspace}'
 
 x-cfg-stage-1:
   paths:    
@@ -123,7 +123,7 @@ services:
       - "host.docker.internal:host-gateway"
 
     build:
-      context: '???'
+      context: .
       dockerfile: stage-2.Dockerfile
 
       # required to use proxy
@@ -134,7 +134,7 @@ services:
         BASE_IMAGE: ${x-cfg-stage-2.build.base_image}
 
         # install essential apps, by executing /installation/scripts/install-essential-apps.sh
-        WITH_ESSENTIAL_APPS: ${x-cfg-stage-2.build.apps.with_essential_apps}
+        WITH_ESSENTIAL_APPS: ${x-cfg-stage-2.build.flags.with_essential_apps}
 
         # installation dirs
         INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths._installation_root_host}
@@ -167,7 +167,7 @@ services:
           devices: '${x-sections.run-with-device[${x-cfg-stage-1.run.device}]}'
 
     # user provided environments
-    environment: ${x-cfg-stage-1.run.environment}
+    environment: []
 
     # required to use proxy
     extra_hosts:
@@ -185,7 +185,7 @@ services:
         BASE_IMAGE: ${x-cfg-stage-1.build.base_image}
 
         # install essential apps, by executing /installation/scripts/install-essential-apps.sh
-        WITH_ESSENTIAL_APPS: ${x-cfg-stage-1.build.apps.with_essential_apps}
+        WITH_ESSENTIAL_APPS: ${x-cfg-stage-1.build.flags.with_essential_apps}
 
         # install openssh-server, and set up ssh user, password, public key (optional)
         WITH_SSH: ${x-cfg-stage-1.build.ssh.enable}
