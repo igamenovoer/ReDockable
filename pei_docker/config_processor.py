@@ -6,6 +6,7 @@ from pei_docker.user_config import *
 
 import omegaconf as oc
 from omegaconf import DictConfig
+from attrs import define, field
 
 import cattrs
 
@@ -48,11 +49,20 @@ class Defaults:
     Stage1_BaseImageName='ubuntu:22.04'
     RunDevice='cpu'
     
+@define(kw_only=True)
+class GeneratedScripts:
+    ''' Generated scripts for the user to run
+    '''
+    on_build_script : str | None = field(default=None)
+    on_first_run_script : str | None = field(default=None)
+    on_every_run_script : str | None = field(default=None)
+    
 class PeiConfigProcessor:
     def __init__(self) -> None:
         self.m_config : DictConfig = None
         self.m_compose_template : DictConfig = None
         self.m_compose_output : DictConfig = None
+        self.m_generated_scripts : GeneratedScripts = GeneratedScripts()
         
         # root of installation in host
         self.m_host_dir = os.getcwd() +'/' + Defaults.HostInstallationRoot
@@ -379,6 +389,9 @@ class PeiConfigProcessor:
                 # write to compose
                 oc.OmegaConf.update(stage_compose, 'volumes', vol_strings)
         
+    def _generate_scripts_text(self, postfix:str, custom_script_files : list[str]) -> str:
+        # TODO: here
+        pass
     
     def process(self):
         ''' process the config and compose template to generate the compose output
