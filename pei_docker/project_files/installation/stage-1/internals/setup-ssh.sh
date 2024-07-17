@@ -27,6 +27,9 @@ echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 # permit password authentication
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 
+# allow x11 forwarding
+echo "X11Forwarding yes" >> /etc/ssh/sshd_config
+
 # create a user group named users
 groupadd ssh_users
 
