@@ -14,6 +14,8 @@ from pei_docker.config_processor import *
 @click.group()
 def cli():
     pass
+
+# TODO: generate build.sh and run.sh scripts
     
 # create the output dir and copy the template files there
 @click.command()
