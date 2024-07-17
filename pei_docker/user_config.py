@@ -82,6 +82,9 @@ class DeviceConfig:
     
 @define(kw_only=True)
 class CustomScriptConfig:
+    ''' paths of custom scripts to run at different stages of the container lifecycle,
+    relative to the installation directory
+    '''
     on_build : list[str] = field(factory=list)
     on_first_run : list[str] = field(factory=list)
     on_every_run : list[str] = field(factory=list)

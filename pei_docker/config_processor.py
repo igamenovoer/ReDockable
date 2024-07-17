@@ -37,13 +37,15 @@ class StoragePaths:
     HardVolume = '/hard/volume'
 
 class Defaults:
-    ConfigTemplatePath='./pei_docker/templates/config-template-full.yml'
-    ComposeTemplatePath='./pei_docker/templates/base-image.yml'
-    OutputConfigName='config.yml'
+    ConfigTemplatePath='templates/config-template-full.yml'
+    ComposeTemplatePath='templates/base-image-gen.yml'
+    OutputConfigName='user_config.yml'
+    OutputComposeTemplateName = 'compose-template.yml'
     OutputComposeName='docker-compose.yml'
     BuildDir='build'
-    ContainerInstallationRoot='/pei-init'
-    HostInstallationRoot='./pei_docker/project_files/installation'
+    ContainerInstallationDir='/pei-init'
+    ProjectDirectory='./project_files'
+    HostInstallationDir='./installation' # relative to the project directory
     Stage1_ImageName='pei-image:stage-1'
     Stage2_ImageName='pei-image:stage-2'
     Stage1_BaseImageName='ubuntu:22.04'
@@ -64,26 +66,27 @@ class PeiConfigProcessor:
         self.m_compose_output : DictConfig = None
         self.m_generated_scripts : GeneratedScripts = GeneratedScripts()
         
-        # root of installation in host
-        self.m_host_dir = os.getcwd() +'/' + Defaults.HostInstallationRoot
-        assert os.path.exists(self.m_host_dir), f'Host installation root {self.m_host_dir} not found'
-        self.m_host_dir = os.path.abspath(self.m_host_dir).replace('\\', '/')
-        
-        self.m_container_dir = Defaults.ContainerInstallationRoot
+        # host dir is relative to the directory of the docker compose file
+        self.m_project_dir = Defaults.ProjectDirectory
+        self.m_host_dir = Defaults.HostInstallationDir
+        self.m_container_dir = Defaults.ContainerInstallationDir
         
     @classmethod
-    def from_config(cls, config : DictConfig, compose_template : DictConfig) -> 'PeiConfigProcessor':
+    def from_config(cls, config : DictConfig, compose_template : DictConfig, project_dir: str = None) -> 'PeiConfigProcessor':
+        ''' create a new instance of PeiConfigProcessor from the config and compose template
+        '''
         self = cls()
         self.m_config = config
         self.m_compose_template = compose_template
+        if project_dir is not None:
+            self.m_project_dir = project_dir
         return self
     
     @classmethod
-    def from_files(cls, config_file : str, compose_template_file : str) -> 'PeiConfigProcessor':
-        self = cls()
-        self.m_config = oc.OmegaConf.load(config_file)
-        self.m_compose_template = oc.OmegaConf.load(compose_template_file)
-        return self
+    def from_files(cls, config_file : str, compose_template_file : str, project_dir: str = None) -> 'PeiConfigProcessor':
+        config = oc.OmegaConf.load(config_file)
+        compose = oc.OmegaConf.load(compose_template_file)
+        return cls.from_config(config, compose, project_dir)
     
     def _check_custom_scripts(self, custom_config : CustomScriptConfig) -> bool:
         ''' check if all custom scripts listed in the config exist, and update the stage config
@@ -103,7 +106,7 @@ class PeiConfigProcessor:
         if on_build_scripts is not None:
             # check if all files listed in on_build_scripts exist, and replace it
             for i, script in enumerate(on_build_scripts):
-                host_path = self.m_host_dir + '/' + script
+                host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
                     raise FileNotFoundError(f'Script {host_path} not found')
             
@@ -111,7 +114,7 @@ class PeiConfigProcessor:
         if on_first_run_scripts is not None:
             # check if all files listed in on_first_run_scripts exist
             for i, script in enumerate(on_first_run_scripts):
-                host_path = self.m_host_dir + '/' + script
+                host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
                     raise FileNotFoundError(f'Script {host_path} not found')
             
@@ -119,7 +122,7 @@ class PeiConfigProcessor:
         if on_every_run_scripts is not None:
             # check if all files listed in on_every_run_scripts exist
             for script in on_every_run_scripts:
-                host_path = self.m_host_dir + '/' + script
+                host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
                     raise FileNotFoundError(f'Script {host_path} not found')
                 
@@ -140,7 +143,7 @@ class PeiConfigProcessor:
         repo_source = apt_config.repo_source
         
         # check if the repo path exists
-        _repo_path_host = self.m_host_dir + '/' + repo_source
+        _repo_path_host = f'{self.m_project_dir}/{self.m_host_dir}/{repo_source}'
         if not os.path.exists(_repo_path_host):
             raise FileNotFoundError(f'Repo source path {_repo_path_host} not found')
         
@@ -217,7 +220,8 @@ class PeiConfigProcessor:
                 
                 if pubkey_file is not None and len(pubkey_file) > 0:
                     # check if the pubkey file exists
-                    p = self.m_host_dir + '/' + pubkey_file
+                    # p = self.m_host_dir + '/' + pubkey_file
+                    p = f'{self.m_project_dir}/{self.m_host_dir}/{pubkey_file}'
                     if not os.path.exists(p):
                         raise FileNotFoundError(f'Pubkey file {p} not found')
                     
@@ -362,13 +366,13 @@ class PeiConfigProcessor:
             else:   # at stage 2
                 vol_strings : list[str] = []
                 for prefix, storage_opt in stage_config.storage.items():
-                    soft_path = StoragePaths.Soft + '/' + prefix
+                    vol_path = StoragePaths.HardVolume + '/' + prefix
                     if storage_opt.type == StorageTypes.AutoVolume:
                         # add volume to docker compose
                         oc.OmegaConf.update(compose_template, f'volumes.{prefix}', {})
                         
                         # map volume to soft path
-                        vol_strings.append(f'{prefix}:{soft_path}')
+                        vol_strings.append(f'{prefix}:{vol_path}')
                     elif storage_opt.type == StorageTypes.ManualVolume:
                         assert storage_opt.volume_name is not None, 'volume_name must be provided for manual-volume storage'
                         
@@ -377,12 +381,12 @@ class PeiConfigProcessor:
                                             {'external': True, 'name': storage_opt.volume_name})
                         
                         # map volume to soft path
-                        vol_strings.append(f'{prefix}:{soft_path}')
+                        vol_strings.append(f'{prefix}:{vol_path}')
                     elif storage_opt.type == StorageTypes.Host:
                         assert storage_opt.host_path is not None, 'host_path must be provided for host storage'
                         
                         # map host path to soft path
-                        vol_strings.append(f'{storage_opt.host_path}:{soft_path}')
+                        vol_strings.append(f'{storage_opt.host_path}:{vol_path}')
                     elif storage_opt.type == StorageTypes.Image:
                         # nothing to do here
                         pass
@@ -406,7 +410,7 @@ class PeiConfigProcessor:
         ]
         
         for file in filelist:
-            cmds.append(f"bash $DIR/../custom/{file}")
+            cmds.append(f"bash $DIR/../../{file}")
             
         return '\n'.join(cmds)
     
@@ -428,7 +432,7 @@ class PeiConfigProcessor:
             on_build_scripts = stage_config.custom.on_build
             if on_build_scripts is not None:
                 on_build_script = self._generate_script_text('on-build', on_build_scripts)
-                filename_build = f'{self.m_host_dir}/{name}/generated/_custom-on-build.sh'
+                filename_build = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-build.sh'
                 logging.info(f'Writing to {filename_build}')
                 with open(filename_build, 'w+') as f:
                     f.write(on_build_script)
@@ -436,7 +440,7 @@ class PeiConfigProcessor:
             on_first_run_scripts = stage_config.custom.on_first_run
             if on_first_run_scripts is not None:
                 on_first_run_script = self._generate_script_text('on-first-run', on_first_run_scripts)
-                filename_first_run = f'{self.m_host_dir}/{name}/generated/_custom-on-first-run.sh'
+                filename_first_run = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-first-run.sh'
                 logging.info(f'Writing to {filename_first_run}')
                 with open(filename_first_run, 'w+') as f:
                     f.write(on_first_run_script)
@@ -444,14 +448,19 @@ class PeiConfigProcessor:
             on_every_run_scripts = stage_config.custom.on_every_run
             if on_every_run_scripts is not None:
                 on_every_run_script = self._generate_script_text('on-every-run', on_every_run_scripts)
-                filename_every_run = f'{self.m_host_dir}/{name}/generated/_custom-on-every-run.sh'
+                filename_every_run = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-every-run.sh'
                 logging.info(f'Writing to {filename_every_run}')
                 with open(filename_every_run, 'w+') as f:
                     f.write(on_every_run_script)    
             
     
-    def process(self):
+    def process(self, remove_extra : bool = True) -> DictConfig:
         ''' process the config and compose template to generate the compose output
+        
+        return
+        -----------
+        compose_output : DictConfig
+            the compose output after applying the user config
         '''
         # user_cfg = self.m_config
         # compose_cfg = self.m_compose_template.copy()
@@ -491,12 +500,14 @@ class PeiConfigProcessor:
         self._generate_script_files(user_config)
         
         # strip the x-? from the compose template
-        useless_keys = []
-        for key in list(compose_resolved.keys()):
-            if key.startswith('x-'):
-                useless_keys.append(key)
-        for key in useless_keys:
-            del compose_resolved[key]
+        if remove_extra:
+            useless_keys = []
+            for key in list(compose_resolved.keys()):
+                if key.startswith('x-'):
+                    useless_keys.append(key)
+            for key in useless_keys:
+                del compose_resolved[key]
             
         # resolve the compose template
         self.m_compose_output = compose_resolved
+        return compose_resolved
