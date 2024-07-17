@@ -7,12 +7,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "Executing $DIR/create-links.sh ..."
 
 # create links
-link_source="$X_PATH_SOFT_BASE/$X_PREFIX_APPS $X_PATH_SOFT_BASE/$X_PREFIX_DATA $X_PATH_SOFT_BASE/$X_PREFIX_WORKSPACE"
+link_source="$PEI_SOFT_APPS $PEI_SOFT_DATA $PEI_SOFT_WORKSPACE"
+X_STORAGE_CHOICE="volume-first" # default value, can be image-first
 
 # link source to target according to X_STORAGE_CHOICE
 for source in $link_source; do
-    target_volume="$X_PATH_HARD_BASE/$X_PREFIX_VOLUME_STORAGE/$(basename $source)"
-    target_image="$X_PATH_HARD_BASE/$X_PREFIX_IMAGE_STORAGE/$(basename $source)"
+    target_volume="$PEI_PATH_HARD/$PEI_PREFIX_VOLUME/$(basename $source)"
+    target_image="$PEI_PATH_HARD/$PEI_PREFIX_IMAGE/$(basename $source)"
 
     # if source exists, remove it if it is a link, report error if it is a directory
     if [ -e $source ]; then

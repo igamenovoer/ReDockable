@@ -42,7 +42,7 @@ class Defaults:
     OutputConfigName='config.yml'
     OutputComposeName='docker-compose.yml'
     BuildDir='build'
-    ContainerInstallationRoot='/init-me'
+    ContainerInstallationRoot='/pei-init'
     HostInstallationRoot='./pei_docker/project_files/installation'
     Stage1_ImageName='pei-image:stage-1'
     Stage2_ImageName='pei-image:stage-2'
@@ -389,9 +389,66 @@ class PeiConfigProcessor:
                 # write to compose
                 oc.OmegaConf.update(stage_compose, 'volumes', vol_strings)
         
-    def _generate_scripts_text(self, postfix:str, custom_script_files : list[str]) -> str:
-        # TODO: here
-        pass
+    def _generate_script_text(self, on_what:str, filelist : list[str]) -> str:
+        ''' generate the script commands that will run all user scripts
+        
+        parameters
+        -------------
+        on_what : str
+            the event that the scripts will run on, such as on-build, on-first-run, on-every-run
+        filelist : list[str]
+            the list of script files to run, the path is relative to stage-?/custom
+        
+        '''
+        cmds : list[str] = [
+            "DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\" ",
+            f"echo \"Executing $DIR/_custom-{on_what}.sh\" "
+        ]
+        
+        for file in filelist:
+            cmds.append(f"bash $DIR/../custom/{file}")
+            
+        return '\n'.join(cmds)
+    
+    def _generate_script_files(self, user_config : UserConfig):
+        ''' generate the script files that will run all user scripts
+        
+        parameters
+        -----------
+        user_config : UserConfig
+            the user configuration object
+        '''
+        
+        infos : list[tuple[str, StageConfig]] = [
+            ('stage-1', user_config.stage_1),
+            ('stage-2', user_config.stage_2),
+        ]
+        
+        for name, stage_config in infos:
+            on_build_scripts = stage_config.custom.on_build
+            if on_build_scripts is not None:
+                on_build_script = self._generate_script_text('on-build', on_build_scripts)
+                filename_build = f'{self.m_host_dir}/{name}/generated/_custom-on-build.sh'
+                logging.info(f'Writing to {filename_build}')
+                with open(filename_build, 'w+') as f:
+                    f.write(on_build_script)
+            
+            on_first_run_scripts = stage_config.custom.on_first_run
+            if on_first_run_scripts is not None:
+                on_first_run_script = self._generate_script_text('on-first-run', on_first_run_scripts)
+                filename_first_run = f'{self.m_host_dir}/{name}/generated/_custom-on-first-run.sh'
+                logging.info(f'Writing to {filename_first_run}')
+                with open(filename_first_run, 'w+') as f:
+                    f.write(on_first_run_script)
+            
+            on_every_run_scripts = stage_config.custom.on_every_run
+            if on_every_run_scripts is not None:
+                on_every_run_script = self._generate_script_text('on-every-run', on_every_run_scripts)
+                filename_every_run = f'{self.m_host_dir}/{name}/generated/_custom-on-every-run.sh'
+                logging.info(f'Writing to {filename_every_run}')
+                with open(filename_every_run, 'w+') as f:
+                    f.write(on_every_run_script)    
+            
     
     def process(self):
         ''' process the config and compose template to generate the compose output
@@ -429,6 +486,9 @@ class PeiConfigProcessor:
         
         # apply the stage configuration to the compose template again
         self._apply_config_to_resolved_compose(user_config, compose_resolved)
+        
+        # generate script files
+        self._generate_script_files(user_config)
         
         # strip the x-? from the compose template
         useless_keys = []

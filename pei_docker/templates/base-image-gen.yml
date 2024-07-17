@@ -5,23 +5,27 @@ version: '3'
 x-paths:
   # paths for the installation
   installation_root_host: '???'
-  installation_root_image: '/init-me'
+  installation_root_image: '/pei-init'
 
   # prefixes for the in-container paths
   dir_prefix:
     apps: 'apps'
     data: 'data'
     workspace: 'workspace'
+    image: 'image'
+    volume: 'volume'
 
   # in-container hard storage root
   hard_storage:
-    volume: '/hard/volume'
-    image: '/hard/image'
+    base: '/hard'
+    volume: '${.base}/${..dir_prefix.volume}'
+    image: '${.base}/${..dir_prefix.image}'
   
   soft_storage:
-    apps: '/soft/${..dir_prefix.apps}'
-    data: '/soft/${..dir_prefix.data}'
-    workspace: '/soft/${..dir_prefix.workspace}'
+    base: '/soft'
+    apps: '${.base}/${..dir_prefix.apps}'
+    data: '${.base}/${..dir_prefix.data}'
+    workspace: '${.base}/${..dir_prefix.workspace}'
 
 x-cfg-stage-1:
   paths:    
@@ -41,7 +45,7 @@ x-cfg-stage-1:
     root_password: ''
 
     flags:
-      # install essential apps, by executing /init-me/stage-1/internals/install-essentials.sh
+      # install essential apps, by executing /pei-init/stage-1/internals/install-essentials.sh
       with_essential_apps: true
 
     # ssh configurations
@@ -140,17 +144,14 @@ services:
         INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths._installation_root_host}
         INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._installation_root_image}
 
-        # prefixes
+        # prefixes and paths
         PEI_PREFIX_APPS: ${x-paths.dir_prefix.apps}
         PEI_PREFIX_DATA: ${x-paths.dir_prefix.data}
         PEI_PREFIX_WORKSPACE: ${x-paths.dir_prefix.workspace}
-
-        # paths
-        PEI_HARD_STORAGE_VOLUME: ${x-paths.hard_storage.volume}
-        PEI_HARD_STORAGE_IMAGE: ${x-paths.hard_storage.image}
-        PEI_SOFT_STORAGE_APPS: ${x-paths.soft_storage.apps}
-        PEI_SOFT_STORAGE_DATA: ${x-paths.soft_storage.data}
-        PEI_SOFT_STORAGE_WORKSPACE: ${x-paths.soft_storage.workspace}
+        PEI_PREFIX_VOLUME: ${x-paths.dir_prefix.volume}
+        PEI_PREFIX_IMAGE: ${x-paths.dir_prefix.image}
+        PEI_PATH_HARD: ${x-paths.hard_storage.base}
+        PEI_PATH_SOFT: ${x-paths.soft_storage.base}
 
   stage-1:
     image: ${x-cfg-stage-1.build.output_image_name}

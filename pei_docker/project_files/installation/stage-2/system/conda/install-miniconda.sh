@@ -6,7 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 echo "Executing $DIR/install-miniconda.sh ..."
 
-CONDA_INSTALL_DIR="$X_APPS/miniconda3"
+CONDA_INSTALL_DIR="$PEI_SOFT_APPS/miniconda3"
 
 # check if the cpu is arm64, if yes, use tmp/Miniconda3-latest-Linux-aarch64.sh
 # else use tmp/Miniconda3-latest-Linux-x86_64.sh

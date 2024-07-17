@@ -2,11 +2,11 @@ version: '3'
 
 x-cfg-stage-1:
 
-  # ./installation will be copied to /init-me in the container
+  # ./installation will be copied to /pei-init in the container
   # all paths specified in cfg are the in-container paths
   paths:
     _root_dir_host: ./installation/stage-1
-    _root_dir_container: /init-me/stage-1
+    _root_dir_container: /pei-init/stage-1
 
   build:
     # built image name and tag
@@ -18,10 +18,10 @@ x-cfg-stage-1:
     root_password: ''
 
     apps:
-      # install essential apps, by executing /init-me/stage-1/internals/install-essential-apps.sh
+      # install essential apps, by executing /pei-init/stage-1/internals/install-essential-apps.sh
       with_essential_apps: true
 
-      # install additional apps, by executing /init-me/stage-1/custom/custom-install-apps.sh
+      # install additional apps, by executing /pei-init/stage-1/custom/custom-install-apps.sh
       with_comstom_apps: true
 
     # ssh configurations
@@ -33,7 +33,7 @@ x-cfg-stage-1:
 
       # ssh public key file, if not set, password will be used
       # if you want to use your own key, copy the key to system/ssh/keys and set the file name here, like this
-      # pubkey_file: /init-me/stage-1/system/ssh/keys/mykey.rsa.pub
+      # pubkey_file: /pei-init/stage-1/system/ssh/keys/mykey.rsa.pub
       pubkey_file: ''
 
     proxy:
@@ -51,7 +51,7 @@ x-cfg-stage-1:
       # replace apt source file?
       # use empty string to retain the default source file
       # source_file: ''
-      source_file: '/init-me/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+      source_file: '/pei-init/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
       keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
 
       # use http proxy for apt? 
@@ -66,7 +66,7 @@ x-cfg-stage-1:
 x-cfg-stage-2:
   paths:
     _root_dir_host: ./installation/stage-2
-    _root_dir_container: /init-me/stage-2
+    _root_dir_container: /pei-init/stage-2
 
     # in-container paths
     _hard_apps: /hard/volume/apps

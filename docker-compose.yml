@@ -25,7 +25,7 @@ services:
         WITH_ESSENTIAL_APPS: true
         WITH_CUSTOM_APPS: true
         INSTALL_DIR_HOST_2: ./installation/stage-2
-        INSTALL_DIR_CONTAINER_2: /init-me/stage-2
+        INSTALL_DIR_CONTAINER_2: /pei-init/stage-2
   stage-1:
     image: my_image:stage-1
     stdin_open: true
@@ -53,14 +53,14 @@ services:
         SSH_USER_NAME: me
         SSH_USER_PASSWORD: 123456
         SSH_PUBKEY_FILE: ''
-        APT_SOURCE_FILE: /init-me/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list
+        APT_SOURCE_FILE: /pei-init/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list
         KEEP_APT_SOURCE_FILE: true
         APT_USE_PROXY: false
         APT_KEEP_PROXY: false
         USER_HTTP_PROXY: http://host.docker.internal:7890
         USER_HTTPS_PROXY: http://host.docker.internal:7890
         INSTALL_DIR_HOST_1: ./installation/stage-1
-        INSTALL_DIR_CONTAINER_1: /init-me/stage-1
+        INSTALL_DIR_CONTAINER_1: /pei-init/stage-1
         ROOT_PASSWORD: ''
 volumes:
   apt-cache: null
