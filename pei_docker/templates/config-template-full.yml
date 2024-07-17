@@ -41,7 +41,7 @@ stage_1:
   # additional environment variables
   # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
   environment:
-    EXAMPLE_VAR_STAGE_1: 'example env var'
+    - 'EXAMPLE_VAR_STAGE_1=example env var'
 
   # additional port mapping
   # see https://docs.docker.com/compose/networking/
@@ -77,8 +77,8 @@ stage_2:
 
   # additional environment variables
   # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
-  environment:
-    EXAMPLE_VAR_STAGE_2: 'example env var'
+  environment:  # use list intead of dict
+    - 'EXAMPLE_VAR_STAGE_2=example env var'
 
   # port mapping, will be appended to the stage-1 port mapping
   # see https://docs.docker.com/compose/networking/
@@ -86,7 +86,7 @@ stage_2:
 
   # device settings, will override the stage-1 device settings
   device:
-    type: cpu # can be cpu or gpu
+    type: gpu # can be cpu or gpu
 
   # storage configurations
   storage:

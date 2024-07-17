@@ -6,6 +6,7 @@ from pei_docker.user_config import *
 
 import omegaconf as oc
 from omegaconf import DictConfig
+
 import cattrs
 
 logging.basicConfig(level=logging.INFO)
@@ -321,17 +322,29 @@ class PeiConfigProcessor:
             (user_config.stage_2, oc.OmegaConf.select(compose_template, 'services.stage-2')),
         ]
         
+        # this will accumulate from stage 1 to stage 2
+        port_dict : dict[int, int] = {}
+        env_dict : dict[str, str] = {}
+        
         for ith_stage, _data in enumerate(stages):
             stage_config, stage_compose = _data
-        
-            # TODO: add ssh port mapping here
+                        
             # port mapping
-            port_strings : list[str] = stage_config.ports
+            if stage_config.ports is not None:
+                _port_dict = port_mapping_str_to_dict(stage_config.ports)
+                port_dict.update(_port_dict)
+            
+            if stage_config.ssh is not None and stage_config.ssh.host_port is not None:
+                port_dict[stage_config.ssh.host_port] = stage_config.ssh.port
+            port_strings = port_mapping_dict_to_str(port_dict)
             oc.OmegaConf.update(stage_compose, 'ports', port_strings)
             
             # environment variables
-            env_strings : list[str] = [f'{k}={v}' for k, v in stage_config.environment.items()]
-            oc.OmegaConf.update(stage_compose, 'environment', env_strings)
+            if stage_config.environment is not None:
+                _env_dict = stage_config.get_environment_as_dict()
+                env_dict.update(_env_dict)
+            # env_strings : list[str] = [f'{k}={v}' for k, v in env_dict.items()]
+            oc.OmegaConf.update(stage_compose, 'environment', env_dict)
             
             # stage 2 storage
             if ith_stage == 0:
@@ -379,10 +392,19 @@ class PeiConfigProcessor:
         # user_cfg = oc.OmegaConf.load(fn_config)
         # compose_cfg = oc.OmegaConf.load(fn_template)
         
-        user_config : UserConfig = cattrs.structure(oc.OmegaConf.to_container(self.m_config, resolve=True), UserConfig)
-        compose_template : DictConfig = self.m_compose_template.copy()
+        config_dict = oc.OmegaConf.to_container(self.m_config, resolve=True)
         
-        # set the x-cfg-stage-? to the compose template
+        # convert environment from list to dict
+        for stage in ['stage_1', 'stage_2']:
+            env = config_dict[stage]['environment']
+            if env is not None and isinstance(env, list):
+                config_dict[stage]['environment'] = env_str_to_dict(env)
+        
+        # parse the user config
+        user_config : UserConfig = cattrs.structure(config_dict, UserConfig)
+        
+        # apply the user config to the compose template
+        compose_template : DictConfig = self.m_compose_template.copy()
         self._process_config_and_apply_x_compose(user_config, compose_template)
         
         # resolve the compose template
@@ -392,7 +414,7 @@ class PeiConfigProcessor:
                                                   structured_config_mode=oc.SCMode.DICT_CONFIG)
         compose_resolved = oc.OmegaConf.create(_resolve_dict)
         
-        # apply the stage configuration to the compose template
+        # apply the stage configuration to the compose template again
         self._apply_config_to_resolved_compose(user_config, compose_resolved)
         
         # strip the x-? from the compose template
@@ -404,5 +426,4 @@ class PeiConfigProcessor:
             del compose_resolved[key]
             
         # resolve the compose template
-        
         self.m_compose_output = compose_resolved

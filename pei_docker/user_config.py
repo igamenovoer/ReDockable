@@ -16,7 +16,32 @@ __all__ = [
     'StageConfig',
     'StorageTypes',
     'UserConfig',
+    'port_mapping_str_to_dict',
+    'port_mapping_dict_to_str',
+    'env_str_to_dict',
+    'env_dict_to_str',
 ]
+
+def port_mapping_str_to_dict(port_mapping : list[str]) -> dict[int, int]:
+    ''' get port mapping from a list of strings in the format 'host:container' to a dict,
+    mapping host port to container port
+    '''
+    return {int(x.split(':')[0]): int(x.split(':')[1]) for x in port_mapping}
+    
+def port_mapping_dict_to_str(port_mapping: dict[int, int]) -> list[str]:
+    ''' get port mapping from a dict mapping host port to container port to a list of strings in the format 'host:container'
+    '''
+    return [f'{k}:{v}' for k, v in port_mapping.items()]
+
+def env_str_to_dict(env_list: list[str]) -> dict[str, str]:
+    ''' get environment variables from a list of strings in the format 'key=value' to a dict
+    '''
+    return {x.split('=')[0]: x.split('=')[1] for x in env_list}
+
+def env_dict_to_str(env_dict: dict[str, str]) -> list[str]:
+    ''' get environment variables from a dict to a list of strings in the format 'key=value'
+    '''
+    return [f'{k}={v}' for k, v in env_dict.items()]
 
 @define(kw_only=True)
 class ImageConfig:
@@ -86,17 +111,45 @@ class StorageOption:
         if self.type == 'host' and self.host_path is None:
             raise ValueError('host_path must be provided for host storage')
 
+def env_converter(x : list[str] | dict[str, str] | None) -> dict[str, str] | None:
+    ''' convert environment variable from list to dict
+    '''
+    if x is None:
+        return None
+    if isinstance(x, list):
+        return env_str_to_dict(x)
+    else:
+        return x
 @define(kw_only=True)
 class StageConfig:
     image : ImageConfig | None = field(default=None)
     ssh : SSHConfig | None = field(default=None)
     proxy : ProxyConfig | None = field(default=None)
     apt : AptConfig | None = field(default=None)
-    environment : dict[str, str] | None = field(factory=dict)
+    environment : dict[str,str] | None = field(factory=None, converter=env_converter)
     ports : list[str] | None = field(factory=list)  # list of port mappings in docker format (e.g. 8080:80)
     device : DeviceConfig | None = field(default=None)
     custom : CustomScriptConfig | None = field(default=None)
     storage : dict[str, StorageOption] | None = field(factory=dict)
+    
+    def get_port_mapping_as_dict(self) -> dict[int, int]:
+        ''' get port mapping as a dict mapping host port to container port
+        '''
+        if self.ports is not None:
+            return port_mapping_str_to_dict(self.ports)
+        
+    def set_port_mapping_from_dict(self, port_mapping: dict[int, int]):
+        ''' set port mapping from a dict mapping host port to container port
+        '''
+        self.ports = port_mapping_dict_to_str(port_mapping)
+        
+    def get_environment_as_dict(self) -> dict[str, str]:
+        ''' get environment variables as a dict
+        '''
+        if self.environment is not None and isinstance(self.environment, list):
+            return env_str_to_dict(self.environment)
+        else:
+            return self.environment
     
 @define(kw_only=True)
 class UserConfig:

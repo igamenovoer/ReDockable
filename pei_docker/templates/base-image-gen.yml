@@ -167,7 +167,7 @@ services:
           devices: '${x-sections.run-with-device[${x-cfg-stage-1.run.device}]}'
 
     # user provided environments
-    environment: []
+    environment: {}
 
     # required to use proxy
     extra_hosts:
