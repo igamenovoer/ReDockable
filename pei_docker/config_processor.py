@@ -1,14 +1,12 @@
 # main command of PeiDocker utility
 import os
 import logging
-from rich import print
-from pei_docker.user_config import *
-
 import omegaconf as oc
 from omegaconf import DictConfig
 from attrs import define, field
-
 import cattrs
+
+from pei_docker.user_config import *
 
 logging.basicConfig(level=logging.INFO)
 

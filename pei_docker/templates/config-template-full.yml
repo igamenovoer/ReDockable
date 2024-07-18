@@ -4,7 +4,7 @@ stage_1:
   # input/output image settings
   image:
     base: ubuntu:22.04
-    output: my_image:stage-1
+    output: pei-image:stage-1
 
   # ssh settings
   ssh:
@@ -16,6 +16,9 @@ stage_1:
     users:
       me:
         password: '123456'
+
+        # public key file path, relative to the installation directory
+        # e.g., 'stage-1/system/ssh/keys/mykey.rsa.pub'
         pubkey_file: null
       you:
         password: '654321'
@@ -33,7 +36,9 @@ stage_1:
 
   # apt settings
   apt:
-    repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    # replace the default apt source with a custom one, use empty string to disable this
+    # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    repo_source: ''
     keep_repo_after_build: true # keep the apt source file after build?
     use_proxy: false  # use proxy for apt?
     keep_proxy_after_build: false # keep proxy settings after build?
@@ -73,8 +78,8 @@ stage_2:
 
   # input/output image settings
   image:
-    base: my_image:stage-1
-    output: my_image:stage-2
+    base: pei-image:stage-1
+    output: pei-image:stage-2
 
   # additional environment variables
   # see https://docs.docker.com/compose/environment-variables/set-environment-variables/

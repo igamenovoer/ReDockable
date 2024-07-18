@@ -1,8 +1,5 @@
-import omegaconf as oc
 from attrs import define, field
 import attrs.validators as av
-import cattrs
-from rich import print
 
 __all__ = [
     'ImageConfig',
@@ -158,9 +155,3 @@ class StageConfig:
 class UserConfig:
     stage_1 : StageConfig | None = field(default=None)
     stage_2 : StageConfig | None = field(default=None)
-    
-# fn_config = r'templates/config-template-full.yml'
-# cfg = oc.OmegaConf.load(fn_config)
-# cfg_dict = oc.OmegaConf.to_container(cfg, resolve=True, throw_on_missing=False)
-# # cfg_struct = UserConfig(**cfg_dict)
-# cfg_struct = cattrs.structure_attrs_fromdict(cfg_dict, UserConfig)

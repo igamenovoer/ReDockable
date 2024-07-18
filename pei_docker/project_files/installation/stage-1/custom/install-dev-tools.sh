@@ -9,6 +9,7 @@ echo "running $DIR/$FILENAME"
 
 # install dev tools
 export DEBIAN_FRONTEND=noninteractive
+export TZ=Asia/Shanghai
 
 # for general development
 apt-get install python3 python3-pip -y
