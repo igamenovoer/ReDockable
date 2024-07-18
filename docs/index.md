@@ -172,7 +172,7 @@ Here are the options you can set in `user_config.yml`:
     custom:
         # scripts run during build
         on_build: 
-        - 'stage-1/custom/install-dev-tools.sh'
+        - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
         - 'stage-1/custom/my-build-1.sh'
         - 'stage-1/custom/my-build-2.sh'
 
@@ -209,17 +209,17 @@ Here are the options you can set in `user_config.yml`:
     # storage configurations
     storage:
         app:
-        type: auto-volume # auto-volume, manual-volume, host, image
-        host_path: null # host directory to be mounted, in effect when type=host
-        volume_name: null # volume name, in effect when type=manual-volume
+            type: auto-volume # auto-volume, manual-volume, host, image
+            host_path: null # host directory to be mounted, in effect when type=host
+            volume_name: null # volume name, in effect when type=manual-volume
         data:
-        type: auto-volume
-        host_path: null
-        volume_name: null
+            type: auto-volume
+            host_path: null
+            volume_name: null
         workspace:
-        type: auto-volume
-        host_path: null
-        volume_name: null
+            type: auto-volume
+            host_path: null
+            volume_name: null
 
     # custom scripts in stage-2, run after stage-1 custom scripts
     custom:

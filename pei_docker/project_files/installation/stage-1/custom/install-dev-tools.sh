@@ -13,11 +13,14 @@ export TZ=Asia/Shanghai
 
 # for general development
 apt-get install python3 python3-pip -y
-apt-get install git net-tools curl tmux -y
 apt-get install cmake cmake-curses-gui pkg-config -y
-
-# for x11 remote
-apt-get install xauth xvfb x11vnc x11-apps qimgv -y
+apt-get install qimgv -y
 
 # you need these to make opencv work
 apt-get install ffmpeg libsm6 libxext6 -y
+
+# for x11 remote
+apt-get install xauth x11-apps -y
+
+# for vnc
+# apt-get install xauth xvfb x11vnc -y

@@ -146,8 +146,9 @@ class PeiConfigProcessor:
             raise FileNotFoundError(f'Repo source path {_repo_path_host} not found')
         
         # set it to the compose template
-        _repo_path_container = self.m_container_dir + '/' + repo_source
-        oc_set(build_compose, 'apt.source_file', _repo_path_container)
+        if repo_source is not None and len(repo_source) > 0:
+            _repo_path_container = self.m_container_dir + '/' + repo_source
+            oc_set(build_compose, 'apt.source_file', _repo_path_container)
         
         # keep repo after build?
         keep_repo = bool(apt_config.keep_repo_after_build)  # convert to bool explicitly in case it's None

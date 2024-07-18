@@ -60,7 +60,7 @@ stage_1:
   custom:
     # scripts run during build
     on_build: 
-      - 'stage-1/custom/install-dev-tools.sh'
+      - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
       - 'stage-1/custom/my-build-1.sh'
       - 'stage-1/custom/my-build-2.sh'
 
