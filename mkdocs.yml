@@ -1,7 +1,7 @@
 site_name: PeiDocker
 
 nav:
-- Home: index.md
-- About: about.md
+- Introduction: index.md
+- Examples: examples.md
 
 theme: readthedocs

@@ -110,130 +110,132 @@ Inside your project directory, you will find the following files and directories
 
 Here are the options you can set in `user_config.yml`:
 
-    # all paths are relative to /installation directory
+```yaml
+# all paths are relative to /installation directory
 
-    stage_1:
-    # input/output image settings
-    image:
-        base: ubuntu:22.04
-        output: pei-image:stage-1
+stage_1:
+# input/output image settings
+image:
+    base: ubuntu:22.04
+    output: pei-image:stage-1
 
-    # ssh settings
-    ssh:
-        enable: true
-        port: 22  # port in container
-        host_port: 2222  # port in host
+# ssh settings
+ssh:
+    enable: true
+    port: 22  # port in container
+    host_port: 2222  # port in host
 
-        # ssh users, the key is user name, value is user info
-        users:
-            me:
-                password: '123456'
+    # ssh users, the key is user name, value is user info
+    users:
+        me:
+            password: '123456'
 
-                # public key file path, relative to the installation directory
-                # e.g., 'stage-1/system/ssh/keys/mykey.rsa.pub'
-                pubkey_file: null
-            you:
-                password: '654321'
-                pubkey_file: null
-            root: # you can configure root user here
-                password: root
-                pubkey_file: null
+            # public key file path, relative to the installation directory
+            # e.g., 'stage-1/system/ssh/keys/mykey.rsa.pub'
+            pubkey_file: null
+        you:
+            password: '654321'
+            pubkey_file: null
+        root: # you can configure root user here
+            password: root
+            pubkey_file: null
 
-    # proxy settings
-    # inside the container, the proxy will accessed as http://{address}:{port}
-    # note that whether the proxy is used or not depends on the applications
-    proxy:
-        address: host.docker.internal # default value, this will map to the host machine
-        port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+# proxy settings
+# inside the container, the proxy will accessed as http://{address}:{port}
+# note that whether the proxy is used or not depends on the applications
+proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
 
-    # apt settings
-    apt:
-        # replace the default apt source with a custom one, use empty string to disable this
-        # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
-        repo_source: ''
-        keep_repo_after_build: true # keep the apt source file after build?
-        use_proxy: false  # use proxy for apt?
-        keep_proxy_after_build: false # keep proxy settings after build?
+# apt settings
+apt:
+    # replace the default apt source with a custom one, use empty string to disable this
+    # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    repo_source: ''
+    keep_repo_after_build: true # keep the apt source file after build?
+    use_proxy: false  # use proxy for apt?
+    keep_proxy_after_build: false # keep proxy settings after build?
 
-    # additional environment variables
-    # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
-    environment:
-        - 'EXAMPLE_VAR_STAGE_1=example env var'
+# additional environment variables
+# see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+environment:
+    - 'EXAMPLE_VAR_STAGE_1=example env var'
 
-    # additional port mapping
-    # see https://docs.docker.com/compose/networking/
-    ports: []
+# additional port mapping
+# see https://docs.docker.com/compose/networking/
+ports: []
 
-    # device settings
-    device:
-        type: cpu # can be cpu or gpu
+# device settings
+device:
+    type: cpu # can be cpu or gpu
 
-    # custom scripts
-    custom:
-        # scripts run during build
-        on_build: 
-        - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
-        - 'stage-1/custom/my-build-1.sh'
-        - 'stage-1/custom/my-build-2.sh'
+# custom scripts
+custom:
+    # scripts run during build
+    on_build: 
+    - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
+    - 'stage-1/custom/my-build-1.sh'
+    - 'stage-1/custom/my-build-2.sh'
 
-        # scripts run on first run
-        on_first_run:
-        - 'stage-1/custom/my-on-first-run-1.sh'
-        - 'stage-1/custom/my-on-first-run-2.sh'
+    # scripts run on first run
+    on_first_run:
+    - 'stage-1/custom/my-on-first-run-1.sh'
+    - 'stage-1/custom/my-on-first-run-2.sh'
 
-        # scripts run on every run
-        on_every_run:
-        - 'stage-1/custom/my-on-every-run-1.sh'
-        - 'stage-1/custom/my-on-every-run-2.sh'
-        
-    stage_2:
+    # scripts run on every run
+    on_every_run:
+    - 'stage-1/custom/my-on-every-run-1.sh'
+    - 'stage-1/custom/my-on-every-run-2.sh'
+    
+stage_2:
 
-    # input/output image settings
-    image:
-        base: pei-image:stage-1
-        output: pei-image:stage-2
+# input/output image settings
+image:
+    base: pei-image:stage-1
+    output: pei-image:stage-2
 
-    # additional environment variables
-    # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
-    environment:  # use list intead of dict
-        - 'EXAMPLE_VAR_STAGE_2=example env var'
+# additional environment variables
+# see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+environment:  # use list intead of dict
+    - 'EXAMPLE_VAR_STAGE_2=example env var'
 
-    # port mapping, will be appended to the stage-1 port mapping
-    # see https://docs.docker.com/compose/networking/
-    ports: []    
+# port mapping, will be appended to the stage-1 port mapping
+# see https://docs.docker.com/compose/networking/
+ports: []    
 
-    # device settings, will override the stage-1 device settings
-    device:
-        type: gpu # can be cpu or gpu
+# device settings, will override the stage-1 device settings
+device:
+    type: gpu # can be cpu or gpu
 
-    # storage configurations
-    storage:
-        app:
-            type: auto-volume # auto-volume, manual-volume, host, image
-            host_path: null # host directory to be mounted, in effect when type=host
-            volume_name: null # volume name, in effect when type=manual-volume
-        data:
-            type: auto-volume
-            host_path: null
-            volume_name: null
-        workspace:
-            type: auto-volume
-            host_path: null
-            volume_name: null
+# storage configurations
+storage:
+    app:
+        type: auto-volume # auto-volume, manual-volume, host, image
+        host_path: null # host directory to be mounted, in effect when type=host
+        volume_name: null # volume name, in effect when type=manual-volume
+    data:
+        type: auto-volume
+        host_path: null
+        volume_name: null
+    workspace:
+        type: auto-volume
+        host_path: null
+        volume_name: null
 
-    # custom scripts in stage-2, run after stage-1 custom scripts
-    custom:
-        # scripts run during build
-        on_build: 
-        - 'stage-2/custom/my-build-1.sh'
-        - 'stage-2/custom/my-build-2.sh'
+# custom scripts in stage-2, run after stage-1 custom scripts
+custom:
+    # scripts run during build
+    on_build: 
+    - 'stage-2/custom/my-build-1.sh'
+    - 'stage-2/custom/my-build-2.sh'
 
-        # scripts run on first start
-        on_first_run:
-        - 'stage-2/custom/my-on-first-run-1.sh'
-        - 'stage-2/custom/my-on-first-run-2.sh'
+    # scripts run on first start
+    on_first_run:
+    - 'stage-2/custom/my-on-first-run-1.sh'
+    - 'stage-2/custom/my-on-first-run-2.sh'
 
-        # scripts run on every start
-        on_every_run:
-        - 'stage-2/custom/my-on-every-run-1.sh'
-        - 'stage-2/custom/my-on-every-run-2.sh'
+    # scripts run on every start
+    on_every_run:
+    - 'stage-2/custom/my-on-every-run-1.sh'
+    - 'stage-2/custom/my-on-every-run-2.sh'
+```
