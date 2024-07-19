@@ -126,7 +126,7 @@ class StageConfig:
     ssh : SSHConfig | None = field(default=None)
     proxy : ProxyConfig | None = field(default=None)
     apt : AptConfig | None = field(default=None)
-    environment : dict[str,str] | None = field(factory=None, converter=env_converter)
+    environment : dict[str,str] | None = field(default=None, converter=env_converter)
     ports : list[str] | None = field(factory=list)  # list of port mappings in docker format (e.g. 8080:80)
     device : DeviceConfig | None = field(default=None)
     custom : CustomScriptConfig | None = field(default=None)

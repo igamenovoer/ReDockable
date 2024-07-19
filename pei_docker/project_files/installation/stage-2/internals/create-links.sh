@@ -36,9 +36,9 @@ for source in $link_source; do
         fi
     fi
 
-    # if X_STORAGE_CHOICE is volume_first, link source to target_volume if target_volume exists,
+    # if X_STORAGE_CHOICE is volume-first, link source to target_volume if target_volume exists,
     # otherwise link source to target_image
-    if [ "$X_STORAGE_CHOICE" == "volume_first" ]; then
+    if [ "$X_STORAGE_CHOICE" == "volume-first" ]; then
         if [ -d "$target_volume" ]; then
             echo "Linking $source to $target_volume"
             ln -s $target_volume $source
@@ -49,9 +49,9 @@ for source in $link_source; do
         continue
     fi
 
-    # if X_STORAGE_CHOICE is image_first, link source to target_image if target_image exists,
+    # if X_STORAGE_CHOICE is image-first, link source to target_image if target_image exists,
     # otherwise link source to target_volume
-    if [ "$X_STORAGE_CHOICE" == "image_first" ]; then
+    if [ "$X_STORAGE_CHOICE" == "image-first" ]; then
         if [ -d "$target_image" ]; then
             echo "Linking $source to $target_image"
             ln -s $target_image $source

@@ -88,5 +88,5 @@ ENTRYPOINT [ "/entrypoint.sh" ]
 
 # install apps to the image
 # FROM default AS store-in-image
-# ENV X_STORAGE_CHOICE="image_first"
+# ENV X_STORAGE_CHOICE="image-first"
 # RUN /installation/scripts/create-links.sh

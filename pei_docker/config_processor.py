@@ -47,7 +47,10 @@ class Defaults:
     Stage1_ImageName='pei-image:stage-1'
     Stage2_ImageName='pei-image:stage-2'
     Stage1_BaseImageName='ubuntu:22.04'
-    RunDevice='cpu'
+    RunDevice='cpu'    
+    SpecialAptSources : list[str] = [
+        'tuna','aliyun','163','ustc','cn'
+    ]
     
 @define(kw_only=True)
 class GeneratedScripts:
@@ -140,15 +143,17 @@ class PeiConfigProcessor:
         oc_set = oc.OmegaConf.update
         repo_source = apt_config.repo_source
         
-        # check if the repo path exists
-        _repo_path_host = f'{self.m_project_dir}/{self.m_host_dir}/{repo_source}'
-        if not os.path.exists(_repo_path_host):
-            raise FileNotFoundError(f'Repo source path {_repo_path_host} not found')
-        
-        # set it to the compose template
         if repo_source is not None and len(repo_source) > 0:
-            _repo_path_container = self.m_container_dir + '/' + repo_source
-            oc_set(build_compose, 'apt.source_file', _repo_path_container)
+            if repo_source in Defaults.SpecialAptSources:
+                oc_set(build_compose, 'apt.source_file', repo_source)
+            else:
+                # check if the repo path exists
+                _repo_path_host = f'{self.m_project_dir}/{self.m_host_dir}/{repo_source}'
+                if not os.path.exists(_repo_path_host):
+                    raise FileNotFoundError(f'Repo source path {_repo_path_host} not found')
+                
+                _repo_path_container = self.m_container_dir + '/' + repo_source
+                oc_set(build_compose, 'apt.source_file', _repo_path_container)
         
         # keep repo after build?
         keep_repo = bool(apt_config.keep_repo_after_build)  # convert to bool explicitly in case it's None
@@ -281,6 +286,8 @@ class PeiConfigProcessor:
         
         for ith_stage, _configs in enumerate(user_compose_obj):
             _stage, _compose = _configs
+            if _stage is None:
+                continue
             
             build_compose = oc_get(_compose, 'build')
             run_compose = oc_get(_compose, 'run')
@@ -315,9 +322,8 @@ class PeiConfigProcessor:
                 self._check_custom_scripts(custom_config)
                 
             # device
-            device_type : str = _stage.device.type
-            if device_type is not None:
-                oc_set(run_compose, 'device', device_type)
+            if _stage.device is not None and _stage.device.type is not None:
+                oc_set(run_compose, 'device', _stage.device.type)
         
     def _apply_config_to_resolved_compose(self, user_config : UserConfig, compose_template : DictConfig):
         ''' apply the stage configuration to the compose template of that stage
@@ -341,6 +347,8 @@ class PeiConfigProcessor:
         
         for ith_stage, _data in enumerate(stages):
             stage_config, stage_compose = _data
+            if stage_config is None:
+                continue
                         
             # port mapping
             if stage_config.ports is not None:
@@ -392,7 +400,7 @@ class PeiConfigProcessor:
                 # write to compose
                 oc.OmegaConf.update(stage_compose, 'volumes', vol_strings)
         
-    def _generate_script_text(self, on_what:str, filelist : list[str]) -> str:
+    def _generate_script_text(self, on_what:str, filelist : list[str] | None) -> str:
         ''' generate the script commands that will run all user scripts
         
         parameters
@@ -408,8 +416,9 @@ class PeiConfigProcessor:
             f"echo \"Executing $DIR/_custom-{on_what}.sh\" "
         ]
         
-        for file in filelist:
-            cmds.append(f"bash $DIR/../../{file}")
+        if filelist:
+            for file in filelist:
+                cmds.append(f"bash $DIR/../../{file}")
             
         return '\n'.join(cmds)
     
@@ -428,33 +437,44 @@ class PeiConfigProcessor:
         ]
         
         for name, stage_config in infos:
-            on_build_scripts = stage_config.custom.on_build
-            if on_build_scripts is not None:
-                on_build_script = self._generate_script_text('on-build', on_build_scripts)
-                filename_build = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-build.sh'
-                logging.info(f'Writing to {filename_build}')
-                with open(filename_build, 'w+') as f:
-                    f.write(on_build_script)
+            if stage_config is None or stage_config.custom is None:
+                # if the stage or custom section is not provided, we still need to generate the empty script files
+                on_build_list = []
+                on_first_run_list = []
+                on_every_run_list = []
+            else:
+                on_build_list = stage_config.custom.on_build
+                on_first_run_list = stage_config.custom.on_first_run
+                on_every_run_list = stage_config.custom.on_every_run
             
-            on_first_run_scripts = stage_config.custom.on_first_run
-            if on_first_run_scripts is not None:
-                on_first_run_script = self._generate_script_text('on-first-run', on_first_run_scripts)
-                filename_first_run = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-first-run.sh'
-                logging.info(f'Writing to {filename_first_run}')
-                with open(filename_first_run, 'w+') as f:
-                    f.write(on_first_run_script)
+            on_build_script = self._generate_script_text('on-build', on_build_list)
+            filename_build = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-build.sh'
+            logging.info(f'Writing to {filename_build}')
+            with open(filename_build, 'w+') as f:
+                f.write(on_build_script)
             
-            on_every_run_scripts = stage_config.custom.on_every_run
-            if on_every_run_scripts is not None:
-                on_every_run_script = self._generate_script_text('on-every-run', on_every_run_scripts)
-                filename_every_run = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-every-run.sh'
-                logging.info(f'Writing to {filename_every_run}')
-                with open(filename_every_run, 'w+') as f:
-                    f.write(on_every_run_script)    
+            on_first_run_script = self._generate_script_text('on-first-run', on_first_run_list)
+            filename_first_run = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-first-run.sh'
+            logging.info(f'Writing to {filename_first_run}')
+            with open(filename_first_run, 'w+') as f:
+                f.write(on_first_run_script)
+            
+            on_every_run_script = self._generate_script_text('on-every-run', on_every_run_list)
+            filename_every_run = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-every-run.sh'
+            logging.info(f'Writing to {filename_every_run}')
+            with open(filename_every_run, 'w+') as f:
+                f.write(on_every_run_script)    
             
     
-    def process(self, remove_extra : bool = True) -> DictConfig:
+    def process(self, remove_extra : bool = True, generate_custom_script_files : bool = True) -> DictConfig:
         ''' process the config and compose template to generate the compose output
+        
+        parameters
+        ------------
+        remove_extra : bool
+            whether to remove the x-? keys from the compose output
+        generate_custom_script_files : bool
+            whether to generate the script files for the user to run
         
         return
         -----------
@@ -474,6 +494,8 @@ class PeiConfigProcessor:
         
         # convert environment from list to dict
         for stage in ['stage_1', 'stage_2']:
+            if stage not in config_dict or 'environment' not in config_dict[stage]:
+                continue
             env = config_dict[stage]['environment']
             if env is not None and isinstance(env, list):
                 config_dict[stage]['environment'] = env_str_to_dict(env)
@@ -496,7 +518,8 @@ class PeiConfigProcessor:
         self._apply_config_to_resolved_compose(user_config, compose_resolved)
         
         # generate script files
-        self._generate_script_files(user_config)
+        if generate_custom_script_files:
+            self._generate_script_files(user_config)
         
         # strip the x-? from the compose template
         if remove_extra:

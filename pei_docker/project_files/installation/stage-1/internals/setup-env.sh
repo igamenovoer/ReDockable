@@ -35,6 +35,53 @@ if [ -n "$APT_SOURCE_FILE" ]; then
   # backup the original sources.list
   cp /etc/apt/sources.list /etc/apt/sources.list.bak
 
-  # copy the new sources.list
-  cp $APT_SOURCE_FILE /etc/apt/sources.list
+  # check for special values
+  # if APT_SOURCE_FILE is 'tuna', use tuna mirrors
+  # replace archive.ubuntu.com with mirrors.tuna.tsinghua.edu.cn
+  if [ "$APT_SOURCE_FILE" = "tuna" ]; then
+    echo "Using tuna mirrors"
+
+    # replace normal sources and security sources
+    sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
+    
+  # if APT_SOURCE_FILE is 'aliyun', use aliyun mirrors
+  # replace archive.ubuntu.com with mirrors.aliyun.com
+  elif [ "$APT_SOURCE_FILE" = "aliyun" ]; then
+    echo "Using aliyun mirrors"
+
+    # replace normal sources and security sources
+    sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+
+  # if APT_SOURCE_FILE is '163', use 163 mirrors
+  # replace archive.ubuntu.com with mirrors.163.com
+  elif [ "$APT_SOURCE_FILE" = "163" ]; then
+    echo "Using 163 mirrors"
+
+    # replace normal sources and security sources
+    sed -i 's/archive.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list
+
+  # if APT_SOURCE_FILE is 'ustc', use ustc mirrors
+  # replace archive.ubuntu.com with mirrors.ustc.edu.cn
+  elif [ "$APT_SOURCE_FILE" = "ustc" ]; then
+    echo "Using ustc mirrors"
+
+    # replace normal sources and security sources
+    sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+  
+  # if APT_SOURCE_FILE is 'cn', use cn mirrors
+  # replace archive.ubuntu.com with cn.archive.ubuntu.com
+  elif [ "$APT_SOURCE_FILE" = "cn" ]; then
+    echo "Using cn mirrors"
+
+    # replace normal sources and security sources
+    sed -i 's/archive.ubuntu.com/cn.archive.ubuntu.com/g' /etc/apt/sources.list
+    sed -i 's/security.ubuntu.com/cn.archive.ubuntu.com/g' /etc/apt/sources.list
+  else
+    # copy the new sources.list
+    cp $APT_SOURCE_FILE /etc/apt/sources.list
+  fi
 fi

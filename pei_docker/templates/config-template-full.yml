@@ -38,6 +38,12 @@ stage_1:
   apt:
     # replace the default apt source with a custom one, use empty string to disable this
     # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    # special values that refer to well known apt sources:
+    # 'tuna' : 'http://mirrors.tuna.tsinghua.edu.cn/ubuntu/'
+    # 'aliyun' : 'http://mirrors.aliyun.com/ubuntu/'
+    # '163' : 'http://mirrors.163.com/ubuntu/'
+    # 'ustc' : 'http://mirrors.ustc.edu.cn/ubuntu/'
+    # 'cn' : 'http://cn.archive.ubuntu.com/ubuntu/
     repo_source: ''
     keep_repo_after_build: true # keep the apt source file after build?
     use_proxy: false  # use proxy for apt?
@@ -113,6 +119,7 @@ stage_2:
   custom:
     # scripts run during build
     on_build: 
+      - 'stage-2/custom/install-gui-tools.sh' # just an example, you can safely remove this
       - 'stage-2/custom/my-build-1.sh'
       - 'stage-2/custom/my-build-2.sh'
 

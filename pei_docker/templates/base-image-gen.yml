@@ -77,6 +77,12 @@ x-cfg-stage-1:
     apt:
       # replace apt source file? absolute path inside the container
       # source_file: '${x-paths.installation_root_image}/stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+      # special values that refer to well known apt sources:
+      # 'tuna' : 'http://mirrors.tuna.tsinghua.edu.cn/ubuntu/'
+      # 'aliyun' : 'http://mirrors.aliyun.com/ubuntu/'
+      # '163' : 'http://mirrors.163.com/ubuntu/'
+      # 'ustc' : 'http://mirrors.ustc.edu.cn/ubuntu/'
+      # 'cn' : 'http://cn.archive.ubuntu.com/ubuntu/
       source_file: ''
       keep_source_file: true  # retain apt source file after build? If false, source file will be removed after build
 
