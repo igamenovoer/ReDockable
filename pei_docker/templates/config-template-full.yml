@@ -3,7 +3,7 @@
 stage_1:
   # input/output image settings
   image:
-    base: ubuntu:22.04
+    base: ubuntu:latest
     output: pei-image:stage-1
 
   # ssh settings
@@ -84,7 +84,7 @@ stage_2:
 
   # input/output image settings
   image:
-    base: pei-image:stage-1
+    base: null  # if not specified, use the output image of stage-1
     output: pei-image:stage-2
 
   # additional environment variables
@@ -98,7 +98,7 @@ stage_2:
 
   # device settings, will override the stage-1 device settings
   device:
-    type: gpu # can be cpu or gpu
+    type: cpu # can be cpu or gpu
 
   # storage configurations
   storage:

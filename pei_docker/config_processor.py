@@ -199,45 +199,53 @@ class PeiConfigProcessor:
         oc_get = oc.OmegaConf.select
         oc_set = oc.OmegaConf.update
         
+        if ssh_config is None:
+            ssh_config = SSHConfig()
+            ssh_config.enable = False
+            ssh_config.host_port = None
+        
         # set ssh
         enable_ssh = ssh_config.enable
-        if enable_ssh:
-            # in-container port
-            ssh_port = ssh_config.port
-            oc_set(build_compose, 'ssh.port', ssh_port)
+        
+        # if enable_ssh:
+        oc_set(build_compose, 'ssh.enable', enable_ssh)
+        
+        # in-container port
+        ssh_port = ssh_config.port
+        oc_set(build_compose, 'ssh.port', ssh_port)
+        
+        # users
+        ssh_users = ssh_config.users
+        _ssh_names : list[str] = []
+        _ssh_pwds : list[str] = []
+        _ssh_pubkeys : list[str] = []
+        for name, info in ssh_users.items():
+            _ssh_names.append(name)
             
-            # users
-            ssh_users = ssh_config.users
-            _ssh_names : list[str] = []
-            _ssh_pwds : list[str] = []
-            _ssh_pubkeys : list[str] = []
-            for name, info in ssh_users.items():
-                _ssh_names.append(name)
+            pw = info.password
+            if pw is None:
+                _ssh_pwds.append('')
+            else:
+                _ssh_pwds.append(str(pw))   # convert to string, in case it's a number
                 
-                pw = info.password
-                if pw is None:
-                    _ssh_pwds.append('')
+            pubkey_file = info.pubkey_file
+            
+            if pubkey_file is not None and len(pubkey_file) > 0:
+                # check if the pubkey file exists
+                # p = self.m_host_dir + '/' + pubkey_file
+                p = f'{self.m_project_dir}/{self.m_host_dir}/{pubkey_file}'
+                if not os.path.exists(p):
+                    raise FileNotFoundError(f'Pubkey file {p} not found')
+                
+                if pubkey_file is None:
+                    _ssh_pubkeys.append('')
                 else:
-                    _ssh_pwds.append(str(pw))   # convert to string, in case it's a number
-                    
-                pubkey_file = info.pubkey_file
+                    _ssh_pubkeys.append(self.m_container_dir + '/' + pubkey_file)
                 
-                if pubkey_file is not None and len(pubkey_file) > 0:
-                    # check if the pubkey file exists
-                    # p = self.m_host_dir + '/' + pubkey_file
-                    p = f'{self.m_project_dir}/{self.m_host_dir}/{pubkey_file}'
-                    if not os.path.exists(p):
-                        raise FileNotFoundError(f'Pubkey file {p} not found')
-                    
-                    if pubkey_file is None:
-                        _ssh_pubkeys.append('')
-                    else:
-                        _ssh_pubkeys.append(self.m_container_dir + '/' + pubkey_file)
-                    
-            # set config
-            oc_set(build_compose, 'ssh.username', ','.join(_ssh_names))
-            oc_set(build_compose, 'ssh.password', ','.join(_ssh_pwds))
-            oc_set(build_compose, 'ssh.pubkey_file', ','.join(_ssh_pubkeys))
+        # set config
+        oc_set(build_compose, 'ssh.username', ','.join(_ssh_names))
+        oc_set(build_compose, 'ssh.password', ','.join(_ssh_pwds))
+        oc_set(build_compose, 'ssh.pubkey_file', ','.join(_ssh_pubkeys))
                 
     def _apply_device(self, device_config : DeviceConfig, run_compose : DictConfig):
         ''' process the device configuration and update the compose template
@@ -283,7 +291,7 @@ class PeiConfigProcessor:
         
         install_root_host : str = self.m_host_dir
         oc_set(compose_cfg, 'x-paths.installation_root_host', install_root_host)
-        
+
         for ith_stage, _configs in enumerate(user_compose_obj):
             _stage, _compose = _configs
             if _stage is None:
@@ -294,15 +302,23 @@ class PeiConfigProcessor:
             
             # set base
             image_config = _stage.image
-            if image_config is not None:
-                base_image = image_config.base
+            assert image_config is not None, 'Image configuration must be provided'
+            assert image_config.output is not None, 'Output image name must be provided'
+            if ith_stage == 0:
+                assert image_config.base is not None, 'Base image must be provided for stage 1'
+                oc_set(build_compose, 'base_image', image_config.base)
+                oc_set(build_compose, 'output_image_name', image_config.output)
+            elif ith_stage == 1:
+                # use the output of stage 1 as the base image if not specified
+                base_image = image_config.base if image_config.base else user_cfg.stage_1.image.output
                 oc_set(build_compose, 'base_image', base_image)
+                oc_set(build_compose, 'output_image_name', image_config.output)
             
-            # ssh
+            # ssh, can be None
             ssh_config = _stage.ssh
             if ssh_config is not None:
                 assert ith_stage == 0, 'SSH is only available for stage 1'
-                self._apply_ssh_to_x_compose(ssh_config, build_compose = build_compose)
+            self._apply_ssh_to_x_compose(ssh_config, build_compose = build_compose)
         
             # proxy
             proxy_config = _stage.proxy
@@ -512,7 +528,7 @@ class PeiConfigProcessor:
         _resolve_dict = oc.OmegaConf.to_container(compose_template, resolve=True, 
                                                   throw_on_missing=True, 
                                                   structured_config_mode=oc.SCMode.DICT_CONFIG)
-        compose_resolved = oc.OmegaConf.create(_resolve_dict)
+        compose_resolved : DictConfig = oc.OmegaConf.create(_resolve_dict)
         
         # apply the stage configuration to the compose template again
         self._apply_config_to_resolved_compose(user_config, compose_resolved)
@@ -529,6 +545,10 @@ class PeiConfigProcessor:
                     useless_keys.append(key)
             for key in useless_keys:
                 del compose_resolved[key]
+                
+        # if stage-2 does not exist, remove it from the compose template
+        if user_config.stage_2 is None:
+            del compose_resolved['services']['stage-2']
             
         # resolve the compose template
         self.m_compose_output = compose_resolved

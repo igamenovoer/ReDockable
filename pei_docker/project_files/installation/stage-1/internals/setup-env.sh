@@ -26,6 +26,14 @@ if [ "$APT_USE_PROXY" = "true" ]; then
   fi
 fi
 
+# apt source file, it can be /etc/apt/sources.list or /etc/apt/sources.list.d/ubuntu.sources
+# see which file exists, check /etc/apt/sources.list.d/ubuntu.sources first
+CURRENT_APT_SOURCE=/etc/apt/sources.list
+if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+  echo "/etc/apt/sources.list.d/ubuntu.sources exists"
+  CURRENT_APT_SOURCE="/etc/apt/sources.list.d/ubuntu.sources"
+fi
+
 # if you want to use proxy in shell, just use ENV in your dockerfile
 
 # if APT_SOURCE_FILE is set, use it to replace /etc/apt/sources.list
@@ -33,7 +41,7 @@ if [ -n "$APT_SOURCE_FILE" ]; then
   echo "Using $APT_SOURCE_FILE as /etc/apt/sources.list"
 
   # backup the original sources.list
-  cp /etc/apt/sources.list /etc/apt/sources.list.bak
+  cp "$CURRENT_APT_SOURCE" "$CURRENT_APT_SOURCE.bak"
 
   # check for special values
   # if APT_SOURCE_FILE is 'tuna', use tuna mirrors
@@ -42,8 +50,8 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     echo "Using tuna mirrors"
 
     # replace normal sources and security sources
-    sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
-    sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' /etc/apt/sources.list
+    sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' $CURRENT_APT_SOURCE
+    sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' $CURRENT_APT_SOURCE
     
   # if APT_SOURCE_FILE is 'aliyun', use aliyun mirrors
   # replace archive.ubuntu.com with mirrors.aliyun.com
@@ -51,8 +59,8 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     echo "Using aliyun mirrors"
 
     # replace normal sources and security sources
-    sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
-    sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' /etc/apt/sources.list
+    sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' $CURRENT_APT_SOURCE
+    sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' $CURRENT_APT_SOURCE
 
   # if APT_SOURCE_FILE is '163', use 163 mirrors
   # replace archive.ubuntu.com with mirrors.163.com
@@ -60,8 +68,8 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     echo "Using 163 mirrors"
 
     # replace normal sources and security sources
-    sed -i 's/archive.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list
-    sed -i 's/security.ubuntu.com/mirrors.163.com/g' /etc/apt/sources.list
+    sed -i 's/archive.ubuntu.com/mirrors.163.com/g' $CURRENT_APT_SOURCE
+    sed -i 's/security.ubuntu.com/mirrors.163.com/g' $CURRENT_APT_SOURCE
 
   # if APT_SOURCE_FILE is 'ustc', use ustc mirrors
   # replace archive.ubuntu.com with mirrors.ustc.edu.cn
@@ -69,8 +77,8 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     echo "Using ustc mirrors"
 
     # replace normal sources and security sources
-    sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-    sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+    sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' $CURRENT_APT_SOURCE
+    sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' $CURRENT_APT_SOURCE
   
   # if APT_SOURCE_FILE is 'cn', use cn mirrors
   # replace archive.ubuntu.com with cn.archive.ubuntu.com
@@ -78,10 +86,19 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     echo "Using cn mirrors"
 
     # replace normal sources and security sources
-    sed -i 's/archive.ubuntu.com/cn.archive.ubuntu.com/g' /etc/apt/sources.list
-    sed -i 's/security.ubuntu.com/cn.archive.ubuntu.com/g' /etc/apt/sources.list
+    sed -i 's/archive.ubuntu.com/cn.archive.ubuntu.com/g' $CURRENT_APT_SOURCE
+    sed -i 's/security.ubuntu.com/cn.archive.ubuntu.com/g' $CURRENT_APT_SOURCE
   else
     # copy the new sources.list
-    cp $APT_SOURCE_FILE /etc/apt/sources.list
+    cp $APT_SOURCE_FILE $CURRENT_APT_SOURCE
   fi
+
+  # display contents of /etc/apt/sources.list
+  cat $CURRENT_APT_SOURCE
+fi
+
+# if APT_NUM_RETRY is set, set the number of retries for apt
+if [ -n "$APT_NUM_RETRY" ]; then
+  echo "Setting APT::Acquire::Retries \"$APT_NUM_RETRY\";"
+  echo "APT::Acquire::Retries \"$APT_NUM_RETRY\";" >> /etc/apt/apt.conf.d/80-retries
 fi

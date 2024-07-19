@@ -12,14 +12,22 @@ if [ "$APT_KEEP_PROXY" != "true" ]; then
     fi
 fi
 
+# apt source file, it can be /etc/apt/sources.list or /etc/apt/sources.list.d/ubuntu.sources
+# see which file exists, check /etc/apt/sources.list.d/ubuntu.sources first
+CURRENT_APT_SOURCE=/etc/apt/sources.list
+if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+  echo "/etc/apt/sources.list.d/ubuntu.sources exists"
+  CURRENT_APT_SOURCE="/etc/apt/sources.list.d/ubuntu.sources"
+fi
+
 # if KEEP_APT_SOURCE_FILE is not equal to true, remove the custom sources.list
 # recover the original sources.list from the backup
 if [ "$KEEP_APT_SOURCE_FILE" != "true" ]; then
     # check if the backup sources.list file exists
     if [ -f /etc/apt/sources.list.bak ]; then
-        echo "Recovering the original /etc/apt/sources.list from the backup..."
+        echo "Recovering the original $CURRENT_APT_SOURCE from the backup..."
         
         # recover the original sources.list from the backup
-        mv -f /etc/apt/sources.list.bak /etc/apt/sources.list
+        mv -f "$CURRENT_APT_SOURCE.bak" "$CURRENT_APT_SOURCE"
     fi
 fi

@@ -42,8 +42,8 @@ def env_dict_to_str(env_dict: dict[str, str]) -> list[str]:
 
 @define(kw_only=True)
 class ImageConfig:
-    base : str = field()
-    output : str = field()
+    base : str | None = field(default=None)
+    output : str | None = field(default=None)
     
 @define(kw_only=True)
 class SSHUserConfig:
@@ -56,7 +56,8 @@ class SSHUserConfig:
     
 @define(kw_only=True)
 class SSHConfig:
-    enable : bool = field(default=False)
+    # HACK: default to True to enable ssh if not specified
+    enable : bool = field(default=True)
     port : int = field(default=22)
     host_port : int | None = field(default=None)
     users : dict[str, SSHUserConfig] = field(factory=dict)
@@ -69,7 +70,10 @@ class ProxyConfig:
 @define(kw_only=True)
 class AptConfig:
     repo_source : str | None = field(default=None)
-    keep_repo_after_build : bool = field(default=False)
+    
+    #HACK: default to True to avoid removing the repo after build
+    keep_repo_after_build : bool = field(default=True)
+    
     use_proxy : bool = field(default=False)
     keep_proxy_after_build : bool = field(default=False)
     

@@ -1,0 +1,20 @@
+stage_1:
+  image:
+    base: ubuntu:latest
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+        pubkey_file: null
+      you:
+        password: '654321'
+        pubkey_file: null
+      root:
+        password: root
+        pubkey_file: null
+  apt:
+    repo_source: aliyun

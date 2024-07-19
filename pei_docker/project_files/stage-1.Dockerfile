@@ -17,6 +17,9 @@ ARG APT_USE_PROXY
 # keep the http proxy for apt after installation?
 ARG APT_KEEP_PROXY
 
+# number of retries for apt
+ARG APT_NUM_RETRY=10
+
 # use other apt source?
 ARG APT_SOURCE_FILE
 
