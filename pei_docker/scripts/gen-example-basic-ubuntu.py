@@ -3,6 +3,7 @@ import omegaconf as oc
 import cattrs
 from pei_docker.user_config import *
 from pei_docker.config_processor import *
+import pei_docker.pei_utils as pu
 from rich import print
 
 
@@ -35,6 +36,7 @@ cfg_obj.stage_1.apt.pop('use_proxy')
 cfg_obj.stage_1.apt.pop('keep_proxy_after_build')
 
 cfg_obj.pop('stage_2')
+pu.remove_null_keys(cfg_obj)
 
 with open(f'pei_docker/examples/minimal-ubuntu-ssh.yml', 'w+') as f:
     f.write(oc.OmegaConf.to_yaml(cfg_obj))

@@ -1,0 +1,26 @@
+stage_1:
+  image:
+    base: ubuntu:latest
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+  apt:
+    repo_source: aliyun
+stage_2:
+  image:
+    output: pei-image:stage-2
+  storage:
+    app:
+      type: host
+      host_path: /Users/igame/code/PeiDocker/build/storage/app
+    data:
+      type: host
+      host_path: /Users/igame/code/PeiDocker/build/storage/data
+    workspace:
+      type: host
+      host_path: /Users/igame/code/PeiDocker/build/storage/workspace

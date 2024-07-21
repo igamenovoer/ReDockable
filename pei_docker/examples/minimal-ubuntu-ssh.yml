@@ -9,12 +9,9 @@ stage_1:
     users:
       me:
         password: '123456'
-        pubkey_file: null
       you:
         password: '654321'
-        pubkey_file: null
       root:
         password: root
-        pubkey_file: null
   apt:
     repo_source: aliyun

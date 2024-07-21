@@ -28,7 +28,7 @@ cd /path/to/PeiDocker
 python -m pei_docker.pei create -p ./build
 ```
 
-* Edit the configuration file `user_config.yml` in the project directory (e.g.,`./build`) according to your needs. To run custom commands, edit the scripts in `<project_dir>/installation/stage-<1,2>/custom`. You can also run other scripts by adding them in `user_config.yml`.
+* Edit the configuration file `user_config.yml` in the project directory (e.g.,`./build`) according to your needs.
 * Generate the `docker-compose.yml` file in the project directory:
 
 ```sh
@@ -72,8 +72,13 @@ docker compose up stage-2
 ssh me@127.0.0.1 -p 2222
 ```
 
-* If you have *on-first-run* commands in `user_config.yml`, you shall commit the container to a new image so that the changes are saved, or otherwise those commands will be executed again when the container is recreated.
+* That's it, you are good to go.
 * If you prefer to run the image using `docker run` instead of `docker compose`, you can convert the `docker-compose.yml` to commands using [Decomposerize](https://www.decomposerize.com/).
+
+## Custom commands
+
+* To run custom commands during build, edit the scripts in `<project_dir>/installation/stage-<1,2>/custom`. You can also run other scripts by adding them in `user_config.yml`.
+* If you have *on-first-run* commands in `user_config.yml`, after the first run, you shall commit the container to a new image so that the changes are saved, or otherwise those commands will be executed again when the container is recreated.
 
 ## Stage-2 storage
 
