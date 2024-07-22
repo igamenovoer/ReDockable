@@ -124,13 +124,15 @@ If you are using `docker run` to run the image, you can copy-paste the `docker-c
 docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v d:/code/PeiDocker/build/storage/app:/hard/volume/app -v d:/code/PeiDocker/build/storage/data:/hard/volume/data -v d:/code/PeiDocker/build/storage/workspace:/hard/volume/workspace pei-image:stage-2 /bin/bash
 ```
 
-## Using existing docker volume as external storage
+## Using docker volume as external storage
 
-Using [docker volumes](https://docs.docker.com/storage/volumes/) is preferred if you run the image locally, because it is more efficient, and will not get lost when the container is removed. Docker volumes can be created automatically, or [manually](https://docs.docker.com/reference/cli/docker/volume/create/) with a given name that can be used to mount the volume to the container.
+Using [docker volumes](https://docs.docker.com/storage/volumes/) is preferred if you run the image locally, because it is more efficient, and will not get lost when the container is removed. Docker volumes can be created automatically, or [manually](https://docs.docker.com/reference/cli/docker/volume/create/) with a given name that can be used to mount the volume to the container. 
 
-This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use existing docker volumes as external storage. The image is based on `pei-image:stage-1` and has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined**), where **docker volumes** are mounted. 
+This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use existing docker volumes as external storage. The `stage-2` image has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined**), where **docker volumes** are mounted. 
+
 
 ```yaml
+# user_config.yml
 stage_1:
   image:
     base: ubuntu:24.04
@@ -193,7 +195,7 @@ docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v app:
 
 To install miniconda and pytorch during build, you can make use of custom scripts. PeiDocker allows you to add your scripts in the `project_dir/installation/stage-<1,2>/custom`, and then specify them in the `user_config.yml` file.
 
-## Install miniconda and pytorch in external storage
+## Install miniconda and pytorch to external storage
 
 ## Moving external storage to image
 

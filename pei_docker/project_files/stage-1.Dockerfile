@@ -79,6 +79,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
     $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh
 
+RUN $INSTALL_DIR_CONTAINER_1/internals/setup-cuda.sh
+
 # copy the everything to the image
 # ADD ${INSTALL_DIR_HOST_1}/custom ${INSTALL_DIR_CONTAINER_1}/custom
 # ADD ${INSTALL_DIR_HOST_1}/generated ${INSTALL_DIR_CONTAINER_1}/generated

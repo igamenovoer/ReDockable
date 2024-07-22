@@ -54,7 +54,7 @@ class Defaults:
     ]
     
     # ubuntu versions
-    UbuntuCuda='nvidia/cuda:11.8.0-runtime-ubuntu22.04'
+    UbuntuCuda='nvidia/cuda:12.3.2-runtime-ubuntu22.04'
     UbuntuLTS='ubuntu:24.04'
     
 @define(kw_only=True)
@@ -114,7 +114,7 @@ class PeiConfigProcessor:
             for i, script in enumerate(on_build_scripts):
                 host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
-                    raise FileNotFoundError(f'Script {host_path} not found')
+                    logging.warning(f'Script {host_path} not found')
             
         on_first_run_scripts = custom_config.on_first_run
         if on_first_run_scripts is not None:
@@ -122,7 +122,7 @@ class PeiConfigProcessor:
             for i, script in enumerate(on_first_run_scripts):
                 host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
-                    raise FileNotFoundError(f'Script {host_path} not found')
+                    logging.warning(f'Script {host_path} not found')
             
         on_every_run_scripts : list[str] = custom_config.on_every_run
         if on_every_run_scripts is not None:
@@ -130,7 +130,7 @@ class PeiConfigProcessor:
             for script in on_every_run_scripts:
                 host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
-                    raise FileNotFoundError(f'Script {host_path} not found')
+                    logging.warning(f'Script {host_path} not found')
                 
         return True
     

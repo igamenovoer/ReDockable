@@ -16,7 +16,7 @@ apt_repo : str = 'tuna'
 # def gen_minimal_image_with_ssh(fn_config : str):
 #     ''' generate a minimal ubuntu image
 #     '''
-useful_keys : list[str] = ['image', 'ssh', 'apt','device','storage']
+useful_keys : list[str] = ['image', 'ssh', 'apt','device','storage', 'custom']
 cfg_obj = oc.OmegaConf.load(fn_config)
 cfg_stage_1 = cfg_obj['stage_1']
 cfg_stage_2 = cfg_obj['stage_2']
@@ -34,6 +34,7 @@ for s in stages:
 # configure stage 1
 cfg_obj.stage_1.image.base=Defaults.UbuntuCuda
 cfg_obj.stage_1.device.type='gpu'
+cfg_obj.stage_1.pop('custom')
 
 cfg_obj.stage_1.apt.repo_source = apt_repo
 cfg_obj.stage_1.apt.pop('keep_repo_after_build')
@@ -44,6 +45,9 @@ pu.retain_ssh_users(cfg_obj.stage_1.ssh, ['me', 'root'])
 
 # cfg_obj.pop('stage_2')
 cfg_obj.stage_2.device.type='gpu'
+cfg_obj.stage_2.custom = oc.OmegaConf.create({
+    'on_build':['stage-2/custom/install-my-conda.sh']
+    })
 
 # set storage
 dir_build_abs = os.path.abspath(dir_build)
