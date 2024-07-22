@@ -41,6 +41,13 @@ docker compose build stage-1 --progress=plain --no-cache
 docker compose up stage-1
 ```
 
+### With docker run
+If you prefer to use `docker run` to run the image, you can copy-paste the `docker-compose.yml` file into [Decomposerize](https://www.decomposerize.com/) to get the `docker run` command. The command will look like this:
+
+```bash
+docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
+```
+
 ## Basic image with GPU support
 ## Using host directory as external storage
 
@@ -76,8 +83,6 @@ stage_2:
 ```
 
 ## Using existing docker volume as external storage
-
-### With docker compose
 
 Using [docker volumes](https://docs.docker.com/storage/volumes/) is preferred if you run the image locally, because it is more efficient, and will not get lost when the container is removed. Docker volumes can be created automatically, or [manually](https://docs.docker.com/reference/cli/docker/volume/create/) with a given name that can be used to mount the volume to the container.
 
