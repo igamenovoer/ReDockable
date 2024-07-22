@@ -49,6 +49,47 @@ docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-ima
 ```
 
 ## Basic image with GPU support
+
+This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use GPU in the container. The image is based on `nvidia/cuda:11.8.0-runtime-ubuntu22.04` and has three users: `me`, `you`, and `root`. The passwords for the users are `123456`, `654321`, and `root` respectively. The SSH server is running on port `22` and mapped to host port `2222`. The generated `docker-compose.yml` will start the container with gpu support.
+
+```yaml
+stage_1:
+  image:
+    base: nvidia/cuda:11.8.0-runtime-ubuntu22.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+```
+
+### With docker run
+
+If you are using `docker run` to run the image, you can copy-paste the `docker-compose.yml` file into [Decomposerize](https://www.decomposerize.com/) to get the `docker run` command. The command will look like this, note that you need to add `--gpus all` manually:
+
+```bash
+# start stage-1
+docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
+
+# start stage-2 if you need
+# docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-2 /bin/bash
+```
 ## Using host directory as external storage
 
 This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use host directories as external storage. The image is based on `pei-image:stage-1` and has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined**), where specified host directories are mounted. In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`.

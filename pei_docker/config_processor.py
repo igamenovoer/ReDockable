@@ -53,6 +53,10 @@ class Defaults:
         'tuna','aliyun','163','ustc','cn'
     ]
     
+    # ubuntu versions
+    UbuntuCuda='nvidia/cuda:11.8.0-runtime-ubuntu22.04'
+    UbuntuLTS='ubuntu:24.04'
+    
 @define(kw_only=True)
 class GeneratedScripts:
     ''' Generated scripts for the user to run

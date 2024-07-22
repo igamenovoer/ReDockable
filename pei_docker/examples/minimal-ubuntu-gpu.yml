@@ -1,0 +1,24 @@
+stage_1:
+  image:
+    base: nvidia/cuda:11.8.0-runtime-ubuntu22.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
