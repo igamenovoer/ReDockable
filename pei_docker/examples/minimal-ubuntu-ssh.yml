@@ -1,6 +1,6 @@
 stage_1:
   image:
-    base: ubuntu:latest
+    base: ubuntu:24.04
     output: pei-image:stage-1
   ssh:
     enable: true
@@ -14,4 +14,4 @@ stage_1:
       root:
         password: root
   apt:
-    repo_source: aliyun
+    repo_source: tuna

@@ -84,7 +84,7 @@ ssh me@127.0.0.1 -p 2222
 
 The image built in stage-2 have the following directories for user:
 
-- `/soft/apps`: the directory to store the installed apps.
+- `/soft/app`: the directory to store the installed apps.
 - `/soft/data`: the directory to store the data files.
 - `/soft/workspace`: the directory to store the workspace files, like code.
 
@@ -93,7 +93,7 @@ These `/soft/xxx` are links to the corresponding directories in `/hard/image/xxx
 - If `/hard/volume/xxx` is found, then `/soft/xxx` is a link to `/hard/volume/xxx`.
 - Otherwise, if `/hard/image/xxx` is found, then `/soft/xxx` is a link to `/hard/image/xxx`.
 
-As such, you can switch between in-image storage and external storage by mounting into `/hard/volume/xxx`, and this behavious is already present in the generated `docker-compose.yml` file based on your `user_config.yml`. Note that only predefined directories (`apps`, `data`, `workspace`) are linked, others will be ignored.
+As such, you can switch between in-image storage and external storage by mounting into `/hard/volume/xxx`, and this behavious is already present in the generated `docker-compose.yml` file based on your `user_config.yml`. Note that only predefined directories (`app`, `data`, `workspace`) are linked, others will be ignored.
 
 ## Project directory layout
 
@@ -125,7 +125,7 @@ Here are the options you can set in `user_config.yml`:
 stage_1:
   # input/output image settings
   image:
-    base: ubuntu:latest
+    base: ubuntu:24.04
     output: pei-image:stage-1
 
   # ssh settings

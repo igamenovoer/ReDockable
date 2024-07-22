@@ -5,3 +5,12 @@ nav:
 - Examples: examples.md
 
 theme: readthedocs
+
+plugins:
+- search
+- autorefs
+- glightbox
+
+markdown_extensions:
+- attr_list
+- md_in_html

@@ -16,11 +16,10 @@ stage_2:
     output: pei-image:stage-2
   storage:
     app:
-      type: host
-      host_path: d:/code/PeiDocker/build/storage/app
+      type: auto-volume
     data:
-      type: host
-      host_path: d:/code/PeiDocker/build/storage/data
+      type: manual-volume
+      volume_name: my_data
     workspace:
-      type: host
-      host_path: d:/code/PeiDocker/build/storage/workspace
+      type: manual-volume
+      volume_name: my_workspace

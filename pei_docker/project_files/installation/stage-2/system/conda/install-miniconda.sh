@@ -19,7 +19,7 @@ fi
 CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/system/conda"
 INSTALL_FOR_ROOT="false"
 
-# install miniconda3 to /apps/miniconda3
+# install miniconda3 to /app/miniconda3
 bash $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users

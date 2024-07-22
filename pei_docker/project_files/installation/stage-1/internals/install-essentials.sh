@@ -13,7 +13,7 @@ fi
 # apt-get install sudo nano mc ne software-properties-common -y
 apt-get install sudo nano -y
 apt-get install git net-tools curl tmux -y
-apt-get install build-essential -y
+apt-get install build-essential cmake pkg-config -y
 
 # if ssh server is not installed, install it
 dpkg -l | grep openssh-server

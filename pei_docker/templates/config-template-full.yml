@@ -3,7 +3,7 @@
 stage_1:
   # input/output image settings
   image:
-    base: ubuntu:latest
+    base: ubuntu:24.04
     output: pei-image:stage-1
 
   # ssh settings

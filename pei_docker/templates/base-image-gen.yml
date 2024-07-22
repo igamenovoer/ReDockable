@@ -9,7 +9,7 @@ x-paths:
 
   # prefixes for the in-container paths
   dir_prefix:
-    apps: 'apps'
+    app: 'app'
     data: 'data'
     workspace: 'workspace'
     image: 'image'
@@ -23,7 +23,7 @@ x-paths:
   
   soft_storage:
     base: '/soft'
-    apps: '${.base}/${..dir_prefix.apps}'
+    app: '${.base}/${..dir_prefix.app}'
     data: '${.base}/${..dir_prefix.data}'
     workspace: '${.base}/${..dir_prefix.workspace}'
 
@@ -151,7 +151,7 @@ services:
         INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._installation_root_image}
 
         # prefixes and paths
-        PEI_PREFIX_APPS: ${x-paths.dir_prefix.apps}
+        PEI_PREFIX_APPS: ${x-paths.dir_prefix.app}
         PEI_PREFIX_DATA: ${x-paths.dir_prefix.data}
         PEI_PREFIX_WORKSPACE: ${x-paths.dir_prefix.workspace}
         PEI_PREFIX_VOLUME: ${x-paths.dir_prefix.volume}

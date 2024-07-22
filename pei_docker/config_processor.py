@@ -37,6 +37,7 @@ class StoragePaths:
 class Defaults:
     ConfigTemplatePath='templates/config-template-full.yml'
     ComposeTemplatePath='templates/base-image-gen.yml'
+    ConfigExamplesDir='examples'
     OutputConfigName='user_config.yml'
     OutputComposeTemplateName = 'compose-template.yml'
     OutputComposeName='docker-compose.yml'

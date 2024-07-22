@@ -10,6 +10,7 @@ import os
 dir_build = './build'
 fn_config = f'{dir_build}/user_config.yml'
 fn_compose = f'{dir_build}/compose-template.yml'
+apt_repo : str = 'tuna'
 
 # remove useless keys from both stage-1 and stage-2
 useful_keys : list[str] = ['image', 'ssh', 'apt','storage']
@@ -29,7 +30,7 @@ for s in stages:
         s.pop(k)
 
 # configure stage-1
-cfg_obj.stage_1.apt.repo_source = 'aliyun'
+cfg_obj.stage_1.apt.repo_source = apt_repo
 cfg_obj.stage_1.apt.pop('keep_repo_after_build')
 cfg_obj.stage_1.apt.pop('use_proxy')
 cfg_obj.stage_1.apt.pop('keep_proxy_after_build')
@@ -44,7 +45,7 @@ s2_storage = cfg_obj.stage_2.storage
 dir_build_abs = os.path.abspath(dir_build)
 for prefix, opt in s2_storage.items():
     opt.type='host'
-    host_dir = f'{dir_build_abs}/storage/{prefix}'
+    host_dir = f'{dir_build_abs}/storage/{prefix}'.replace('\\','/')
     os.makedirs(host_dir, exist_ok=True)
     opt.host_path=host_dir
     

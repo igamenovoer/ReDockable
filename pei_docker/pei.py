@@ -21,7 +21,9 @@ def cli():
 @click.command()
 @click.option('--project-dir', '-p', help='project directory', required=True, 
               type=click.Path(exists=False, file_okay=False))
-def create(project_dir):
+@click.option('--with-examples', '-e', is_flag=True, default=False, 
+              help='copy example files to the project dir')
+def create(project_dir : str, with_examples : bool):
     logging.info(f'Creating PeiDocker project in {project_dir}')
     os.makedirs(project_dir, exist_ok=True)
     
@@ -53,6 +55,20 @@ def create(project_dir):
     dst_compose_template : str = f'{project_dir}/{Defaults.OutputComposeTemplateName}'
     logging.info(f'Copying compose template {src_compose_template} to {dst_compose_template}')
     shutil.copy2(src_compose_template, dst_compose_template)
+    
+    # copy example files to the project dir
+    # the examples is in Defaults.ConfigExamplesDir
+    if with_examples:
+        examples_dir : str = f'{this_dir}/{Defaults.ConfigExamplesDir}'
+        for item in os.listdir(examples_dir):
+            s = os.path.join(examples_dir, item)
+            d = os.path.join(project_dir, item)
+            if os.path.isdir(s):
+                logging.info(f'Copying directory {s} to {d}')
+                shutil.copytree(s, d)
+            else:
+                logging.info(f'Copying file {s} to {d}')
+                shutil.copy2(s, d)
     
     logging.info('Done')
         
