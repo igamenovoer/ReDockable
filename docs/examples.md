@@ -48,9 +48,9 @@ If you prefer to use `docker run` to run the image, you can copy-paste the `dock
 docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
 ```
 
-## Basic image with GPU support
+## GPU image with external storage
 
-This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use GPU in the container. The image is based on `nvidia/cuda:11.8.0-runtime-ubuntu22.04` and has three users: `me`, `you`, and `root`. The passwords for the users are `123456`, `654321`, and `root` respectively. The SSH server is running on port `22` and mapped to host port `2222`. The generated `docker-compose.yml` will start the container with gpu support.
+This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use GPU in the container. The image is based on `nvidia/cuda:11.8.0-runtime-ubuntu22.04` that makes use of the GPU. As such, the `device` section is added to the `stage_1` and `stage_2` sections, which are set to `gpu`.
 
 ```yaml
 stage_1:
@@ -64,8 +64,6 @@ stage_1:
     users:
       me:
         password: '123456'
-      you:
-        password: '654321'
       root:
         password: root
   apt:
@@ -77,40 +75,6 @@ stage_2:
     output: pei-image:stage-2
   device:
     type: gpu
-```
-
-### With docker run
-
-If you are using `docker run` to run the image, you can copy-paste the `docker-compose.yml` file into [Decomposerize](https://www.decomposerize.com/) to get the `docker run` command. The command will look like this, note that you need to add `--gpus all` manually:
-
-```bash
-# start stage-1
-docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
-
-# start stage-2 if you need
-# docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-2 /bin/bash
-```
-## Using host directory as external storage
-
-This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use host directories as external storage. The image is based on `pei-image:stage-1` and has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined**), where specified host directories are mounted. In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`.
-
-```yaml
-stage_1:
-  image:
-    base: ubuntu:24.04
-    output: pei-image:stage-1
-  ssh:
-    enable: true
-    port: 22
-    host_port: 2222
-    users:
-      me:
-        password: '123456'
-  apt:
-    repo_source: tuna
-stage_2:
-  image:
-    output: pei-image:stage-2
   storage:
     app:
       type: host
@@ -121,6 +85,43 @@ stage_2:
     workspace:
       type: host
       host_path: d:/code/PeiDocker/build/storage/workspace
+```
+
+### External storage with host directory
+
+The `stage-2` image has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined), where specified host directories are mounted. In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`. In this example, the host directories are `d:/code/PeiDocker/build/storage/app`, `d:/code/PeiDocker/build/storage/data`, and `d:/code/PeiDocker/build/storage/workspace` (Windows path).
+
+### With docker-compose
+
+To build and run the image, do the followings:
+
+```bash
+# assuming the project dir is /path/to/project
+
+# build stage-1
+docker compose -f /path/to/project/docker-compose.yml build stage-1 --progress=plain --no-cache
+
+# build stage-2
+docker compose -f /path/to/project/docker-compose.yml build stage-2 --progress=plain --no-cache
+
+# start stage-2
+docker compose -f /path/to/project/docker-compose.yml up stage-2
+```
+
+After that, you can ssh into the container with the following command:
+
+```bash
+ssh -p 2222 me@127.0.0.1
+```
+
+
+### With docker run
+
+If you are using `docker run` to run the image, you can copy-paste the `docker-compose.yml` file into [Decomposerize](https://www.decomposerize.com/) to get the `docker run` command. The command will look like this, note that you need to add `--gpus all` manually:
+
+```bash
+# you only need to run stage-2
+docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v d:/code/PeiDocker/build/storage/app:/hard/volume/app -v d:/code/PeiDocker/build/storage/data:/hard/volume/data -v d:/code/PeiDocker/build/storage/workspace:/hard/volume/workspace pei-image:stage-2 /bin/bash
 ```
 
 ## Using existing docker volume as external storage
@@ -164,20 +165,13 @@ docker volume create my_data
 docker volume create my_workspace
 ``` 
 
-You can check the volumes with `docker volume ls`, the output should contains:
-
-```
-DRIVER              VOLUME NAME
-local               my_data
-local               my_workspace
-```
+You can check the volumes with `docker volume ls`.
 
 If you are using the [docker desktop](https://www.docker.com/products/docker-desktop) on Windows, you will see this:
 
 ![docker desktop volumes](images/docker-desktop-volumes.png)
 
 In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`.
-
 
 
 ### With docker run
@@ -195,7 +189,15 @@ docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v app:
 # docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
 ```
 
+## Install miniconda and pytorch in image
+
+To install miniconda and pytorch during build, you can make use of custom scripts. PeiDocker allows you to add your scripts in the `project_dir/installation/stage-<1,2>/custom`, and then specify them in the `user_config.yml` file.
+
+## Install miniconda and pytorch in external storage
+
 ## Moving external storage to image
-## Miniconda with pytorch installed
+
+## Environment variables
+
 ## ROS2 development
 

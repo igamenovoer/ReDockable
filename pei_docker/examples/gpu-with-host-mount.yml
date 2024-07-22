@@ -9,8 +9,6 @@ stage_1:
     users:
       me:
         password: '123456'
-      you:
-        password: '654321'
       root:
         password: root
   apt:
@@ -22,3 +20,13 @@ stage_2:
     output: pei-image:stage-2
   device:
     type: gpu
+  storage:
+    app:
+      type: host
+      host_path: d:/code/PeiDocker/build/storage/app
+    data:
+      type: host
+      host_path: d:/code/PeiDocker/build/storage/data
+    workspace:
+      type: host
+      host_path: d:/code/PeiDocker/build/storage/workspace

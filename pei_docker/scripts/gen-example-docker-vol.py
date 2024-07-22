@@ -10,7 +10,7 @@ import os
 dir_build = './build'
 fn_config = f'{dir_build}/user_config.yml'
 fn_compose = f'{dir_build}/compose-template.yml'
-fn_output = 'pei_docker/examples/minimal-mount-docker-vol.yml'
+fn_output = 'pei_docker/examples/mount-external-docker-vol.yml'
 apt_repo : str = 'tuna'
 
 # remove useless keys from both stage-1 and stage-2

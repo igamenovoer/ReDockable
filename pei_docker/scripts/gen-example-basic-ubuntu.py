@@ -11,6 +11,7 @@ dir_build = './build'
 fn_config = f'{dir_build}/user_config.yml'
 fn_compose = f'{dir_build}/compose-template.yml'
 apt_repo : str = 'tuna'
+fn_output = f'pei_docker/examples/minimal-ubuntu-ssh.yml'
 
 # def gen_minimal_image_with_ssh(fn_config : str):
 #     ''' generate a minimal ubuntu image
@@ -38,7 +39,7 @@ cfg_obj.stage_1.apt.pop('keep_proxy_after_build')
 cfg_obj.pop('stage_2')
 pu.remove_null_keys(cfg_obj)
 
-with open(f'pei_docker/examples/minimal-ubuntu-ssh.yml', 'w+') as f:
+with open(fn_output, 'w+') as f:
     f.write(oc.OmegaConf.to_yaml(cfg_obj))
 
 # cfg_dict = oc.OmegaConf.to_container(cfg_obj, resolve=True, throw_on_missing=True)

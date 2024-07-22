@@ -60,16 +60,12 @@ def create(project_dir : str, with_examples : bool):
     # the examples is in Defaults.ConfigExamplesDir
     if with_examples:
         examples_dir : str = f'{this_dir}/{Defaults.ConfigExamplesDir}'
-        for item in os.listdir(examples_dir):
-            s = os.path.join(examples_dir, item)
-            d = os.path.join(project_dir, item)
-            if os.path.isdir(s):
-                logging.info(f'Copying directory {s} to {d}')
-                shutil.copytree(s, d)
-            else:
-                logging.info(f'Copying file {s} to {d}')
-                shutil.copy2(s, d)
-    
+        
+        # copy this dir to project_dir/examples
+        examples_dst_dir : str = f'{project_dir}/examples'
+        logging.info(f'Copying examples from {examples_dir} to {examples_dst_dir}')
+        shutil.copytree(examples_dir, examples_dst_dir)
+        
     logging.info('Done')
         
 # generate the docker compose file from the config file
