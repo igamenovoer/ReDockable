@@ -83,27 +83,6 @@ Using [docker volumes](https://docs.docker.com/storage/volumes/) is preferred if
 
 This example is based on [the basic ssh image](#basic-ssh), which demonstrates how to use existing docker volumes as external storage. The image is based on `pei-image:stage-1` and has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined**), where **docker volumes** are mounted. 
 
-`app` is an **auto-volume**, which means it will be created automatically. `data` and `workspace` are **manual-volumes**, which means they are created manually with the names `my_data` and `my_workspace` first, and then mounted to the container. To create these volumes, use the following commands
-
-```bash
-docker volume create my_data
-docker volume create my_workspace
-``` 
-
-You can check the volumes with `docker volume ls`, the output should contains:
-
-```
-DRIVER              VOLUME NAME
-local               my_data
-local               my_workspace
-```
-
-If you are using the [docker desktop](https://www.docker.com/products/docker-desktop) on Windows, you will see this:
-
-![docker desktop volumes](images/docker-desktop-volumes.png)
-
-In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`.
-
 ```yaml
 stage_1:
   image:
@@ -131,6 +110,29 @@ stage_2:
       type: manual-volume
       volume_name: my_workspace
 ```
+
+`app` is an **auto-volume**, which means it will be created automatically. `data` and `workspace` are **manual-volumes**, which means they are created manually with the names `my_data` and `my_workspace` first, and then mounted to the container. To create these volumes, use the following commands
+
+```bash
+docker volume create my_data
+docker volume create my_workspace
+``` 
+
+You can check the volumes with `docker volume ls`, the output should contains:
+
+```
+DRIVER              VOLUME NAME
+local               my_data
+local               my_workspace
+```
+
+If you are using the [docker desktop](https://www.docker.com/products/docker-desktop) on Windows, you will see this:
+
+![docker desktop volumes](images/docker-desktop-volumes.png)
+
+In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`.
+
+
 
 ### With docker run
 
