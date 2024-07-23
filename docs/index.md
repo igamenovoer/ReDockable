@@ -2,7 +2,7 @@
 
 Don't keep your docker images around, keep the build files! If you ever want to make reproducible docker images but have no patience to learn Dockerfiles and docker-compose, PeiDocker is for you.
 
-PeiDocker (配 docker) helps you script and organize your docker image building process without learning too much about Dockerfiles and docker-compose, it streamlines the building process and allows you to customize the image building and running behaviours using shell scripts. With PeiDocker, you can:
+[PeiDocker (配 docker)](https://github.com/igamenovoer/PeiDocker) helps you script and organize your docker image building process without learning too much about Dockerfiles and docker-compose, it streamlines the building process and allows you to customize the image building and running behaviours using shell scripts. With PeiDocker, you can:
 
 - Build images with SSH support.
 - Install packages from public repository using proxy.
