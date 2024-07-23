@@ -95,7 +95,10 @@ RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
 
 # install custom apps and clean up
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_1/internals/custom-on-build.sh &&\
+    $INSTALL_DIR_CONTAINER_1/internals/custom-on-build.sh
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    $INSTALL_DIR_CONTAINER_1/internals/setup-users.sh &&\
     $INSTALL_DIR_CONTAINER_1/internals/cleanup.sh
 
 # setup entrypoint

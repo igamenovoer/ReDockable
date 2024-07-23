@@ -79,6 +79,11 @@ stage_1:
     on_every_run:
       - 'stage-1/custom/my-on-every-run-1.sh'
       - 'stage-1/custom/my-on-every-run-2.sh'
+
+    # scripts run on user login
+    on_user_login:
+      - 'stage-1/custom/my-on-user-login-1.sh'
+      - 'stage-1/custom/my-on-user-login-2.sh'
     
 stage_2:
 
@@ -132,3 +137,8 @@ stage_2:
     on_every_run:
       - 'stage-2/custom/my-on-every-run-1.sh'
       - 'stage-2/custom/my-on-every-run-2.sh'
+
+    # scripts run on user login
+    on_user_login:
+      - 'stage-2/custom/my-on-user-login-1.sh'
+      - 'stage-2/custom/my-on-user-login-2.sh'

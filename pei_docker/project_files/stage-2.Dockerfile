@@ -78,7 +78,10 @@ RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
 
 # install custom apps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_2/internals/custom-on-build.sh &&\
+    $INSTALL_DIR_CONTAINER_2/internals/custom-on-build.sh
+
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    $INSTALL_DIR_CONTAINER_2/internals/setup-users.sh &&\
     $INSTALL_DIR_CONTAINER_2/internals/cleanup.sh
 
 # override the entrypoint

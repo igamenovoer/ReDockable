@@ -131,6 +131,14 @@ class PeiConfigProcessor:
                 host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
                 if not os.path.exists(host_path):
                     logging.warning(f'Script {host_path} not found')
+                    
+        on_user_login_scripts : list[str] = custom_config.on_user_login
+        if on_user_login_scripts is not None:
+            # check if all files listed in on_user_login_scripts exist
+            for script in on_user_login_scripts:
+                host_path = f'{self.m_project_dir}/{self.m_host_dir}/{script}'
+                if not os.path.exists(host_path):
+                    logging.warning(f'Script {host_path} not found')
                 
         return True
     
@@ -438,8 +446,13 @@ class PeiConfigProcessor:
         ]
         
         if filelist:
-            for file in filelist:
-                cmds.append(f"bash $DIR/../../{file}")
+            if on_what == 'on_user_login':
+                # for user login scripts, we use source instead of bash
+                for file in filelist:
+                    cmds.append(f"source $DIR/../../{file}")
+            else:
+                for file in filelist:
+                    cmds.append(f"bash $DIR/../../{file}")
             
         return '\n'.join(cmds)
     
@@ -463,10 +476,12 @@ class PeiConfigProcessor:
                 on_build_list = []
                 on_first_run_list = []
                 on_every_run_list = []
+                on_user_login_list = []
             else:
                 on_build_list = stage_config.custom.on_build
                 on_first_run_list = stage_config.custom.on_first_run
                 on_every_run_list = stage_config.custom.on_every_run
+                on_user_login_list = stage_config.custom.on_user_login
             
             on_build_script = self._generate_script_text('on-build', on_build_list)
             filename_build = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-build.sh'
@@ -485,6 +500,12 @@ class PeiConfigProcessor:
             logging.info(f'Writing to {filename_every_run}')
             with open(filename_every_run, 'w+') as f:
                 f.write(on_every_run_script)    
+                
+            on_user_login_script = self._generate_script_text('on-user-login', on_user_login_list)
+            filename_user_login = f'{self.m_project_dir}/{self.m_host_dir}/{name}/generated/_custom-on-user-login.sh'
+            logging.info(f'Writing to {filename_user_login}')
+            with open(filename_user_login, 'w+') as f:
+                f.write(on_user_login_script)
             
     
     def process(self, remove_extra : bool = True, generate_custom_script_files : bool = True) -> DictConfig:

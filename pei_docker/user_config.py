@@ -89,6 +89,7 @@ class CustomScriptConfig:
     on_build : list[str] = field(factory=list)
     on_first_run : list[str] = field(factory=list)
     on_every_run : list[str] = field(factory=list)
+    on_user_login : list[str] = field(factory=list)
     
 class StorageTypes:
     AutoVolume = 'auto-volume'
