@@ -31,3 +31,14 @@ if [ "$KEEP_APT_SOURCE_FILE" != "true" ]; then
         mv -f "$CURRENT_APT_SOURCE.bak" "$CURRENT_APT_SOURCE"
     fi
 fi
+
+# if REMOVE_GLOBAL_PROXY_AFTER_BUILD is true, remove the global proxy settings
+if [ "$REMOVE_GLOBAL_PROXY_AFTER_BUILD" = "true" ]; then
+    # check if the proxy settings file exists
+    if [ -f /etc/profile.d/proxy.sh ]; then
+        echo "Removing proxy settings from /etc/profile.d/proxy.sh..."
+        
+        # remove the proxy settings file
+        rm -f /etc/profile.d/proxy.sh
+    fi
+fi

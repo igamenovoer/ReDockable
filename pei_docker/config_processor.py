@@ -193,10 +193,27 @@ class PeiConfigProcessor:
         oc_set = oc.OmegaConf.update
         
         adr = proxy_config.address
-        oc_set(build_compose, 'proxy.address', adr)
+        if adr is not None:
+            oc_set(build_compose, 'proxy.address', adr)
         
         port = proxy_config.port
-        oc_set(build_compose, 'proxy.port', port)
+        if port is not None:
+            oc_set(build_compose, 'proxy.port', port)
+        
+        enable_globally = proxy_config.enable_globally
+        if enable_globally is not None:
+            oc_set(build_compose, 'proxy.enable_globally', enable_globally)
+        
+        remove_after_build = proxy_config.remove_after_build
+        if remove_after_build is not None:
+            oc_set(build_compose, 'proxy.remove_after_build', remove_after_build)
+        
+        use_https = proxy_config.use_https
+        if use_https is not None:
+            if use_https:
+                oc_set(build_compose, 'proxy.https_header', 'https')
+            else:
+                oc_set(build_compose, 'proxy.https_header', 'http')
     
     def _apply_ssh_to_x_compose(self, ssh_config : SSHConfig, build_compose : DictConfig):
         ''' process the ssh configuration and update the compose template
@@ -336,7 +353,7 @@ class PeiConfigProcessor:
             # proxy
             proxy_config = _stage.proxy
             if proxy_config is not None:
-                assert ith_stage == 0, 'Proxy is only available for stage 1'
+                # assert ith_stage == 0, 'Proxy is only available for stage 1'
                 self._apply_proxy(proxy_config, build_compose = build_compose)
                 
             # apt

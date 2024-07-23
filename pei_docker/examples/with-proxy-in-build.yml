@@ -1,0 +1,24 @@
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  proxy:
+    address: host.docker.internal
+    port: 30080
+    enable_globally: false
+    remove_after_build: false
+    use_https: false
+  apt:
+    use_proxy: true
+    keep_proxy_after_build: true

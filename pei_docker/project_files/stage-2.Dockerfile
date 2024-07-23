@@ -22,6 +22,16 @@ ARG PEI_PREFIX_IMAGE=image
 ARG PEI_PATH_HARD=/hard
 ARG PEI_PATH_SOFT=/soft
 
+# derive from stage-1
+ARG PEI_HTTP_PROXY_2
+ARG PEI_HTTPS_PROXY_2
+ARG ENABLE_GLOBAL_PROXY
+ARG REMOVE_GLOBAL_PROXY_AFTER_BUILD
+
+# override stage-1 proxy settings
+ENV PEI_HTTP_PROXY_2=${PEI_HTTP_PROXY_2}
+ENV PEI_HTTPS_PROXY_2=${PEI_HTTPS_PROXY_2}
+
 # envs
 ENV PEI_PREFIX_DATA=${PEI_PREFIX_DATA}
 ENV PEI_PREFIX_APPS=${PEI_PREFIX_APPS}
@@ -51,8 +61,8 @@ RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/t
 # add chmod+x to all scripts, including all subdirs
 RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
 
-# show env
-RUN env
+# setup and show env
+RUN $INSTALL_DIR_CONTAINER_2/internals/setup-env.sh && env
 
 # create soft and hard directories
 RUN $INSTALL_DIR_CONTAINER_2/internals/create-dirs.sh

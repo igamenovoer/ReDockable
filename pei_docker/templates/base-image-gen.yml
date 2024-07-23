@@ -68,10 +68,13 @@ x-cfg-stage-1:
       # and you can optionally use it for apt, shell, or custom scripts
       port: 7890
       address: host.docker.internal
+      enable_globally: false  # enable proxy for all shell commands during build and run?
+      remove_after_build: false # remove global proxy after build?
+      https_header: 'http' # use https or http for https_proxy?
 
       # deduced http proxy settings, you do not have to touch this
       _proxy_http: http://${.address}:${.port}
-      _proxy_https: http://${.address}:${.port}
+      _proxy_https: ${.https_header}://${.address}:${.port}
 
     # apt settings
     apt:
@@ -101,6 +104,19 @@ x-cfg-stage-2:
   build:
     output_image_name: my_image:stage-2
     base_image: '${x-cfg-stage-1.build.output_image_name}'
+
+    proxy:
+      # proxy configurations, the proxy will be exposed in the container
+      # and you can optionally use it for apt, shell, or custom scripts
+      port: ${x-cfg-stage-1.build.proxy.port}
+      address: ${x-cfg-stage-1.build.proxy.address}
+      enable_globally: ${x-cfg-stage-1.build.proxy.enable_globally}  # enable proxy for all shell commands during build and run?
+      remove_after_build: ${x-cfg-stage-1.build.proxy.remove_after_build} # remove global proxy after build?
+      https_header: ${x-cfg-stage-1.build.proxy.https_header} # use https proxy?
+
+      # deduced http proxy settings, you do not have to touch this
+      _proxy_http: http://${.address}:${.port}
+      _proxy_https: ${.https_header}://${.address}:${.port}
 
     flags:
       with_essential_apps: true
@@ -159,6 +175,12 @@ services:
         PEI_PATH_HARD: ${x-paths.hard_storage.base}
         PEI_PATH_SOFT: ${x-paths.soft_storage.base}
 
+        # given proxies
+        PEI_HTTP_PROXY_2: ${x-cfg-stage-2.build.proxy._proxy_http}
+        PEI_HTTPS_PROXY_2: ${x-cfg-stage-2.build.proxy._proxy_https}
+        ENABLE_GLOBAL_PROXY: ${x-cfg-stage-2.build.proxy.enable_globally}
+        REMOVE_GLOBAL_PROXY_AFTER_BUILD: ${x-cfg-stage-2.build.proxy.remove_after_build}
+
   stage-1:
     image: ${x-cfg-stage-1.build.output_image_name}
 
@@ -207,8 +229,10 @@ services:
         APT_KEEP_PROXY: ${x-cfg-stage-1.build.apt.keep_proxy} # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
         # given proxies
-        PEI_HTTP_PROXY: ${x-cfg-stage-1.build.proxy._proxy_http}
-        PEI_HTTPS_PROXY: ${x-cfg-stage-1.build.proxy._proxy_https}
+        PEI_HTTP_PROXY_1: ${x-cfg-stage-1.build.proxy._proxy_http}
+        PEI_HTTPS_PROXY_1: ${x-cfg-stage-1.build.proxy._proxy_https}
+        ENABLE_GLOBAL_PROXY: ${x-cfg-stage-1.build.proxy.enable_globally}
+        REMOVE_GLOBAL_PROXY_AFTER_BUILD: ${x-cfg-stage-1.build.proxy.remove_after_build}
 
         # installation dirs
         INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths._installation_root_host}

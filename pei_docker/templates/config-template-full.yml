@@ -33,6 +33,10 @@ stage_1:
   proxy:
     address: host.docker.internal # default value, this will map to the host machine
     port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
+    remove_after_build: false # remove global proxy after build?
+    use_https: false # use https proxy?
+
 
   # apt settings
   apt:
@@ -104,6 +108,17 @@ stage_2:
   # device settings, will override the stage-1 device settings
   device:
     type: cpu # can be cpu or gpu
+
+  
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: null # this means to use the proxy settings of stage-1
+    port: null
+    enable_globally: null 
+    remove_after_build: null 
+    use_https: null
 
   # storage configurations
   storage:

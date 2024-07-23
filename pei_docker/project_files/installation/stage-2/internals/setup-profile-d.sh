@@ -15,6 +15,8 @@ echo "source $DIR/_setup-cuda.sh" >> /etc/profile.d/env-stage-2.sh
 # PEI_PREFIX_DATA, PEI_PREFIX_APPS, PEI_PREFIX_WORKSPACE, PEI_PREFIX_VOLUME, PEI_PREFIX_IMAGE
 # PEI_PATH_HARD, PEI_PATH_SOFT, PEI_SOFT_APPS, PEI_SOFT_DATA, PEI_SOFT_WORKSPACE, PEI_SOFT_VOLUME, PEI_SOFT_IMAGE
 
+echo "export PEI_HTTP_PROXY_2=$PEI_HTTP_PROXY_2" >> /etc/profile.d/env-stage-2.sh
+echo "export PEI_HTTPS_PROXY_2=$PEI_HTTPS_PROXY_2" >> /etc/profile.d/env-stage-2.sh
 echo "export INSTALL_DIR_CONTAINER_2=$INSTALL_DIR_CONTAINER_2" >> /etc/profile.d/env-stage-2.sh
 echo "export PEI_PREFIX_DATA=$PEI_PREFIX_DATA" >> /etc/profile.d/env-stage-2.sh
 echo "export PEI_PREFIX_APPS=$PEI_PREFIX_APPS" >> /etc/profile.d/env-stage-2.sh

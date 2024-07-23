@@ -9,17 +9,17 @@ if [ -n "$ROOT_PASSWORD" ]; then
 fi
 
 # if APT_USE_PROXY is true, set up proxy for apt
-# the proxy is given in PEI_HTTP_PROXY and PEI_HTTPS_PROXY
+# the proxy is given in PEI_HTTP_PROXY_1 and PEI_HTTPS_PROXY_1
 if [ "$APT_USE_PROXY" = "true" ]; then
-  # if PEI_HTTP_PROXY is not set, or PEI_HTTPS_PROXY is not set
+  # if PEI_HTTP_PROXY_1 is not set, or PEI_HTTPS_PROXY_1 is not set
   # skip
-  if [ -z "$PEI_HTTP_PROXY" ] || [ -z "$PEI_HTTPS_PROXY" ]; then
-    echo "PEI_HTTP_PROXY and PEI_HTTPS_PROXY must be set if APT_USE_PROXY is true"
+  if [ -z "$PEI_HTTP_PROXY_1" ] || [ -z "$PEI_HTTPS_PROXY_1" ]; then
+    echo "PEI_HTTP_PROXY_1 and PEI_HTTPS_PROXY_1 must be set if APT_USE_PROXY is true"
     echo "Skipping proxy setup for apt"    
   else
     echo "Setting up proxy for apt"
-    echo "Acquire::http::Proxy \"$PEI_HTTP_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
-    echo "Acquire::https::Proxy \"$PEI_HTTPS_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
+    echo "Acquire::http::Proxy \"$PEI_HTTP_PROXY_1\";" >> /etc/apt/apt.conf.d/proxy.conf
+    echo "Acquire::https::Proxy \"$PEI_HTTPS_PROXY_1\";" >> /etc/apt/apt.conf.d/proxy.conf
 
     echo "/etc/apt/apt.conf.d/proxy.conf:"
     cat /etc/apt/apt.conf.d/proxy.conf
@@ -101,4 +101,20 @@ fi
 if [ -n "$APT_NUM_RETRY" ]; then
   echo "Setting APT::Acquire::Retries \"$APT_NUM_RETRY\";"
   echo "APT::Acquire::Retries \"$APT_NUM_RETRY\";" >> /etc/apt/apt.conf.d/80-retries
+fi
+
+# if ENABLE_GLOBAL_PROXY is true, set up proxy for all users
+if [ "$ENABLE_GLOBAL_PROXY" = "true" ]; then
+  # if PEI_HTTP_PROXY_1 is not set, or PEI_HTTPS_PROXY_1 is not set
+  # skip
+  if [ -z "$PEI_HTTP_PROXY_1" ] || [ -z "$PEI_HTTPS_PROXY_1" ]; then
+    echo "PEI_HTTP_PROXY_1 and PEI_HTTPS_PROXY_1 must be set if ENABLE_PROXY_IN_BUILD is true"
+    echo "Skipping proxy setup for build"
+  else
+    echo "Setting up proxy for build, write to profile.d"
+    echo "export http_proxy=$PEI_HTTP_PROXY_1" >> /etc/profile.d/proxy.sh
+    echo "export https_proxy=$PEI_HTTPS_PROXY_1" >> /etc/profile.d/proxy.sh
+    echo "export HTTP_PROXY=$PEI_HTTP_PROXY_1" >> /etc/profile.d/proxy.sh
+    echo "export HTTPS_PROXY=$PEI_HTTPS_PROXY_1" >> /etc/profile.d/proxy.sh
+  fi
 fi

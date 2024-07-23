@@ -1,0 +1,75 @@
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  proxy:
+    address: host.docker.internal
+    port: 7890
+    enable_globally: false
+    remove_after_build: false
+    use_https: false
+  apt:
+    repo_source: ''
+    keep_repo_after_build: true
+    use_proxy: false
+    keep_proxy_after_build: false
+  environment:
+  - EXAMPLE_VAR_STAGE_1=example env var
+  ports: []
+  device:
+    type: cpu
+  custom:
+    on_build:
+    - stage-1/custom/install-dev-tools.sh
+    - stage-1/custom/my-build-1.sh
+    - stage-1/custom/my-build-2.sh
+    on_first_run:
+    - stage-1/custom/my-on-first-run-1.sh
+    - stage-1/custom/my-on-first-run-2.sh
+    on_every_run:
+    - stage-1/custom/my-on-every-run-1.sh
+    - stage-1/custom/my-on-every-run-2.sh
+    on_user_login:
+    - stage-1/custom/my-on-user-login-1.sh
+    - stage-1/custom/my-on-user-login-2.sh
+stage_2:
+  image:
+    output: pei-image:stage-2
+  environment:
+  - EXAMPLE_VAR_STAGE_2=example env var
+  ports: []
+  device:
+    type: cpu
+  proxy: {}
+  storage:
+    app:
+      type: auto-volume
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+  custom:
+    on_build:
+    - stage-2/custom/install-gui-tools.sh
+    - stage-2/custom/my-build-1.sh
+    - stage-2/custom/my-build-2.sh
+    on_first_run:
+    - stage-2/custom/my-on-first-run-1.sh
+    - stage-2/custom/my-on-first-run-2.sh
+    on_every_run:
+    - stage-2/custom/my-on-every-run-1.sh
+    - stage-2/custom/my-on-every-run-2.sh
+    on_user_login:
+    - stage-2/custom/my-on-user-login-1.sh
+    - stage-2/custom/my-on-user-login-2.sh

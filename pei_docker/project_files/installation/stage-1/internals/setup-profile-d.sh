@@ -12,11 +12,11 @@ echo "source $DIR/_setup-cuda.sh" >> /etc/profile.d/env-stage-1.sh
 
 # add the following env variables to env-stage-1.sh
 # INSTALL_DIR_CONTAINER_1
-# PEI_HTTP_PROXY, PEI_HTTPS_PROXY, PEI_DOCKER_DIR
+# PEI_HTTP_PROXY_1, PEI_HTTPS_PROXY_1, PEI_DOCKER_DIR
 echo "export INSTALL_DIR_CONTAINER_1=$INSTALL_DIR_CONTAINER_1" >> /etc/profile.d/env-stage-1.sh
-echo "export PEI_HTTP_PROXY=$PEI_HTTP_PROXY" >> /etc/profile.d/env-stage-1.sh
-echo "export PEI_HTTPS_PROXY=$PEI_HTTPS_PROXY" >> /etc/profile.d/env-stage-1.sh
-echo "export PEI_DOCKER_DIR=$DIR" >> /etc/profile.d/env-stage-1.sh
+echo "export PEI_HTTP_PROXY_1=$PEI_HTTP_PROXY_1" >> /etc/profile.d/env-stage-1.sh
+echo "export PEI_HTTPS_PROXY_1=$PEI_HTTPS_PROXY_1" >> /etc/profile.d/env-stage-1.sh
+echo "export PEI_DOCKER_DIR=$PEI_DOCKER_DIR" >> /etc/profile.d/env-stage-1.sh
 
 # # for every user, add $DIR/_setup-cuda.sh to their .bashrc, so that it is executed on every run
 # # execute in user context with su

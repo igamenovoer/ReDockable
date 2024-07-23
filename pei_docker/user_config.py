@@ -64,8 +64,11 @@ class SSHConfig:
     
 @define(kw_only=True)
 class ProxyConfig:
-    address : str = field()
-    port : int = field()
+    address : str | None = field(default=None)
+    port : int | None = field(default=None)
+    enable_globally : bool | None = field(default=None)
+    remove_after_build : bool | None = field(default=None)
+    use_https : bool = field(default=False)
     
 @define(kw_only=True)
 class AptConfig:

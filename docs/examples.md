@@ -465,3 +465,149 @@ And then, commit your container to image:
 ```bash
 docker commit <container_id> pei-image:stage-2
 ```
+
+## Using proxy
+
+You can use proxy when building the image. The following example demonstrates how to use proxy for `stage_1`. The proxy is set to `host.docker.internal:30080`, which refers to `127.0.0.1:30080` in host where the proxy is running. The `apt` is specified to use the proxy, and the proxy is kept after the build.
+
+```yaml
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  proxy:
+    address: host.docker.internal
+    port: 30080
+    enable_globally: false  # if set to true, the proxy is used during build and run
+    remove_after_build: false # if set to true, the proxy is removed after build, not effecting run
+    use_https: false  # false means http proxy is used where https proxy is requested
+  apt:
+    use_proxy: true   # use the proxy for apt
+    keep_proxy_after_build: true  # keep apt using the proxy after build
+```
+
+### Using proxy during build and run
+
+This example shows how to use proxy during build and run. The key is to set `enable_globally` to `true`. If you set `remove_after_build` to `true`, the proxy will be removed after the build, and not effecting the run, this is useful if you only want to use the proxy during build (e.g., pulling sources from github).
+
+```yaml
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  proxy:
+    address: host.docker.internal
+    port: 30080
+    enable_globally: true
+    remove_after_build: false
+    use_https: false
+  apt:
+    repo_source: tuna
+```
+
+### Using proxy across stages
+
+This example shows how to use proxy across stages. The proxy is set in `stage-1`, but only used for `apt`. In `stage-2`, the proxy is enabled globally, affecting all commands after run. 
+
+```yaml
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  proxy:
+    address: host.docker.internal
+    port: 30080
+    enable_globally: false
+    remove_after_build: false
+    use_https: false
+  apt:
+    use_proxy: true
+    keep_proxy_after_build: true
+stage_2:
+  image:
+    output: pei-image:stage-2
+  proxy:
+    enable_globally: true
+```
+
+You can verify the proxy is set by running `env` after ssh into the container.
+
+```sh
+# inside container
+env | grep -i proxy
+
+# you should see the proxy settings
+# http_proxy=http://host.docker.internal:30080
+# https_proxy=http://host.docker.internal:30080
+```
+
+### Using proxy manually
+
+If you specify the proxy, but never use it, it will not automatically affect anything. But you can find the proxy setting in the container, using environment variables `PEI_HTTP_PROXY_1` and `PEI_HTTPS_PROXY_1` (replace `1` with the stage number). 
+
+```yaml
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  proxy:
+    address: host.docker.internal
+    port: 30080
+  apt:
+    repo_source: tuna
+```
+
+After ssh into the container, you can find the proxy settings:
+
+```sh
+# inside container
+env | grep -i proxy
+
+# you should see the proxy settings
+# PEI_HTTP_PROXY_1=http://host.docker.internal:30080
+# PEI_HTTPS_PROXY_1=http://host.docker.internal:30080
+```

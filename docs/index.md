@@ -74,6 +74,17 @@ ssh me@127.0.0.1 -p 2222
 
 * That's it, you are good to go.
 * If you prefer to run the image using `docker run` instead of `docker compose`, you can convert the `docker-compose.yml` to commands using [Decomposerize](https://www.decomposerize.com/).
+* If you have trouble connecting to docker.io when building the image, you can either set the global proxy for docker, or pull the base image manually and tag it with a local name. For detail, see [stack overflow](https://stackoverflow.com/questions/68520864/how-to-disable-loading-metadata-while-executing-docker-build).
+
+```sh
+# get the base image manually
+docker pull ubuntu:24.04
+
+# tag it with a local name, 
+# in user_config.yml, use my-ubuntu:24.04 as the base image 
+# to skip checking with docker.io
+docker tag ubuntu:24.04 my-ubuntu:24.04
+```
 
 ## Custom commands
 
@@ -155,6 +166,10 @@ stage_1:
   proxy:
     address: host.docker.internal # default value, this will map to the host machine
     port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
+    remove_after_build: false # remove global proxy after build?
+    use_https: false # use https proxy?
+
 
   # apt settings
   apt:
@@ -201,6 +216,11 @@ stage_1:
     on_every_run:
       - 'stage-1/custom/my-on-every-run-1.sh'
       - 'stage-1/custom/my-on-every-run-2.sh'
+
+    # scripts run on user login
+    on_user_login:
+      - 'stage-1/custom/my-on-user-login-1.sh'
+      - 'stage-1/custom/my-on-user-login-2.sh'
     
 stage_2:
 
@@ -221,6 +241,17 @@ stage_2:
   # device settings, will override the stage-1 device settings
   device:
     type: cpu # can be cpu or gpu
+
+  
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: null # this means to use the proxy settings of stage-1
+    port: null
+    enable_globally: null 
+    remove_after_build: null 
+    use_https: null
 
   # storage configurations
   storage:
@@ -254,4 +285,9 @@ stage_2:
     on_every_run:
       - 'stage-2/custom/my-on-every-run-1.sh'
       - 'stage-2/custom/my-on-every-run-2.sh'
+
+    # scripts run on user login
+    on_user_login:
+      - 'stage-2/custom/my-on-user-login-1.sh'
+      - 'stage-2/custom/my-on-user-login-2.sh'
 ```
