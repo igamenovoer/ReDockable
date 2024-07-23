@@ -433,7 +433,7 @@ stage_2:
     - stage-2/custom/install-my-conda.sh
 ```
 
-The example is based on [Install miniconda in image][#miniconda-in-image], with the following changes:
+The example is based on [Install miniconda in image][miniconda-in-image], with the following changes:
 - `app` is a **manual-volume**, which means it is created manually with the name `my_app`, and then mounted to the container. To create it, use `docker volume create my_app`.
 - `data` and `workspace` are **auto-volumes**, which means they are created automatically.
 - The `install-my-conda.sh` script is executed on the first run of the container, to install miniconda3 and setup conda for all users.
@@ -448,7 +448,20 @@ docker commit <container_id> pei-image:stage-2
 
 ## Moving external storage to image
 
-## Environment variables
+After you have installed apps to the external storage, you can move it to the image storage. This is useful when you want to bake the installed apps into the image. To do this, just copy the files from the external storage to the image storage. Inside the container, do the followings:
 
-## ROS2 development
+```bash
+# inside container
+# just copy /hard/volume/app to /hard/image/app, likewise for other directories
+cp -r /hard/volume/app /hard/image/app
 
+# for data and workspace, if you want to bake them into the image
+# cp -r /hard/volume/data /hard/image/data
+# cp -r /hard/volume/workspace /hard/image/workspace
+```
+
+And then, commit your container to image:
+  
+```bash
+docker commit <container_id> pei-image:stage-2
+```
