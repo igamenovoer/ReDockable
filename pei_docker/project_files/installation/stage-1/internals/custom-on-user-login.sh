@@ -7,11 +7,10 @@ SCRIPTFILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOU
 echo "Executing $SCRIPTFILE"
 
 # source _setup-cuda.sh
-source "$DIR/_setup-cuda.sh"
+# source "$DIR/_setup-cuda.sh"
 
 DIR_GENERATED="$DIR/../generated"
 
 if [ -f "$DIR_GENERATED/_custom-on-user-login.sh" ]; then
-    echo "Found custom on-first-run script, executing ..."
     source "$DIR_GENERATED/_custom-on-user-login.sh"
 fi

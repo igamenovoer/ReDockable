@@ -9,17 +9,17 @@ if [ -n "$ROOT_PASSWORD" ]; then
 fi
 
 # if APT_USE_PROXY is true, set up proxy for apt
-# the proxy is given in USER_HTTP_PROXY and USER_HTTPS_PROXY
+# the proxy is given in PEI_HTTP_PROXY and PEI_HTTPS_PROXY
 if [ "$APT_USE_PROXY" = "true" ]; then
-  # if USER_HTTP_PROXY is not set, or USER_HTTPS_PROXY is not set
+  # if PEI_HTTP_PROXY is not set, or PEI_HTTPS_PROXY is not set
   # skip
-  if [ -z "$USER_HTTP_PROXY" ] || [ -z "$USER_HTTPS_PROXY" ]; then
-    echo "USER_HTTP_PROXY and USER_HTTPS_PROXY must be set if APT_USE_PROXY is true"
+  if [ -z "$PEI_HTTP_PROXY" ] || [ -z "$PEI_HTTPS_PROXY" ]; then
+    echo "PEI_HTTP_PROXY and PEI_HTTPS_PROXY must be set if APT_USE_PROXY is true"
     echo "Skipping proxy setup for apt"    
   else
     echo "Setting up proxy for apt"
-    echo "Acquire::http::Proxy \"$USER_HTTP_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
-    echo "Acquire::https::Proxy \"$USER_HTTPS_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
+    echo "Acquire::http::Proxy \"$PEI_HTTP_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
+    echo "Acquire::https::Proxy \"$PEI_HTTPS_PROXY\";" >> /etc/apt/apt.conf.d/proxy.conf
 
     echo "/etc/apt/apt.conf.d/proxy.conf:"
     cat /etc/apt/apt.conf.d/proxy.conf

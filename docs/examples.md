@@ -193,6 +193,8 @@ docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v app:
 
 ## Install miniconda in image
 
+**IMPORTANT NOTE**: The following example is for demonstration purposes only. It is **not recommended** to install miniconda (or any other apps) in the image, because it will make the image size larger, and later modifications (such as `conda install xxx`) will get lost when container is removed. It is recommended to install miniconda in the volume storage `/hard/volume/app`, and copy them to the image storage `/hard/image/app` when you decide to bake them into image. However, **external storage only exists in stage-2**.
+
 To install miniconda during build, you can make use of custom scripts. PeiDocker allows you to add your scripts in the `project_dir/installation/stage-<1,2>/custom`, and then specify them in the `user_config.yml` file.
 
 ```yaml
@@ -235,7 +237,7 @@ In the above example, the script `install-my-conda.sh` is placed in the `project
 
 - The script is placed in the `project_dir/installation/stage-2/custom` directory.
 - The package files are placed in the `project_dir/installation/stage-2/tmp` directory.
-- You can access the installation directory of the `stage-2` image using the `INSTALL_DIR_CONTAINER_2` environment variable, likewise for `stage-1`.
+- You can access the installation directory of the `stage-2` image using the `INSTALL_DIR_CONTAINER_2` environment variable, likewise for `stage-1`. Note it will try to use external storage `\hard\volume\app` first, but because you have not mounted any external storage, it will use the image storage `\hard\image\app`.
 - During build, you are root, so you shall execute commands for other users using `su - $user -c`.
 - Remember to set DEBIAN_FRONTEND=noninteractive to prevent interactive prompts.
 
@@ -250,22 +252,39 @@ STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
 echo "STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER"
 
 # the installation directory of miniconda3
-# will install to the in-image storage
-CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
+# first check for volume storage at /hard/volume/app, if not found, use /hard/image/app
+if [ -d "/hard/volume/app" ]; then
+  # volume storage takes precedence, note that it only exists in stage-2
+  CONDA_INSTALL_DIR="/hard/volume/app/miniconda3"
+else
+  # otherwise, use the image storage
+  CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
+fi
 
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
-CONDA_PACKAGE_PATH="$STAGE_2_DIR_IN_CONTAINER/tmp/Miniconda3-latest-Linux-x86_64.sh"
+CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-x86_64.sh"
+
+# are you in arm64 platform? If so, use the arm64 version of miniconda3
+if [ "$(uname -m)" = "aarch64" ]; then
+    CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-aarch64.sh"
+fi
+
+# download from
+CONDA_DOWNLOAD_URL="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/$CONDA_PACKAGE_NAME"
+
+# download to
+CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 
 # if the file does not exist, wget it from tuna
-if [ ! -f $CONDA_PACKAGE_PATH ]; then
+if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_PACKAGE_PATH https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
 fi
 
 # install miniconda3 unattended
 echo "installing miniconda3 to $CONDA_INSTALL_DIR ..."
-bash $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
+bash $CONDA_DOWNLOAD_DST -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users
 echo "setting permissions for $CONDA_INSTALL_DIR ..."

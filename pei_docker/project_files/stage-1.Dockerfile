@@ -37,16 +37,16 @@ ARG SSH_USER_PASSWORD
 ARG SSH_PUBKEY_FILE
 
 # user provided proxy
-ARG USER_HTTP_PROXY
-ARG USER_HTTPS_PROXY
+ARG PEI_HTTP_PROXY
+ARG PEI_HTTPS_PROXY
 
 # path to installation directory
 ARG INSTALL_DIR_HOST_1
 ARG INSTALL_DIR_CONTAINER_1
 
 # -------------------------------------------
-ENV USER_HTTP_PROXY=${USER_HTTP_PROXY}
-ENV USER_HTTPS_PROXY=${USER_HTTPS_PROXY}
+ENV PEI_HTTP_PROXY=${PEI_HTTP_PROXY}
+ENV PEI_HTTPS_PROXY=${PEI_HTTPS_PROXY}
 ENV INSTALL_DIR_CONTAINER_1=${INSTALL_DIR_CONTAINER_1}
 
 # create a dir called pei-docker in root, to store logs
@@ -79,7 +79,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
     $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh
 
-RUN $INSTALL_DIR_CONTAINER_1/internals/setup-cuda.sh
+RUN $INSTALL_DIR_CONTAINER_1/internals/setup-profile-d.sh
 
 # copy the everything to the image
 # ADD ${INSTALL_DIR_HOST_1}/custom ${INSTALL_DIR_CONTAINER_1}/custom

@@ -207,8 +207,8 @@ services:
         APT_KEEP_PROXY: ${x-cfg-stage-1.build.apt.keep_proxy} # retain http proxy settings in apt after build? If false, proxy will be removed after build
 
         # given proxies
-        USER_HTTP_PROXY: ${x-cfg-stage-1.build.proxy._proxy_http}
-        USER_HTTPS_PROXY: ${x-cfg-stage-1.build.proxy._proxy_https}
+        PEI_HTTP_PROXY: ${x-cfg-stage-1.build.proxy._proxy_http}
+        PEI_HTTPS_PROXY: ${x-cfg-stage-1.build.proxy._proxy_https}
 
         # installation dirs
         INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths._installation_root_host}

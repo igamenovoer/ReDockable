@@ -61,6 +61,9 @@ RUN $INSTALL_DIR_CONTAINER_2/internals/create-dirs.sh
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $INSTALL_DIR_CONTAINER_2/internals/install-essentials.sh
 
+# setup profile d
+RUN $INSTALL_DIR_CONTAINER_2/internals/setup-profile-d.sh
+
 # -------------------------------------------
 # run custom scripts
 

@@ -8,8 +8,14 @@ STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
 echo "STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER"
 
 # the installation directory of miniconda3
-# will install to the in-image storage
-CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
+# first check for volume storage at /hard/volume/app, if not found, use /hard/image/app
+if [ -d "/hard/volume/app" ]; then
+  # volume storage takes precedence, note that it only exists in stage-2
+  CONDA_INSTALL_DIR="/hard/volume/app/miniconda3"
+else
+  # otherwise, use the image storage
+  CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
+fi
 
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
