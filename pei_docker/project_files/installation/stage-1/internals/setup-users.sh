@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # do something for each user at the end of build
-SCRIPTFILE=$(readlink -f "$0")
+SCRIPTFILE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 echo "Executing $SCRIPTFILE"
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"

@@ -13,17 +13,28 @@ CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
 
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
-CONDA_PACKAGE_PATH="$STAGE_2_DIR_IN_CONTAINER/tmp/Miniconda3-latest-Linux-x86_64.sh"
+CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-x86_64.sh"
+
+# are you in arm64 platform? If so, use the arm64 version of miniconda3
+if [ "$(uname -m)" = "aarch64" ]; then
+    CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-aarch64.sh"
+fi
+
+# download from
+CONDA_DOWNLOAD_URL="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/$CONDA_PACKAGE_NAME"
+
+# download to
+CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 
 # if the file does not exist, wget it from tuna
-if [ ! -f $CONDA_PACKAGE_PATH ]; then
+if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_PACKAGE_PATH https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    wget -O $CONDA_DOWNLOAD_DST https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
 fi
 
 # install miniconda3 unattended
 echo "installing miniconda3 to $CONDA_INSTALL_DIR ..."
-bash $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
+bash $CONDA_DOWNLOAD_DST -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users
 echo "setting permissions for $CONDA_INSTALL_DIR ..."

@@ -7,35 +7,34 @@ export DEBIAN_FRONTEND=noninteractive
 STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
 echo "STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER"
 
-APP_IN_VOLUME="$PEI_PATH_HARD/$PEI_PREFIX_VOLUME/$PEI_PREFIX_APPS"
-APP_IN_IMAGE="$PEI_PATH_HARD/$PEI_PREFIX_IMAGE/$PEI_PREFIX_APPS"
-
-# if APP_IN_VOLUME exists, use it, otherwise use APP_IN_IMAGE
-if [ -d $APP_IN_VOLUME ]; then
-  echo "using $APP_IN_VOLUME ... to install miniconda3"
-  CONDA_INSTALL_DIR=$APP_IN_VOLUME/miniconda3
-else
-  echo "using $APP_IN_IMAGE ... to install miniconda3"
-  CONDA_INSTALL_DIR=$APP_IN_IMAGE/miniconda3
-fi
-
 # the installation directory of miniconda3
 # will install to the in-image storage
 CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
 
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
-CONDA_PACKAGE_PATH="$STAGE_2_DIR_IN_CONTAINER/tmp/Miniconda3-latest-Linux-x86_64.sh"
+CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-x86_64.sh"
+
+# are you in arm64 platform? If so, use the arm64 version of miniconda3
+if [ "$(uname -m)" = "aarch64" ]; then
+    CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-aarch64.sh"
+fi
+
+# download from
+CONDA_DOWNLOAD_URL="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/$CONDA_PACKAGE_NAME"
+
+# download to
+CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 
 # if the file does not exist, wget it from tuna
-if [ ! -f $CONDA_PACKAGE_PATH ]; then
-  echo "downloading miniconda3 installation file ..."
-  wget -O $CONDA_PACKAGE_PATH https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+if [ ! -f $CONDA_DOWNLOAD_DST ]; then
+    echo "downloading miniconda3 installation file ..."
+    wget -O $CONDA_DOWNLOAD_DST https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
 fi
 
 # install miniconda3 unattended
 echo "installing miniconda3 to $CONDA_INSTALL_DIR ..."
-bash $CONDA_PACKAGE_PATH -b -p $CONDA_INSTALL_DIR
+bash $CONDA_DOWNLOAD_DST -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users
 echo "setting permissions for $CONDA_INSTALL_DIR ..."
@@ -64,12 +63,22 @@ custom_channels:
   deepmodeling: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/
 EOM
 
+# tuna pip mirror
 read -r -d '' PIP_TUNA << EOM
 [global]
 index-url = https://pypi.tuna.tsinghua.edu.cn/simple/
 
 [install]
-trusted-host=tuna.tsinghua.edu.cn
+trusted-host=pypi.tuna.tsinghua.edu.cn
+EOM
+
+# aliyun pypi mirror, use it if tuna is slow
+read -r -d '' PIP_ALIYUN << EOM
+[global]
+index-url = http://mirrors.aliyun.com/pypi/simple/
+
+[install]
+trusted-host=mirrors.aliyun.com
 EOM
 
 # add all user names to USER_LIST
@@ -82,22 +91,22 @@ done
 # remember to execute commands in the user context using su - $user -c
 # otherwise the file will be owned by root
 for user in $USER_LIST; do
-  echo "initializing conda for $user ..."
-  su - $user -c "$CONDA_INSTALL_DIR/bin/conda init"
+    echo "initializing conda for $user ..."
+    su - $user -c "$CONDA_INSTALL_DIR/bin/conda init"
 
-  # if user is root, set home_dir to /root, otherwise /home/$user
-  if [ "$user" = "root" ]; then
-      home_dir="/root"
-  else
-      home_dir="/home/$user"
-  fi
+    # if user is root, set home_dir to /root, otherwise /home/$user
+    if [ "$user" = "root" ]; then
+        home_dir="/root"
+    else
+        home_dir="/home/$user"
+    fi
 
-  # to use tuna mirror, replace the .condarc file with the pre-configured CONDA_TUNA
-  echo "setting conda mirror for $user ..."    
-  su - $user -c "echo \"$CONDA_TUNA\" > $home_dir/.condarc"
+    # to use tuna mirror, replace the .condarc file with the pre-configured CONDA_TUNA
+    echo "setting conda mirror for $user ..."    
+    su - $user -c "echo \"$CONDA_TUNA\" > $home_dir/.condarc"
 
-  # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
-  echo "setting pip mirror for $user ..."
-  su - $user -c "mkdir -p $home_dir/.pip"
-  su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
+    # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
+    echo "setting pip mirror for $user ..."
+    su - $user -c "mkdir -p $home_dir/.pip"
+    su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
 done
