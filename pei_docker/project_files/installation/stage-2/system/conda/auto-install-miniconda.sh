@@ -29,7 +29,7 @@ CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 # if the file does not exist, wget it from tuna
 if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_DOWNLOAD_DST https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
 fi
 
 # install miniconda3 unattended
