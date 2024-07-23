@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="description" content="None" />
+      <link rel="shortcut icon" href="img/favicon.ico" />
+    <title>PeiDocker</title>
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Introduction";
+        var mkdocs_page_input_path = "index.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="." class="icon icon-home"> PeiDocker
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="./search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Introduction</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-use">How to use</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#custom-commands">Custom commands</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#stage-2-storage">Stage-2 storage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#project-directory-layout">Project directory layout</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#user-configuration-file">User configuration file</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="examples/">Examples</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href=".">PeiDocker</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Introduction</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="welcome-to-peidocker">Welcome to PeiDocker</h1>
+<p>Don't keep your docker images around, keep the build files! If you ever want to make reproducible docker images but have no patience to learn Dockerfiles and docker-compose, PeiDocker is for you.</p>
+<p>PeiDocker (配 docker) helps you script and organize your docker image building process without learning too much about Dockerfiles and docker-compose, it streamlines the building process and allows you to customize the image building and running behaviours using shell scripts. With PeiDocker, you can:</p>
+<ul>
+<li>Build images with SSH support.</li>
+<li>Install packages from public repository using proxy.</li>
+<li>Easily choose to install apps into the image, your host directory, or docker volumes, you can also switch between them after the image is built.</li>
+<li>Run custom commands during image building, such as setting up environment variables, installing packages, etc.</li>
+<li>Run custom commands when the container starts.</li>
+</ul>
+<h2 id="how-to-use">How to use</h2>
+<ul>
+<li>Install dependencies:</li>
+</ul>
+<pre><code class="language-sh">pip install click omegaconf attrs cattrs
+</code></pre>
+<ul>
+<li>Create a new project:</li>
+</ul>
+<pre><code class="language-sh"># cd to the root of the git repository
+cd /path/to/PeiDocker
+
+# Create a new project in ./build or any other directory
+python -m pei_docker.pei create -p ./build
+</code></pre>
+<ul>
+<li>Edit the configuration file <code>user_config.yml</code> in the project directory (e.g.,<code>./build</code>) according to your needs.</li>
+<li>Generate the <code>docker-compose.yml</code> file in the project directory:</li>
+</ul>
+<pre><code class="language-sh">python -m pei_docker.pei configure -p ./build
+</code></pre>
+<ul>
+<li>Build the docker images. There are two images to be built, namely <code>stage-1</code> and <code>stage-2</code>. <code>stage-1</code> is intended to be a base image, installing system apps using <code>apt install</code>, <code>stage-2</code> is intended to be a final image based on <code>stage-1</code>, installing custom apps using downloaded packages like <code>.deb</code>. External storage is only available in <code>stage-2</code>.</li>
+</ul>
+<pre><code class="language-sh">cd ./build
+
+# Using docker compose to build the images. 
+# To see all the output, use --progress=plain
+# To cleanly rebuild the images, use --no-cache
+
+# Build the stage-1 image
+# By default, the image is named pei-image:stage-1, you can change it in user_config.yml
+docker-compose build stage-1 --progress=plain
+
+# Build the stage-2 image
+# By default, the image is named pei-image:stage-2
+docker-compose build stage-2 --progress=plain
+</code></pre>
+<ul>
+<li>Run the docker container:</li>
+</ul>
+<pre><code class="language-sh"># inside project directory, such as ./build
+
+# Typically you will run the stage-2 container
+# You can also up the stage-1 container as well.
+docker compose up stage-2
+</code></pre>
+<ul>
+<li>If you have setup SSH in <code>user_config.yml</code>, now you can SSH into the container:</li>
+</ul>
+<pre><code class="language-sh"># by default, it will create a user named `me` with password '123456'
+# and map the port 2222 to the container's port 22
+
+ssh me@127.0.0.1 -p 2222
+</code></pre>
+<ul>
+<li>That's it, you are good to go.</li>
+<li>If you prefer to run the image using <code>docker run</code> instead of <code>docker compose</code>, you can convert the <code>docker-compose.yml</code> to commands using <a href="https://www.decomposerize.com/">Decomposerize</a>.</li>
+</ul>
+<h2 id="custom-commands">Custom commands</h2>
+<ul>
+<li>To run custom commands during build, edit the scripts in <code>&lt;project_dir&gt;/installation/stage-&lt;1,2&gt;/custom</code>. You can also run other scripts by adding them in <code>user_config.yml</code>.</li>
+<li>If you have <em>on-first-run</em> commands in <code>user_config.yml</code>, after the first run, you shall commit the container to a new image so that the changes are saved, or otherwise those commands will be executed again when the container is recreated.</li>
+</ul>
+<h2 id="stage-2-storage">Stage-2 storage</h2>
+<p>The image built in stage-2 have the following directories for user:</p>
+<ul>
+<li><code>/soft/app</code>: the directory to store the installed apps.</li>
+<li><code>/soft/data</code>: the directory to store the data files.</li>
+<li><code>/soft/workspace</code>: the directory to store the workspace files, like code.</li>
+</ul>
+<p>These <code>/soft/xxx</code> are links to the corresponding directories in <code>/hard/image/xxx</code> (in-image storage) or <code>/hard/volume/xxx</code> (external storage), where content is actually stored, based on the following rules:</p>
+<ul>
+<li>If <code>/hard/volume/xxx</code> is found, then <code>/soft/xxx</code> is a link to <code>/hard/volume/xxx</code>.</li>
+<li>Otherwise, if <code>/hard/image/xxx</code> is found, then <code>/soft/xxx</code> is a link to <code>/hard/image/xxx</code>.</li>
+</ul>
+<p>As such, you can switch between in-image storage and external storage by mounting into <code>/hard/volume/xxx</code>, and this behavious is already present in the generated <code>docker-compose.yml</code> file based on your <code>user_config.yml</code>. Note that only predefined directories (<code>app</code>, <code>data</code>, <code>workspace</code>) are linked, others will be ignored.</p>
+<h2 id="project-directory-layout">Project directory layout</h2>
+<p>Inside your project directory, you will find the following files and directories:</p>
+<pre><code>compose-template.yml    # the template for docker-compose.yml, do not modify this file
+stage-1.Dockerfile      # the Dockerfile for stage-1 image, do not modify this file
+stage-2.Dockerfile      # the Dockerfile for stage-2 image, do not modify this file
+user_config.yml         # the configuration file, edit this file to customize
+installation/           # this directory will be copied into the image under /pei-init
+    stage-1/            # the scripts to run during stage-1 image building
+        custom/         # the custom scripts to run during stage-1 image building, you need to explicitly list them in user_config.yml
+        tmp/            # the temporary directory to store downloaded packages, like .deb, .whl, etc.
+        system/         # the configuration files for system apps, like apt, pip, etc.
+        ...
+    stage-2/            # the scripts to run during stage-2 image building
+        custom/         # the custom scripts to run during stage-2 image building, you need to explicitly list them in user_config.yml
+        tmp/            # the temporary directory to store downloaded packages, like .deb, .whl, etc.
+        system/         # the configuration files for system apps, like apt, pip, etc.
+        ...
+</code></pre>
+<h2 id="user-configuration-file">User configuration file</h2>
+<p>Here are the options you can set in <code>user_config.yml</code>:</p>
+<pre><code class="language-yaml"># all paths are relative to /installation directory
+
+stage_1:
+  # input/output image settings
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+
+  # ssh settings
+  ssh:
+    enable: true
+    port: 22  # port in container
+    host_port: 2222  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: '123456'
+
+        # public key file path, relative to the installation directory
+        # e.g., 'stage-1/system/ssh/keys/mykey.rsa.pub'
+        pubkey_file: null
+      you:
+        password: '654321'
+        pubkey_file: null
+      root: # you can configure root user here
+        password: root
+        pubkey_file: null
+
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+
+  # apt settings
+  apt:
+    # replace the default apt source with a custom one, use empty string to disable this
+    # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    # special values that refer to well known apt sources:
+    # 'tuna' : 'http://mirrors.tuna.tsinghua.edu.cn/ubuntu/'
+    # 'aliyun' : 'http://mirrors.aliyun.com/ubuntu/'
+    # '163' : 'http://mirrors.163.com/ubuntu/'
+    # 'ustc' : 'http://mirrors.ustc.edu.cn/ubuntu/'
+    # 'cn' : 'http://cn.archive.ubuntu.com/ubuntu/
+    repo_source: ''
+    keep_repo_after_build: true # keep the apt source file after build?
+    use_proxy: false  # use proxy for apt?
+    keep_proxy_after_build: false # keep proxy settings after build?
+
+  # additional environment variables
+  # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+  environment:
+    - 'EXAMPLE_VAR_STAGE_1=example env var'
+
+  # additional port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports: []
+
+  # device settings
+  device:
+    type: cpu # can be cpu or gpu
+
+  # custom scripts
+  custom:
+    # scripts run during build
+    on_build: 
+      - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
+      - 'stage-1/custom/my-build-1.sh'
+      - 'stage-1/custom/my-build-2.sh'
+
+    # scripts run on first run
+    on_first_run:
+      - 'stage-1/custom/my-on-first-run-1.sh'
+      - 'stage-1/custom/my-on-first-run-2.sh'
+
+    # scripts run on every run
+    on_every_run:
+      - 'stage-1/custom/my-on-every-run-1.sh'
+      - 'stage-1/custom/my-on-every-run-2.sh'
+
+stage_2:
+
+  # input/output image settings
+  image:
+    base: null  # if not specified, use the output image of stage-1
+    output: pei-image:stage-2
+
+  # additional environment variables
+  # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+  environment:  # use list intead of dict
+    - 'EXAMPLE_VAR_STAGE_2=example env var'
+
+  # port mapping, will be appended to the stage-1 port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports: []    
+
+  # device settings, will override the stage-1 device settings
+  device:
+    type: cpu # can be cpu or gpu
+
+  # storage configurations
+  storage:
+    app:
+      type: auto-volume # auto-volume, manual-volume, host, image
+      host_path: null # host directory to be mounted, in effect when type=host
+      volume_name: null # volume name, in effect when type=manual-volume
+    data:
+      type: auto-volume
+      host_path: null
+      volume_name: null
+    workspace:
+      type: auto-volume
+      host_path: null
+      volume_name: null
+
+  # custom scripts in stage-2, run after stage-1 custom scripts
+  custom:
+    # scripts run during build
+    on_build: 
+      - 'stage-2/custom/install-gui-tools.sh' # just an example, you can safely remove this
+      - 'stage-2/custom/my-build-1.sh'
+      - 'stage-2/custom/my-build-2.sh'
+
+    # scripts run on first start
+    on_first_run:
+      - 'stage-2/custom/my-on-first-run-1.sh'
+      - 'stage-2/custom/my-on-first-run-2.sh'
+
+    # scripts run on every start
+    on_every_run:
+      - 'stage-2/custom/my-on-every-run-1.sh'
+      - 'stage-2/custom/my-on-every-run-2.sh'
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="examples/" class="btn btn-neutral float-right" title="Examples">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+    
+      <span><a href="examples/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = ".";</script>
+    <script src="js/theme_extra.js"></script>
+    <script src="js/theme.js"></script>
+      <script src="search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+</script></body>
+</html>
+
+<!--
+MkDocs version : 1.6.0
+Build Date UTC : 2024-07-23 09:17:10.379712+00:00
+-->

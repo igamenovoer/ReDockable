@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Examples - PeiDocker</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Examples";
+        var mkdocs_page_input_path = "examples.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PeiDocker
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Examples</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#basic-ubuntu-image-with-ssh-support">Basic Ubuntu image with SSH support</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#with-docker-run">With docker run</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#gpu-image-with-external-storage">GPU image with external storage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#external-storage-with-host-directory">External storage with host directory</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#with-docker-compose">With docker-compose</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#with-docker-run_1">With docker run</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#using-docker-volume-as-external-storage">Using docker volume as external storage</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#with-docker-run_2">With docker run</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#install-miniconda-in-image">Install miniconda in image</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#install-miniconda-to-external-storage">Install miniconda to external storage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#moving-external-storage-to-image">Moving external storage to image</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PeiDocker</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Examples</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="examples">Examples</h1>
+<p><a href="" id="basic-ssh"></a></p>
+<h2 id="basic-ubuntu-image-with-ssh-support">Basic Ubuntu image with SSH support</h2>
+<p>This is the most basic example of creating an image with SSH support. The image is based on <code>ubuntu:24.04</code> and has three users: <code>me</code>, <code>you</code>, and <code>root</code>. The passwords for the users are <code>123456</code>, <code>654321</code>, and <code>root</code> respectively. The SSH server is running on port <code>22</code> and mapped to host port <code>2222</code>. </p>
+<p>To accelerate apt installation in China, the <code>apt</code> source is set to <code>tuna</code>. For other options, see the full <a href="../">config file</a> for documentation. If this option is omitted, the default source will be used.</p>
+<pre><code class="language-yaml"># user_config.yml under project directory
+
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      you:
+        password: '654321'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+</code></pre>
+<p>With this <code>user_config.yml</code> in side your project dir, do the followings to build and run the image:</p>
+<pre><code class="language-bash"># assuming the project dir is /path/to/project
+
+python -m pei_docker.pei configure --project-dir=/path/to/project
+
+cd /path/to/project
+docker compose build stage-1 --progress=plain --no-cache
+docker compose up stage-1
+</code></pre>
+<h3 id="with-docker-run">With docker run</h3>
+<p>If you prefer to use <code>docker run</code> to run the image, you can copy-paste the <code>docker-compose.yml</code> file into <a href="https://www.decomposerize.com/">Decomposerize</a> to get the <code>docker run</code> command. The command will look like this:</p>
+<pre><code class="language-bash">docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
+</code></pre>
+<h2 id="gpu-image-with-external-storage">GPU image with external storage</h2>
+<p>This example is based on <a href="#basic-ssh">the basic ssh image</a>, which demonstrates how to use GPU in the container. The image is based on <code>nvidia/cuda:11.8.0-runtime-ubuntu22.04</code> that makes use of the GPU. As such, the <code>device</code> section is added to the <code>stage_1</code> and <code>stage_2</code> sections, which are set to <code>gpu</code>.</p>
+<pre><code class="language-yaml">stage_1:
+  image:
+    base: nvidia/cuda:11.8.0-runtime-ubuntu22.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+  storage:
+    app:
+      type: host
+      host_path: d:/code/PeiDocker/build/storage/app
+    data:
+      type: host
+      host_path: d:/code/PeiDocker/build/storage/data
+    workspace:
+      type: host
+      host_path: d:/code/PeiDocker/build/storage/workspace
+</code></pre>
+<h3 id="external-storage-with-host-directory">External storage with host directory</h3>
+<p>The <code>stage-2</code> image has three external storage directories: <code>app</code>, <code>data</code>, and <code>workspace</code> (note that the directory names are <strong>NOT CUSTOMIZABLE</strong>, they are **predefined), where specified host directories are mounted. In the container, you can access these directories through <code>/soft/app</code>, <code>/soft/data</code>, and <code>/soft/workspace</code>, which are linked to  <code>/app</code>, <code>/data</code>, and <code>/workspace</code> under the <code>/hard/volume</code>. In this example, the host directories are <code>d:/code/PeiDocker/build/storage/app</code>, <code>d:/code/PeiDocker/build/storage/data</code>, and <code>d:/code/PeiDocker/build/storage/workspace</code> (Windows path).</p>
+<h3 id="with-docker-compose">With docker-compose</h3>
+<p>To build and run the image, do the followings:</p>
+<pre><code class="language-bash"># assuming the project dir is /path/to/project
+
+# build stage-1
+docker compose -f /path/to/project/docker-compose.yml build stage-1 --progress=plain --no-cache
+
+# build stage-2
+docker compose -f /path/to/project/docker-compose.yml build stage-2 --progress=plain --no-cache
+
+# start stage-2
+docker compose -f /path/to/project/docker-compose.yml up stage-2
+</code></pre>
+<p>After that, you can ssh into the container with the following command:</p>
+<pre><code class="language-bash">ssh -p 2222 me@127.0.0.1
+</code></pre>
+<h3 id="with-docker-run_1">With docker run</h3>
+<p>If you are using <code>docker run</code> to run the image, you can copy-paste the <code>docker-compose.yml</code> file into <a href="https://www.decomposerize.com/">Decomposerize</a> to get the <code>docker run</code> command. The command will look like this, note that you need to add <code>--gpus all</code> manually:</p>
+<pre><code class="language-bash"># you only need to run stage-2
+docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v d:/code/PeiDocker/build/storage/app:/hard/volume/app -v d:/code/PeiDocker/build/storage/data:/hard/volume/data -v d:/code/PeiDocker/build/storage/workspace:/hard/volume/workspace pei-image:stage-2 /bin/bash
+</code></pre>
+<p><a href="" id="external-storage"></a></p>
+<h2 id="using-docker-volume-as-external-storage">Using docker volume as external storage</h2>
+<p>Using <a href="https://docs.docker.com/storage/volumes/">docker volumes</a> is preferred if you run the image locally, because it is more efficient, and will not get lost when the container is removed. Docker volumes can be created automatically, or <a href="https://docs.docker.com/reference/cli/docker/volume/create/">manually</a> with a given name that can be used to mount the volume to the container. </p>
+<p>This example is based on <a href="#basic-ssh">the basic ssh image</a>, which demonstrates how to use existing docker volumes as external storage. The <code>stage-2</code> image has three external storage directories: <code>app</code>, <code>data</code>, and <code>workspace</code> (note that the directory names are <strong>NOT CUSTOMIZABLE</strong>, they are <strong>predefined</strong>), where <strong>docker volumes</strong> are mounted. </p>
+<pre><code class="language-yaml"># user_config.yml
+stage_1:
+  image:
+    base: ubuntu:24.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+  apt:
+    repo_source: tuna
+stage_2:
+  image:
+    output: pei-image:stage-2
+  storage:
+    app:
+      type: auto-volume
+    data:
+      type: manual-volume
+      volume_name: my_data
+    workspace:
+      type: manual-volume
+      volume_name: my_workspace
+</code></pre>
+<p><code>app</code> is an <strong>auto-volume</strong>, which means it will be created automatically. <code>data</code> and <code>workspace</code> are <strong>manual-volumes</strong>, which means they are created manually with the names <code>my_data</code> and <code>my_workspace</code> first, and then mounted to the container. To create these volumes, use the following commands</p>
+<pre><code class="language-bash">docker volume create my_data
+docker volume create my_workspace
+</code></pre>
+<p>You can check the volumes with <code>docker volume ls</code>.</p>
+<p>If you are using the <a href="https://www.docker.com/products/docker-desktop">docker desktop</a> on Windows, you will see this:</p>
+<p><a class="glightbox" href="../images/docker-desktop-volumes.png" data-type="image" data-width="auto" data-height="auto" data-desc-position="bottom"><img alt="docker desktop volumes" src="../images/docker-desktop-volumes.png" /></a></p>
+<p>In the container, you can access these directories through <code>/soft/app</code>, <code>/soft/data</code>, and <code>/soft/workspace</code>, which are linked to  <code>/app</code>, <code>/data</code>, and <code>/workspace</code> under the <code>/hard/volume</code>.</p>
+<h3 id="with-docker-run_2">With docker run</h3>
+<p>If you are using <code>docker run</code> to run the image, you can copy-paste the <code>docker-compose.yml</code> file into <a href="https://www.decomposerize.com/">Decomposerize</a> to get the <code>docker run</code> command. Note that you will have to create all volumes manully. The command will look like this:</p>
+<pre><code class="language-bash"># using docker run, you will have to create all volumes manually
+docker volume create app
+docker volume create my_data
+docker volume create my_workspace
+docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v app:/hard/volume/app -v data:/hard/volume/data -v workspace:/hard/volume/workspace pei-image:stage-2 /bin/bash
+
+# you don't need to run stage-1
+# docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
+</code></pre>
+<p><a href="" id="miniconda-in-image"></a></p>
+<h2 id="install-miniconda-in-image">Install miniconda in image</h2>
+<p><strong>IMPORTANT NOTE</strong>: The following example is for demonstration purposes only. It is <strong>not recommended</strong> to install miniconda (or any other apps) in the image, because it will make the image size larger, and later modifications (such as <code>conda install xxx</code>) will get lost when container is removed. It is recommended to install miniconda in the volume storage <code>/hard/volume/app</code>, and copy them to the image storage <code>/hard/image/app</code> when you decide to bake them into image. However, <strong>external storage only exists in stage-2</strong>.</p>
+<p>To install miniconda during build, you can make use of custom scripts. PeiDocker allows you to add your scripts in the <code>project_dir/installation/stage-&lt;1,2&gt;/custom</code>, and then specify them in the <code>user_config.yml</code> file.</p>
+<pre><code class="language-yaml"># user_config.yml
+stage_1:
+  image:
+    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+  storage:
+    app:
+      type: image
+    data:
+      type: image
+    workspace:
+      type: image
+  custom:
+    on_build:
+    - stage-2/custom/install-my-conda.sh
+</code></pre>
+<p>In the above example, the script <code>install-my-conda.sh</code> is placed in the <code>project_dir/installation/stage-2/custom</code> directory. The script will be executed during the build of the <code>stage-2</code> image. Below is the content of the script. It first checks if the miniconda installation file exists in the <code>/tmp</code> directory, and if not, downloads it from the tuna mirror. Then it installs miniconda to <code>/hard/image/app/miniconda3</code>, and initializes conda for all users. The conda and pip mirrors are set to the tuna mirror. Important points to note:</p>
+<ul>
+<li>The script is placed in the <code>project_dir/installation/stage-2/custom</code> directory.</li>
+<li>The package files are placed in the <code>project_dir/installation/stage-2/tmp</code> directory.</li>
+<li>You can access the installation directory of the <code>stage-2</code> image using the <code>INSTALL_DIR_CONTAINER_2</code> environment variable, likewise for <code>stage-1</code>. Note it will try to use external storage <code>\hard\volume\app</code> first, but because you have not mounted any external storage, it will use the image storage <code>\hard\image\app</code>.</li>
+<li>During build, you are root, so you shall execute commands for other users using <code>su - $user -c</code>.</li>
+<li>Remember to set DEBIAN_FRONTEND=noninteractive to prevent interactive prompts.</li>
+</ul>
+<pre><code class="language-bash">#!/bin/bash
+
+# prevent interactive prompts
+export DEBIAN_FRONTEND=noninteractive
+
+# INSTALL_DIR_CONTAINER_2 points to where the installation/stage-2 is inside container
+STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
+echo &quot;STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER&quot;
+
+# the installation directory of miniconda3
+# first check for volume storage at /hard/volume/app, if not found, use /hard/image/app
+if [ -d &quot;/hard/volume/app&quot; ]; then
+  # volume storage takes precedence, note that it only exists in stage-2
+  CONDA_INSTALL_DIR=&quot;/hard/volume/app/miniconda3&quot;
+else
+  # otherwise, use the image storage
+  CONDA_INSTALL_DIR=&quot;/hard/image/app/miniconda3&quot;
+fi
+
+# already installed? skip
+if [ -d $CONDA_INSTALL_DIR ]; then
+    echo &quot;miniconda3 is already installed in $CONDA_INSTALL_DIR, skipping ...&quot;
+    exit 0
+fi
+
+# download the miniconda3 installation file yourself, and put it in the tmp directory
+# it will be copied to the container during the build process
+CONDA_PACKAGE_NAME=&quot;Miniconda3-latest-Linux-x86_64.sh&quot;
+
+# are you in arm64 platform? If so, use the arm64 version of miniconda3
+if [ &quot;$(uname -m)&quot; = &quot;aarch64&quot; ]; then
+    CONDA_PACKAGE_NAME=&quot;Miniconda3-latest-Linux-aarch64.sh&quot;
+fi
+
+# download from
+CONDA_DOWNLOAD_URL=&quot;https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/$CONDA_PACKAGE_NAME&quot;
+
+# download to
+CONDA_DOWNLOAD_DST=&quot;$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME&quot;
+
+# if the file does not exist, wget it from tuna
+if [ ! -f $CONDA_DOWNLOAD_DST ]; then
+    echo &quot;downloading miniconda3 installation file ...&quot;
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
+fi
+
+# install miniconda3 unattended
+echo &quot;installing miniconda3 to $CONDA_INSTALL_DIR ...&quot;
+bash $CONDA_DOWNLOAD_DST -b -p $CONDA_INSTALL_DIR
+
+# make conda installation read/write for all users
+echo &quot;setting permissions for $CONDA_INSTALL_DIR ...&quot;
+chmod -R 777 $CONDA_INSTALL_DIR
+
+echo &quot;initializing conda for all users, including root ...&quot;
+
+# conda and pip mirror, for faster python package installation
+# save the following content to a variable
+read -r -d '' CONDA_TUNA &lt;&lt; EOM
+channels:
+  - defaults
+show_channel_urls: true
+default_channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/msys2
+custom_channels:
+  conda-forge: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  msys2: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  bioconda: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  menpo: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  pytorch: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  pytorch-lts: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  simpleitk: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud
+  deepmodeling: https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/
+EOM
+
+# tuna pip mirror
+read -r -d '' PIP_TUNA &lt;&lt; EOM
+[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple/
+
+[install]
+trusted-host=pypi.tuna.tsinghua.edu.cn
+EOM
+
+# aliyun pypi mirror, use it if tuna is slow
+read -r -d '' PIP_ALIYUN &lt;&lt; EOM
+[global]
+index-url = http://mirrors.aliyun.com/pypi/simple/
+
+[install]
+trusted-host=mirrors.aliyun.com
+EOM
+
+# add all user names to USER_LIST
+USER_LIST=&quot;root&quot;
+for user in $(ls /home); do
+    USER_LIST=&quot;$USER_LIST $user&quot;
+done
+
+# for each user in USERS, initialize conda.
+# remember to execute commands in the user context using su - $user -c
+# otherwise the file will be owned by root
+for user in $USER_LIST; do
+    echo &quot;initializing conda for $user ...&quot;
+    su - $user -c &quot;$CONDA_INSTALL_DIR/bin/conda init&quot;
+
+    # if user is root, set home_dir to /root, otherwise /home/$user
+    if [ &quot;$user&quot; = &quot;root&quot; ]; then
+        home_dir=&quot;/root&quot;
+    else
+        home_dir=&quot;/home/$user&quot;
+    fi
+
+    # to use tuna mirror, replace the .condarc file with the pre-configured CONDA_TUNA
+    echo &quot;setting conda mirror for $user ...&quot;    
+    su - $user -c &quot;echo \&quot;$CONDA_TUNA\&quot; &gt; $home_dir/.condarc&quot;
+
+    # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
+    echo &quot;setting pip mirror for $user ...&quot;
+    su - $user -c &quot;mkdir -p $home_dir/.pip&quot;
+    su - $user -c &quot;echo \&quot;$PIP_TUNA\&quot; &gt; $home_dir/.pip/pip.conf&quot;
+done
+
+# create a app-config directory in conda installation directory to save .condarc and .pip directory
+# because when conda is installed in external storage, these files will be lost after container restart
+# we can recover them from app-config if needed
+echo &quot;creating app-config directory in $CONDA_INSTALL_DIR ...&quot;
+mkdir -p $CONDA_INSTALL_DIR/app-config
+
+# copy .condarc and .pip directory to app-config
+echo &quot;copying .condarc and .pip directory to app-config ...&quot;
+cp /root/.condarc $CONDA_INSTALL_DIR/app-config
+cp -r /root/.pip $CONDA_INSTALL_DIR/app-config
+
+# make it accessible to all users
+echo &quot;setting permissions for $CONDA_INSTALL_DIR/app-config ...&quot;
+chmod -R 777 $CONDA_INSTALL_DIR/app-config
+</code></pre>
+<h2 id="install-miniconda-to-external-storage">Install miniconda to external storage</h2>
+<p>To install miniconda to external storage, you can mount external storage (<a class="autorefs autorefs-internal" href="#using-docker-volume-as-external-storage">How to use external storage?</a>) to the <code>/hard/volume/app</code>, so that the miniconda installation will be saved there. The following example demonstrates how to install miniconda to the external storage.</p>
+<p>First, create a docker volume named <code>my_app</code>:</p>
+<pre><code class="language-bash">docker volume create my_app
+</code></pre>
+<p>Then, modify the <code>user_config.yml</code> file as follows:</p>
+<pre><code class="language-yaml">stage_1:
+  image:
+    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+  storage:
+    app:
+      type: manual-volume
+      volume_name: my_app
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+  custom:
+    on_first_run:
+    - stage-2/custom/install-my-conda.sh
+</code></pre>
+<p>The example is based on <a class="autorefs autorefs-internal" href="#install-miniconda-in-image">Install miniconda in image</a>, with the following changes:
+- <code>app</code> is a <strong>manual-volume</strong>, which means it is created manually with the name <code>my_app</code>, and then mounted to the container. To create it, use <code>docker volume create my_app</code>.
+- <code>data</code> and <code>workspace</code> are <strong>auto-volumes</strong>, which means they are created automatically.
+- The <code>install-my-conda.sh</code> script is executed on the first run of the container, to install miniconda3 and setup conda for all users.</p>
+<p><strong>IMPORTANT</strong>: Here comes the critical part for using <code>on_first_run</code> commands. After the commands are run, they modify the <strong>container</strong>, not the <strong>image</strong>. If you want to save the changes to the image, you need to commit the container to the image. If you forgot to do that, changes are not saved, and the first-run commands will be run again when the container is recreated. </p>
+<p>To correct this, commit the container to the image after the first run:</p>
+<pre><code class="language-bash">docker commit &lt;container_id&gt; pei-image:stage-2
+</code></pre>
+<h2 id="moving-external-storage-to-image">Moving external storage to image</h2>
+<p>After you have installed apps to the external storage, you can move it to the image storage. This is useful when you want to bake the installed apps into the image. To do this, just copy the files from the external storage to the image storage. Inside the container, do the followings:</p>
+<pre><code class="language-bash"># inside container
+# just copy /hard/volume/app to /hard/image/app, likewise for other directories
+cp -r /hard/volume/app /hard/image/app
+
+# for data and workspace, if you want to bake them into the image
+# cp -r /hard/volume/data /hard/image/data
+# cp -r /hard/volume/workspace /hard/image/workspace
+</code></pre>
+<p>And then, commit your container to image:</p>
+<pre><code class="language-bash">docker commit &lt;container_id&gt; pei-image:stage-2
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Introduction"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+</script></body>
+</html>
