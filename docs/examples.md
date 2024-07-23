@@ -124,6 +124,7 @@ If you are using `docker run` to run the image, you can copy-paste the `docker-c
 docker run --gpus all -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v d:/code/PeiDocker/build/storage/app:/hard/volume/app -v d:/code/PeiDocker/build/storage/data:/hard/volume/data -v d:/code/PeiDocker/build/storage/workspace:/hard/volume/workspace pei-image:stage-2 /bin/bash
 ```
 
+[](){#external-storage}
 ## Using docker volume as external storage
 
 Using [docker volumes](https://docs.docker.com/storage/volumes/) is preferred if you run the image locally, because it is more efficient, and will not get lost when the container is removed. Docker volumes can be created automatically, or [manually](https://docs.docker.com/reference/cli/docker/volume/create/) with a given name that can be used to mount the volume to the container. 
@@ -191,6 +192,7 @@ docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 -v app:
 # docker run -i -t --add-host host.docker.internal:host-gateway -p 2222:22 pei-image:stage-1 /bin/bash
 ```
 
+[](){#miniconda-in-image}
 ## Install miniconda in image
 
 **IMPORTANT NOTE**: The following example is for demonstration purposes only. It is **not recommended** to install miniconda (or any other apps) in the image, because it will make the image size larger, and later modifications (such as `conda install xxx`) will get lost when container is removed. It is recommended to install miniconda in the volume storage `/hard/volume/app`, and copy them to the image storage `/hard/image/app` when you decide to bake them into image. However, **external storage only exists in stage-2**.
@@ -259,6 +261,12 @@ if [ -d "/hard/volume/app" ]; then
 else
   # otherwise, use the image storage
   CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
+fi
+
+# already installed? skip
+if [ -d $CONDA_INSTALL_DIR ]; then
+    echo "miniconda3 is already installed in $CONDA_INSTALL_DIR, skipping ..."
+    exit 0
 fi
 
 # download the miniconda3 installation file yourself, and put it in the tmp directory
@@ -360,9 +368,83 @@ for user in $USER_LIST; do
     su - $user -c "mkdir -p $home_dir/.pip"
     su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
 done
+
+# create a app-config directory in conda installation directory to save .condarc and .pip directory
+# because when conda is installed in external storage, these files will be lost after container restart
+# we can recover them from app-config if needed
+echo "creating app-config directory in $CONDA_INSTALL_DIR ..."
+mkdir -p $CONDA_INSTALL_DIR/app-config
+
+# copy .condarc and .pip directory to app-config
+echo "copying .condarc and .pip directory to app-config ..."
+cp /root/.condarc $CONDA_INSTALL_DIR/app-config
+cp -r /root/.pip $CONDA_INSTALL_DIR/app-config
+
+# make it accessible to all users
+echo "setting permissions for $CONDA_INSTALL_DIR/app-config ..."
+chmod -R 777 $CONDA_INSTALL_DIR/app-config
 ```
 
 ## Install miniconda to external storage
+
+To install miniconda to external storage, you can mount external storage ([How to use external storage?][external-storage]) to the `/hard/volume/app`, so that the miniconda installation will be saved there. The following example demonstrates how to install miniconda to the external storage.
+
+First, create a docker volume named `my_app`:
+
+```bash
+docker volume create my_app
+```
+
+Then, modify the `user_config.yml` file as follows:
+
+```yaml
+stage_1:
+  image:
+    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    output: pei-image:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2222
+    users:
+      me:
+        password: '123456'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+  storage:
+    app:
+      type: manual-volume
+      volume_name: my_app
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+  custom:
+    on_first_run:
+    - stage-2/custom/install-my-conda.sh
+```
+
+The example is based on [Install miniconda in image][#miniconda-in-image], with the following changes:
+- `app` is a **manual-volume**, which means it is created manually with the name `my_app`, and then mounted to the container. To create it, use `docker volume create my_app`.
+- `data` and `workspace` are **auto-volumes**, which means they are created automatically.
+- The `install-my-conda.sh` script is executed on the first run of the container, to install miniconda3 and setup conda for all users.
+
+**IMPORTANT**: Here comes the critical part for using `on_first_run` commands. After the commands are run, they modify the **container**, not the **image**. If you want to save the changes to the image, you need to commit the container to the image. If you forgot to do that, changes are not saved, and the first-run commands will be run again when the container is recreated. 
+
+To correct this, commit the container to the image after the first run:
+
+```bash
+docker commit <container_id> pei-image:stage-2
+```
 
 ## Moving external storage to image
 

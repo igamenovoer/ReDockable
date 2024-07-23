@@ -446,7 +446,7 @@ class PeiConfigProcessor:
         ]
         
         if filelist:
-            if on_what == 'on_user_login':
+            if on_what == 'on-user-login':
                 # for user login scripts, we use source instead of bash
                 for file in filelist:
                     cmds.append(f"source $DIR/../../{file}")

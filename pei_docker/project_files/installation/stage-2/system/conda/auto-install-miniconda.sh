@@ -17,6 +17,12 @@ else
   CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
 fi
 
+# already installed? skip
+if [ -d $CONDA_INSTALL_DIR ]; then
+    echo "miniconda3 is already installed in $CONDA_INSTALL_DIR, skipping ..."
+    exit 0
+fi
+
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
 CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-x86_64.sh"
@@ -116,3 +122,18 @@ for user in $USER_LIST; do
     su - $user -c "mkdir -p $home_dir/.pip"
     su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
 done
+
+# create a app-config directory in conda installation directory to save .condarc and .pip directory
+# because when conda is installed in external storage, these files will be lost after container restart
+# we can recover them from app-config if needed
+echo "creating app-config directory in $CONDA_INSTALL_DIR ..."
+mkdir -p $CONDA_INSTALL_DIR/app-config
+
+# copy .condarc and .pip directory to app-config
+echo "copying .condarc and .pip directory to app-config ..."
+cp /root/.condarc $CONDA_INSTALL_DIR/app-config
+cp -r /root/.pip $CONDA_INSTALL_DIR/app-config
+
+# make it accessible to all users
+echo "setting permissions for $CONDA_INSTALL_DIR/app-config ..."
+chmod -R 777 $CONDA_INSTALL_DIR/app-config

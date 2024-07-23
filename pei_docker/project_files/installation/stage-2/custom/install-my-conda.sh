@@ -17,6 +17,12 @@ else
   CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
 fi
 
+# already installed? skip
+if [ -d $CONDA_INSTALL_DIR ]; then
+    echo "miniconda3 is already installed in $CONDA_INSTALL_DIR, skipping ..."
+    exit 0
+fi
+
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
 CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-x86_64.sh"
