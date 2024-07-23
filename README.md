@@ -96,6 +96,8 @@ With PeiDocker, you can:
 - Install apps for your container, during or after building, into places such as docker volumes, bind mounts or in-image directory.
 - Run custom commands during image building, when the container starts, or when you SSH into the container.
 
+_For details, please refer to the [Documentation](https://igamenovoer.github.io/PeiDocker/)_
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
