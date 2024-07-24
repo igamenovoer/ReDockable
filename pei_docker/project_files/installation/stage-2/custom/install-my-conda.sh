@@ -122,8 +122,8 @@ for user in $USER_LIST; do
     su - $user -c "mkdir -p $home_dir/.pip"
     su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
 
-    if [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "true" ] || [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "True" ]; then
-      # activate conda and set auto_activate_base to false
-      su - $user -c "$CONDA_INSTALL_DIR/bin/conda activate && $CONDA_INSTALL_DIR/bin/conda config --set auto_activate_base false"
-    fi
+    # if [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "true" ] || [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "True" ]; then
+    #   # activate conda and set auto_activate_base to false
+    #   su - $user -c "$CONDA_INSTALL_DIR/bin/conda activate && $CONDA_INSTALL_DIR/bin/conda config --set auto_activate_base false"
+    # fi
 done
