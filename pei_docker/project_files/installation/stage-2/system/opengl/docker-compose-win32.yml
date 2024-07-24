@@ -1,4 +1,5 @@
 # example about how to use opengl in windows
+# this is from https://github.com/microsoft/wslg/wiki/GPU-selection-in-WSLg
 
 services:
     ros:
