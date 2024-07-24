@@ -115,10 +115,15 @@ for user in $USER_LIST; do
 
     # to use tuna mirror, replace the .condarc file with the pre-configured CONDA_TUNA
     echo "setting conda mirror for $user ..."    
-    su - $user -c "echo \"$CONDA_TUNA\" > $home_dir/.condarc"
+    su - $user -c "echo \"$CONDA_TUNA\" >> $home_dir/.condarc"
 
     # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
     echo "setting pip mirror for $user ..."
     su - $user -c "mkdir -p $home_dir/.pip"
     su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
+
+    if [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "true" ] || [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "True" ]; then
+      # activate conda and set auto_activate_base to false
+      su - $user -c "$CONDA_INSTALL_DIR/bin/conda activate && $CONDA_INSTALL_DIR/bin/conda config --set auto_activate_base false"
+    fi
 done

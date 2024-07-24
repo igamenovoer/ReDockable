@@ -1,0 +1,31 @@
+#!/bin/bash
+
+
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update
+
+# dev tools
+apt-get -y install cmake cmake-curses-gui pkg-config \
+            python python3 python3-pip \
+            build-essential ninja-build mc \
+            clang clangd
+
+
+# heavy libs
+apt-get -y install libopencv-dev libeigen3-dev libssl-dev \
+            ffmpeg libsm6 libxext6 \
+            libcgal-dev libboost-all-dev \
+            pybind11-dev pybind11-json-dev python3-pybind11 \
+
+# algorithms
+apt-get -y install libnanoflann-dev libxtensor-dev libflann-dev
+
+# utilities
+apt-get -y install libspdlog-dev
+
+# file and serialization
+apt-get -y install libcereal-dev nlohmann-json3-dev libflatbuffers-dev libyaml-cpp-dev libprotobuf-dev
+
+# visualization
+apt-get -y install qimgv

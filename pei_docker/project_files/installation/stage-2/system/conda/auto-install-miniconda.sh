@@ -106,6 +106,12 @@ for user in $USER_LIST; do
     echo "initializing conda for $user ..."
     su - $user -c "$CONDA_INSTALL_DIR/bin/conda init"
 
+    # if DISABLE_CONDA_AUTO_ACTIVATE is set, disable conda auto activate
+    if [ "$DISABLE_CONDA_AUTO_ACTIVATE" = "true" ]; then
+        echo "disabling conda auto activate for $user ..."
+        su - $user -c "$CONDA_INSTALL_DIR/bin/conda config --set auto_activate_base false"
+    fi
+
     # if user is root, set home_dir to /root, otherwise /home/$user
     if [ "$user" = "root" ]; then
         home_dir="/root"
@@ -122,18 +128,3 @@ for user in $USER_LIST; do
     su - $user -c "mkdir -p $home_dir/.pip"
     su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
 done
-
-# create a app-config directory in conda installation directory to save .condarc and .pip directory
-# because when conda is installed in external storage, these files will be lost after container restart
-# we can recover them from app-config if needed
-echo "creating app-config directory in $CONDA_INSTALL_DIR ..."
-mkdir -p $CONDA_INSTALL_DIR/app-config
-
-# copy .condarc and .pip directory to app-config
-echo "copying .condarc and .pip directory to app-config ..."
-cp /root/.condarc $CONDA_INSTALL_DIR/app-config
-cp -r /root/.pip $CONDA_INSTALL_DIR/app-config
-
-# make it accessible to all users
-echo "setting permissions for $CONDA_INSTALL_DIR/app-config ..."
-chmod -R 777 $CONDA_INSTALL_DIR/app-config
