@@ -6,17 +6,12 @@ export DEBIAN_FRONTEND=noninteractive
 apt-get update
 
 # dev tools
-apt-get -y install cmake cmake-curses-gui pkg-config \
-            python python3 python3-pip \
-            build-essential ninja-build mc \
-            clang clangd
-
+apt-get -y install cmake cmake-curses-gui pkg-config mc
+apt-get -y install ninja-build 
+apt-get -y install clang clangd
 
 # heavy libs
-apt-get -y install libopencv-dev libeigen3-dev libssl-dev \
-            ffmpeg libsm6 libxext6 \
-            libcgal-dev libboost-all-dev \
-            pybind11-dev pybind11-json-dev python3-pybind11 \
+apt-get -y install libopencv-dev libeigen3-dev libssl-dev ffmpeg libsm6 libxext6 libcgal-dev libboost-all-dev pybind11-dev pybind11-json-dev python3-pybind11
 
 # algorithms
 apt-get -y install libnanoflann-dev libxtensor-dev libflann-dev
