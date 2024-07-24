@@ -1,0 +1,32 @@
+# example about how to use opengl in windows
+
+services:
+    ros:
+        container_name: test
+        volumes:
+            - /tmp/.X11-unix:/tmp/.X11-unix
+            - /mnt/wslg:/mnt/wslg
+            - /usr/lib/wsl:/usr/lib/wsl
+            - /dev:/dev
+        environment:
+            - DISPLAY=unix$DISPLAY
+            - WAYLAND_DISPLAY=$WAYLAND_DISPLAY
+            - NVIDIA_DRIVER_CAPABILITIES=all
+            - LD_LIBRARY_PATH=/usr/lib/wsl/lib
+        devices:
+            - /dev/dxg
+            - /dev/dri:/dev/dri
+        stdin_open: true
+        tty: true
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - driver: nvidia
+                          count: all
+                          capabilities:
+                              - gpu
+        privileged: true
+        network_mode: host
+        image: osrf/ros:jazzy-desktop-full
+        command: /bin/bash

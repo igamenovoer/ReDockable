@@ -28,9 +28,9 @@ def create(project_dir : str, with_examples : bool):
     os.makedirs(project_dir, exist_ok=True)
     
     # the directory should be empty
-    if len(os.listdir(project_dir)) > 0:
-        logging.error(f'Directory {project_dir} is not empty')
-        return
+    # if len(os.listdir(project_dir)) > 0:
+    #     logging.error(f'Directory {project_dir} is not empty')
+    #     return
     
     # copy all the files and folders in project_files to the output dir
     this_dir : str = os.path.dirname(os.path.realpath(__file__))
@@ -40,7 +40,7 @@ def create(project_dir : str, with_examples : bool):
         d = os.path.join(project_dir, item)
         if os.path.isdir(s):
             logging.info(f'Copying directory {s} to {d}')
-            shutil.copytree(s, d)
+            shutil.copytree(s, d, dirs_exist_ok=True)
         else:
             logging.info(f'Copying file {s} to {d}')
             shutil.copy2(s, d)
@@ -64,7 +64,7 @@ def create(project_dir : str, with_examples : bool):
         # copy this dir to project_dir/examples
         examples_dst_dir : str = f'{project_dir}/examples'
         logging.info(f'Copying examples from {examples_dir} to {examples_dst_dir}')
-        shutil.copytree(examples_dir, examples_dst_dir)
+        shutil.copytree(examples_dir, examples_dst_dir, dirs_exist_ok=True)
         
     logging.info('Done')
         
