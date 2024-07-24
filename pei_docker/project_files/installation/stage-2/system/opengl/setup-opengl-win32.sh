@@ -18,22 +18,13 @@ apt-get -y install \
     && apt-get -y autoremove \
     && apt-get clean
 
-# ENV LD_LIBRARY_PATH=/usr/lib/wsl/lib
-# ENV LIBVA_DRIVER_NAME=d3d12
+# to use the NVIDIA GPU, set the below env variable
+# otherwise it will use the integrated GPU
+# if OPENGL_USE_NVIDIA_GPU is set to true, then use the NVIDIA GPU
+if [ "$OPENGL_USE_NVIDIA_GPU" = "true" ]; then
+    echo "export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA" >> /etc/profile.d/opengl.sh
+fi
 
-# echo "libGLVND installed, copying the nvidia json file"
-# cp $DIR/10_nvidia.json /usr/share/glvnd/egl_vendor.d/10_nvidia.json
-
-# setup environment for OpenGL
-echo "Setting up environment for OpenGL"
-
-# add the below env variables to profile.d opengl.sh
-# export NVIDIA_VISIBLE_DEVICES="all"
-# export NVIDIA_DRIVER_CAPABILITIES="graphics,utility,compute"
-# export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/nvidia/lib:/usr/local/nvidia/lib64"
-
-# echo "export LIBVA_DRIVER_NAME=d3d12" >> /etc/profile.d/opengl.sh
-echo "export MESA_D3D12_DEFAULT_ADAPTER_NAME=NVIDIA" >> /etc/profile.d/opengl.sh
 echo "export NVIDIA_VISIBLE_DEVICES=\"all\"" >> /etc/profile.d/opengl.sh
 echo "export NVIDIA_DRIVER_CAPABILITIES=\"all\"" >> /etc/profile.d/opengl.sh
 echo "export LD_LIBRARY_PATH=\"\${LD_LIBRARY_PATH}:/usr/lib/wsl/lib\"" >> /etc/profile.d/opengl.sh

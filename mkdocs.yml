@@ -3,6 +3,7 @@ site_name: PeiDocker
 nav:
 - Introduction: index.md
 - Examples: examples.md
+- Advanced Examples: advanced_examples.md
 
 theme: readthedocs
 
