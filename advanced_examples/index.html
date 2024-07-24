@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Advanced Examples - PeiDocker</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Advanced Examples";
+        var mkdocs_page_input_path = "advanced_examples.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+ <link href="../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+    html.glightbox-open { overflow: initial; height: 100%; }
+    .gslide-title { margin-top: 0px; user-select: text; }
+    .gslide-desc { color: #666; user-select: text; }
+    .gslide-image img { background: white; }</style> <script src="../assets/javascripts/glightbox.min.js"></script></head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> PeiDocker
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Introduction</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../examples/">Examples</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Advanced Examples</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#hardware-accelerated-opengl">Hardware-accelerated OpenGL</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#windows">Windows</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">PeiDocker</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Advanced Examples</li>
+    <li class="wy-breadcrumbs-aside">
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="advanced-examples">Advanced Examples</h1>
+<h2 id="hardware-accelerated-opengl">Hardware-accelerated OpenGL</h2>
+<h3 id="windows">Windows</h3>
+<p>The following example demonstrates how to build a Docker image with hardware-accelerated OpenGL support on Windows. The critical part is to: </p>
+<ul>
+<li>
+<p>install necessary packages (e.g., <code>libglvnd-dev</code>) in the Dockerfile, see <a href="https://github.com/igamenovoer/PeiDocker/blob/627abb919fca23a24e7bc95da0af9c6ac9c88166/pei_docker/project_files/installation/stage-2/system/opengl/setup-opengl-win32.sh">setup-opengl-win32.sh</a></p>
+</li>
+<li>
+<p>mount the necessary directories for WSLg to work properly, see <a href="https://github.com/microsoft/wslg/wiki/GPU-selection-in-WSLg">WSLg GPU selection</a>.</p>
+</li>
+</ul>
+<pre><code class="language-yaml"># all paths are relative to /installation directory
+# for windows, you need to add these to the final docker-compose.yml file
+# see https://github.com/microsoft/wslg/wiki/GPU-selection-in-WSLg
+
+# volumes:
+#     - /tmp/.X11-unix:/tmp/.X11-unix
+#     - /mnt/wslg:/mnt/wslg
+#     - /usr/lib/wsl:/usr/lib/wsl
+#     - /dev:/dev
+
+stage_1:
+  # input/output image settings
+  image:
+    base: nvidia/cuda:12.3.2-base-ubuntu22.04    
+    output: pei-opengl:stage-1
+
+  # ssh settings
+  ssh:
+    enable: true
+    port: 22  # port in container
+    host_port: 2222  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: '123456'
+
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
+    remove_after_build: false # remove global proxy after build?
+    use_https: false # use https proxy?
+
+
+  # apt settings
+  apt:
+    repo_source: 'tuna'
+
+  # device settings
+  device:
+    type: gpu # can be cpu or gpu
+
+stage_2:
+
+  # input/output image settings
+  image:
+    output: pei-opengl:stage-2
+
+  # additional environment variables
+  # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+  environment:  # use list intead of dict
+    NVIDIA_VISIBLE_DEVICES: all
+    NVIDIA_DRIVER_CAPABILITIES: all
+
+  # device settings, will override the stage-1 device settings
+  device:
+    type: gpu # can be cpu or gpu
+
+  storage:
+    app:
+      type: auto-volume
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+
+  # custom scripts in stage-2, run after stage-1 custom scripts
+  custom:
+    # scripts run during build
+    on_build: 
+      - 'stage-2/system/opengl/setup-opengl-win32.sh' # install opengl
+</code></pre>
+<pre><code class="language-yaml"># this is the docker-compose.yml file
+
+version: '3'
+services:
+  stage-2:
+    image: pei-opengl:stage-2
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities:
+            - gpu
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    build:
+      context: .
+      dockerfile: stage-2.Dockerfile
+      extra_hosts:
+      - host.docker.internal:host-gateway
+      args:
+        BASE_IMAGE: pei-opengl:stage-1
+        WITH_ESSENTIAL_APPS: true
+        INSTALL_DIR_HOST_2: ./installation/stage-2
+        INSTALL_DIR_CONTAINER_2: /pei-init/stage-2
+        PEI_PREFIX_APPS: app
+        PEI_PREFIX_DATA: data
+        PEI_PREFIX_WORKSPACE: workspace
+        PEI_PREFIX_VOLUME: volume
+        PEI_PREFIX_IMAGE: image
+        PEI_PATH_HARD: /hard
+        PEI_PATH_SOFT: /soft
+        PEI_HTTP_PROXY_2: http://host.docker.internal:7890
+        PEI_HTTPS_PROXY_2: http://host.docker.internal:7890
+        ENABLE_GLOBAL_PROXY: false
+        REMOVE_GLOBAL_PROXY_AFTER_BUILD: false
+    ports:
+    - '2222:22'
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    volumes:
+    - app:/hard/volume/app
+    - data:/hard/volume/data
+    - workspace:/hard/volume/workspace
+    - /tmp/.X11-unix:/tmp/.X11-unix # for wslg
+    - /mnt/wslg:/mnt/wslg   # for wslg
+    - /usr/lib/wsl:/usr/lib/wsl # for wslg
+    - /dev:/dev # for wslg
+  stage-1:
+    image: pei-opengl:stage-1
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            capabilities:
+            - gpu
+    environment: {}
+    extra_hosts:
+    - host.docker.internal:host-gateway
+    build:
+      context: .
+      dockerfile: stage-1.Dockerfile
+      extra_hosts:
+      - host.docker.internal:host-gateway
+      args:
+        BASE_IMAGE: nvidia/cuda:12.3.2-base-ubuntu22.04
+        WITH_ESSENTIAL_APPS: true
+        WITH_SSH: true
+        SSH_USER_NAME: me
+        SSH_USER_PASSWORD: '123456'
+        SSH_PUBKEY_FILE: ''
+        APT_SOURCE_FILE: tuna
+        KEEP_APT_SOURCE_FILE: true
+        APT_USE_PROXY: false
+        APT_KEEP_PROXY: false
+        PEI_HTTP_PROXY_1: http://host.docker.internal:7890
+        PEI_HTTPS_PROXY_1: http://host.docker.internal:7890
+        ENABLE_GLOBAL_PROXY: false
+        REMOVE_GLOBAL_PROXY_AFTER_BUILD: false
+        INSTALL_DIR_HOST_1: ./installation/stage-1
+        INSTALL_DIR_CONTAINER_1: /pei-init/stage-1
+        ROOT_PASSWORD: ''
+    ports:
+    - '2222:22'
+volumes:
+  app: {}
+  data: {}
+  workspace: {}
+</code></pre>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../examples/" class="btn btn-neutral float-left" title="Examples"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+    
+      <span><a href="../examples/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+<script id="init-glightbox">const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});
+</script></body>
+</html>
