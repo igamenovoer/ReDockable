@@ -1,0 +1,52 @@
+# heavy duty cpp development, install a lot of things
+
+stage_1:
+  # input/output image settings
+  image:
+    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    output: pei-image:stage-1
+
+  # ssh settings
+  ssh:
+    port: 22  # port in container
+    host_port: 2222  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: '123456'
+      root: # you can configure root user here
+        password: root
+        pubkey_file: null
+
+  device:
+    type: gpu
+
+  apt:
+    repo_source: 'tuna'
+
+  # additional mounts
+  mount:
+    # save apt cache, to speed up future installations
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
+    
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+
+  # additional mounts
+  mount:
+    # save home directory to volume, so that it will not get lost after container deletion
+    home_me:
+      type: auto-volume
+      dst_path: /home/me
+
+    # mount will not be inherited from stage-1
+    # you need to mount it again, or otherwise it will not be mounted
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt

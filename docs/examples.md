@@ -89,7 +89,69 @@ stage_2:
 
 ### External storage with host directory
 
-The `stage-2` image has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, they are **predefined), where specified host directories are mounted. In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`. In this example, the host directories are `d:/code/PeiDocker/build/storage/app`, `d:/code/PeiDocker/build/storage/data`, and `d:/code/PeiDocker/build/storage/workspace` (Windows path).
+The `stage-2` image has three external storage directories: `app`, `data`, and `workspace` (note that the directory names are **NOT CUSTOMIZABLE**, for arbitrary mounts, see [the next section][mount-additional-volumes]), where specified host directories are mounted. In the container, you can access these directories through `/soft/app`, `/soft/data`, and `/soft/workspace`, which are linked to  `/app`, `/data`, and `/workspace` under the `/hard/volume`. In this example, the host directories are `d:/code/PeiDocker/build/storage/app`, `d:/code/PeiDocker/build/storage/data`, and `d:/code/PeiDocker/build/storage/workspace` (Windows path).
+
+[](){#mount-additional-volumes}
+### Mounting arbitrary volumes or directories
+
+You can mount additional volumes or directories to the container by adding them to the `mount` section. The following example demonstrates how to mount the `apt_cache` directory to the container's `/var/cache/apt` directory, in this way, the apt cache will be saved for future use. `home_me` is mounted to `/home/me` to save the home directory to a volume, so that it will not get lost after the container is deleted. 
+
+Unlike `app`, `data`, and `workspace`, the mounted volumes `apt_cache` and `home_me` will not be linked to `/soft`, they are mounted directly to the container and not managed by PeiDocker. You can also use `manual-volume` (with `volume_name` set) or `host` (with `host_path` set) in ther `type` though.
+
+```yaml
+# heavy duty cpp development, install a lot of things
+
+stage_1:
+  # input/output image settings
+  image:
+    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    output: pei-image:stage-1
+
+  # ssh settings
+  ssh:
+    port: 22  # port in container
+    host_port: 2222  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: '123456'
+      root: # you can configure root user here
+        password: root
+        pubkey_file: null
+
+  device:
+    type: gpu
+
+  apt:
+    repo_source: 'tuna'
+
+  # additional mounts
+  mount:
+    # save apt cache, to speed up future installations
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
+    
+stage_2:
+  image:
+    output: pei-image:stage-2
+  device:
+    type: gpu
+
+  # additional mounts
+  mount:
+    # save home directory to volume, so that it will not get lost after container deletion
+    home_me:
+      type: auto-volume
+      dst_path: /home/me
+
+    # mount will not be inherited from stage-1
+    # you need to mount it again, or otherwise it will not be mounted
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
+```
 
 ### With docker-compose
 

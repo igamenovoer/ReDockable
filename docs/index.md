@@ -199,6 +199,16 @@ stage_1:
   device:
     type: cpu # can be cpu or gpu
 
+  # mount external volumes to container
+  # the volumes can be given any names, mounted anywhere
+  # mount section does NOT transfer to the next stage, so you need to define them again in stage-2
+  mount:
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
+      host_path: null
+      volume_name: null
+
   # custom scripts
   custom:
     # scripts run during build
@@ -265,6 +275,21 @@ stage_2:
       volume_name: null
     workspace:
       type: auto-volume
+      host_path: null
+      volume_name: null
+
+  # mount external volumes to container
+  # the volumes can be given any names, mounted anywhere
+  # the volume type cannot be 'image', or otherwise it will be ignored
+  mount:
+    home_me:
+      type: auto-volume   # auto-volume, manual-volume, host
+      dst_path: /home/me
+      host_path: null
+      volume_name: null
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
       host_path: null
       volume_name: null
 
