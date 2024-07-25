@@ -49,10 +49,15 @@ stage_1:
 
   # custom scripts
   custom:
-    # scripts run during build
-    on_build: 
+    # scripts run after first run, to make use of apt cache
+    on_first_run: 
       - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
       - 'stage-1/contrib/igamenovoer/install-cpp-libs.sh'
+
+  mount:
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
     
 stage_2:
 
@@ -85,3 +90,12 @@ stage_2:
   custom:
     on_first_run: 
       - 'stage-2/system/conda/auto-install-miniconda.sh'  # install miniconda
+
+  # additional mounts
+  mount:
+    home_me:
+      type: auto-volume
+      dst_path: /home/igamenovoer
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt

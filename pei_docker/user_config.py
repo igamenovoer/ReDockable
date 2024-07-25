@@ -112,6 +112,7 @@ class StorageOption:
     type : str = field(validator=av.in_(StorageTypes.get_all_types()))
     host_path : str | None = field(default=None)
     volume_name : str | None = field(default=None)
+    dst_path : str | None = field(default=None)
     
     def __attrs_post_init__(self):
         if self.type == 'manual-volume' and self.volume_name is None:
@@ -139,6 +140,7 @@ class StageConfig:
     device : DeviceConfig | None = field(default=None)
     custom : CustomScriptConfig | None = field(default=None)
     storage : dict[str, StorageOption] | None = field(factory=dict)
+    mount: dict[str, StorageOption] | None = field(factory=dict)
     
     def get_port_mapping_as_dict(self) -> dict[int, int]:
         ''' get port mapping as a dict mapping host port to container port

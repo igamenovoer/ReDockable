@@ -414,38 +414,49 @@ class PeiConfigProcessor:
             # env_strings : list[str] = [f'{k}={v}' for k, v in env_dict.items()]
             oc.OmegaConf.update(stage_compose, 'environment', env_dict)
             
-            # stage 2 storage
-            if ith_stage == 0:
-                assert stage_config.storage is None or len(stage_config.storage) == 0, 'Storage is only available for stage 2'
-            else:   # at stage 2
-                vol_strings : list[str] = []
-                for prefix, storage_opt in stage_config.storage.items():
+            # deal with storage
+            name2storage : dict[str, StorageOption] = {}
+            if stage_config.storage is not None and ith_stage==1:   # only stage 2 has storage
+                name2storage.update(stage_config.storage)
+            if stage_config.mount is not None:
+                name2storage.update(stage_config.mount)
+                
+            # create storage in docker compose
+            vol_mapping_strings : list[str] = []
+            for prefix, storage_opt in name2storage.items():
+                # in-container path
+                if prefix in StoragePrefixes.get_all_prefixes():
                     vol_path = StoragePaths.HardVolume + '/' + prefix
-                    if storage_opt.type == StorageTypes.AutoVolume:
-                        # add volume to docker compose
-                        oc.OmegaConf.update(compose_template, f'volumes.{prefix}', {})
-                        
-                        # map volume to soft path
-                        vol_strings.append(f'{prefix}:{vol_path}')
-                    elif storage_opt.type == StorageTypes.ManualVolume:
-                        assert storage_opt.volume_name is not None, 'volume_name must be provided for manual-volume storage'
-                        
-                        # add volume to docker compose
-                        oc.OmegaConf.update(compose_template, f'volumes.{prefix}', 
-                                            {'external': True, 'name': storage_opt.volume_name})
-                        
-                        # map volume to soft path
-                        vol_strings.append(f'{prefix}:{vol_path}')
-                    elif storage_opt.type == StorageTypes.Host:
-                        assert storage_opt.host_path is not None, 'host_path must be provided for host storage'
-                        
-                        # map host path to soft path
-                        vol_strings.append(f'{storage_opt.host_path}:{vol_path}')
-                    elif storage_opt.type == StorageTypes.Image:
-                        # nothing to do here
-                        pass
-                # write to compose
-                oc.OmegaConf.update(stage_compose, 'volumes', vol_strings)
+                else:
+                    vol_path = storage_opt.dst_path
+                    
+                # mapping
+                if storage_opt.type == StorageTypes.AutoVolume:
+                    # add volume to docker compose
+                    oc.OmegaConf.update(compose_template, f'volumes.{prefix}', {})
+                    
+                    # map volume to soft path
+                    vol_mapping_strings.append(f'{prefix}:{vol_path}')
+                elif storage_opt.type == StorageTypes.ManualVolume:
+                    assert storage_opt.volume_name is not None, 'volume_name must be provided for manual-volume storage'
+                    
+                    # add volume to docker compose
+                    oc.OmegaConf.update(compose_template, f'volumes.{prefix}', 
+                                        {'external': True, 'name': storage_opt.volume_name})
+                    
+                    # map volume to soft path
+                    vol_mapping_strings.append(f'{prefix}:{vol_path}')
+                elif storage_opt.type == StorageTypes.Host:
+                    assert storage_opt.host_path is not None, 'host_path must be provided for host storage'
+                    
+                    # map host path to soft path
+                    vol_mapping_strings.append(f'{storage_opt.host_path}:{vol_path}')
+                elif storage_opt.type == StorageTypes.Image:
+                    # nothing to do here
+                    pass
+            
+            # write to compose
+            oc.OmegaConf.update(stage_compose, 'volumes', vol_mapping_strings)
         
     def _generate_script_text(self, on_what:str, filelist : list[str] | None) -> str:
         ''' generate the script commands that will run all user scripts
