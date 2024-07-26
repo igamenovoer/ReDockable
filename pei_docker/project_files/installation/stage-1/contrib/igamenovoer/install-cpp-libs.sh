@@ -20,7 +20,7 @@ apt-get -y install libnanoflann-dev libxtensor-dev libflann-dev
 apt-get -y install libspdlog-dev
 
 # file and serialization
-apt-get -y install libcereal-dev nlohmann-json3-dev libflatbuffers-dev libyaml-cpp-dev libprotobuf-dev
+apt-get -y install libcereal-dev nlohmann-json3-dev libflatbuffers-dev libyaml-cpp-dev libprotobuf-dev libtinyobjloader-dev
 
 # visualization
 apt-get -y install qimgv
