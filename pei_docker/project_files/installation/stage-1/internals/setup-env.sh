@@ -52,6 +52,7 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     # replace normal sources and security sources
     sed -i 's/archive.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' $CURRENT_APT_SOURCE
     sed -i 's/security.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' $CURRENT_APT_SOURCE
+    sed -i 's/ports.ubuntu.com/mirrors.tuna.tsinghua.edu.cn/g' $CURRENT_APT_SOURCE
     
   # if APT_SOURCE_FILE is 'aliyun', use aliyun mirrors
   # replace archive.ubuntu.com with mirrors.aliyun.com
@@ -61,6 +62,7 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     # replace normal sources and security sources
     sed -i 's/archive.ubuntu.com/mirrors.aliyun.com/g' $CURRENT_APT_SOURCE
     sed -i 's/security.ubuntu.com/mirrors.aliyun.com/g' $CURRENT_APT_SOURCE
+    sed -i 's/ports.ubuntu.com/mirrors.aliyun.com/g' $CURRENT_APT_SOURCE
 
   # if APT_SOURCE_FILE is '163', use 163 mirrors
   # replace archive.ubuntu.com with mirrors.163.com
@@ -70,6 +72,7 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     # replace normal sources and security sources
     sed -i 's/archive.ubuntu.com/mirrors.163.com/g' $CURRENT_APT_SOURCE
     sed -i 's/security.ubuntu.com/mirrors.163.com/g' $CURRENT_APT_SOURCE
+    sed -i 's/ports.ubuntu.com/mirrors.163.com/g' $CURRENT_APT_SOURCE
 
   # if APT_SOURCE_FILE is 'ustc', use ustc mirrors
   # replace archive.ubuntu.com with mirrors.ustc.edu.cn
@@ -79,6 +82,7 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     # replace normal sources and security sources
     sed -i 's/archive.ubuntu.com/mirrors.ustc.edu.cn/g' $CURRENT_APT_SOURCE
     sed -i 's/security.ubuntu.com/mirrors.ustc.edu.cn/g' $CURRENT_APT_SOURCE
+    sed -i 's/ports.ubuntu.com/mirrors.ustc.edu.cn/g' $CURRENT_APT_SOURCE
   
   # if APT_SOURCE_FILE is 'cn', use cn mirrors
   # replace archive.ubuntu.com with cn.archive.ubuntu.com
@@ -88,6 +92,7 @@ if [ -n "$APT_SOURCE_FILE" ]; then
     # replace normal sources and security sources
     sed -i 's/archive.ubuntu.com/cn.archive.ubuntu.com/g' $CURRENT_APT_SOURCE
     sed -i 's/security.ubuntu.com/cn.archive.ubuntu.com/g' $CURRENT_APT_SOURCE
+    sed -i 's/ports.ubuntu.com/cn.ports.ubuntu.com/g' $CURRENT_APT_SOURCE
   else
     # copy the new sources.list
     cp $APT_SOURCE_FILE $CURRENT_APT_SOURCE

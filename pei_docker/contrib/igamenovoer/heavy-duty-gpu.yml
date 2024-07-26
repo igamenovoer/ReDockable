@@ -84,9 +84,6 @@ stage_2:
       host_path: null
       volume_name: ig-workspace
 
-  environment:
-    - DISABLE_CONDA_AUTO_ACTIVATE=true # disable auto activate conda base environment
-
   custom:
     on_first_run: 
       - 'stage-2/system/conda/auto-install-miniconda.sh'  # install miniconda
