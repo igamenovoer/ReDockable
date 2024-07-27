@@ -14,10 +14,10 @@ apt-get -y install clang clangd lldb gdb
 apt-get -y install libopencv-dev libeigen3-dev libssl-dev ffmpeg libsm6 libxext6 libcgal-dev libboost-all-dev pybind11-dev pybind11-json-dev python3-pybind11
 
 # algorithms
-apt-get -y install libnanoflann-dev libxtensor-dev libflann-dev
+apt-get -y install libnanoflann-dev libxtensor-dev libflann-dev libglm-dev
 
 # utilities
-apt-get -y install libspdlog-dev
+apt-get -y install libspdlog-dev libmsgpack-dev
 
 # file and serialization
 apt-get -y install libcereal-dev nlohmann-json3-dev libflatbuffers-dev libyaml-cpp-dev libprotobuf-dev libtinyobjloader-dev
