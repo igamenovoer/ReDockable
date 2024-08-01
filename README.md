@@ -162,11 +162,11 @@ cd ./build
 
 # Build the stage-1 image
 # By default, the image is named pei-image:stage-1, you can change it in user_config.yml
-docker-compose build stage-1 --progress=plain
+docker compose build stage-1 --progress=plain
 
 # Build the stage-2 image
 # By default, the image is named pei-image:stage-2
-docker-compose build stage-2 --progress=plain
+docker compose build stage-2 --progress=plain
 ```
 
 Run the docker container:
