@@ -23,4 +23,4 @@ apt-get -y install libspdlog-dev libmsgpack-dev
 apt-get -y install libcereal-dev nlohmann-json3-dev libflatbuffers-dev libyaml-cpp-dev libprotobuf-dev libtinyobjloader-dev
 
 # visualization
-apt-get -y install qimgv
+apt-get -y install qimgv qt6-base-dev
