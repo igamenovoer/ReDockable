@@ -3,7 +3,8 @@
 stage_1:
   # input/output image settings
   image:
-    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    # base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    base: nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
     output: ig-heavy-gpu:stage-1
 
   # ssh settings
