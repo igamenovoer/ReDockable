@@ -3,7 +3,13 @@
 # download and install latest opencv
 
 # install dependencies
-sudo apt install libhdf5-dev qt6-base-dev
+sudo apt update
+
+# use qt6 for gui
+sudo apt install -y qt6-base-dev libqt6core5compat6-dev libglx-dev libgl1-mesa-dev 
+
+# use ninja for building, hdf5-dev for reading and writing hdf5 files
+sudo apt install -y libhdf5-dev ninja-build
 
 # check if cuda-toolkit is installed, whose name is cuda-toolkit-xxx
 # if not, raise an error
@@ -72,6 +78,7 @@ cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DBUILD_opencv_python2=OFF \
     -DBUILD_opencv_python3=OFF \
     -DBUILD_opencv_legacy=OFF \
+    -DOPENCV_GENERATE_PKGCONFIG=ON \
     -DWITH_QT=ON \
     -DWITH_CUDA=ON \
     -DOPENCV_DNN_CUDA=ON \
