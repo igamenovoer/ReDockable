@@ -8,7 +8,7 @@ apt-get update
 # dev tools
 apt-get -y install cmake cmake-curses-gui pkg-config mc
 apt-get -y install ninja-build 
-apt-get -y install clang clangd lldb gdb
+apt-get -y install clang clangd lldb gdb clang-format cmake-format
 
 # heavy libs
 apt-get -y install libopencv-dev libeigen3-dev libssl-dev ffmpeg libsm6 libxext6 libcgal-dev libboost-all-dev pybind11-dev pybind11-json-dev python3-pybind11
