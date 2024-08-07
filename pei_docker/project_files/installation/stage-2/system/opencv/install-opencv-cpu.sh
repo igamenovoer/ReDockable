@@ -84,3 +84,6 @@ rm -rf $build_dir
 
 # good to go
 echo "opencv-gpu is now installed"
+
+# make sure the system can find the opencv libraries
+sudo ldconfig -v
