@@ -1,0 +1,39 @@
+stage_1:
+  image:
+    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    output: python-gl:stage-1
+  ssh:
+    enable: true
+    port: 22
+    host_port: 2345
+    users:
+      me:
+        password: '123456'
+      root:
+        password: root
+  apt:
+    repo_source: tuna
+  device:
+    type: gpu
+
+stage_2:
+  image:
+    output: python-gl:stage-2
+  device:
+    type: gpu
+  storage:
+    app:
+      type: manual-volume
+      volume_name: python-gl-app
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+  mount:
+    python-gl-home-me:
+      type: auto-volume
+      dst_path: /home/me
+  custom:
+    on_first_run:
+    - stage-2/system/conda/auto-install-miniconda.sh
+    - stage-2/system/opengl/setup-opengl-win32.sh

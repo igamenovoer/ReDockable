@@ -87,7 +87,7 @@ EOM
 # aliyun pypi mirror, use it if tuna is slow
 read -r -d '' PIP_ALIYUN << EOM
 [global]
-index-url = http://mirrors.aliyun.com/pypi/simple/
+index-url = https://mirrors.aliyun.com/pypi/simple/
 
 [install]
 trusted-host=mirrors.aliyun.com
@@ -120,5 +120,5 @@ for user in $USER_LIST; do
     # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
     echo "setting pip mirror for $user ..."
     su - $user -c "mkdir -p $home_dir/.pip"
-    su - $user -c "echo \"$PIP_TUNA\" > $home_dir/.pip/pip.conf"
+    su - $user -c "echo \"$PIP_ALIYUN\" > $home_dir/.pip/pip.conf"
 done

@@ -14,6 +14,7 @@ apt-get -y install \
     freeglut3-dev \
     mesa-utils \
     mesa-utils-extra \
+    xvfb \
     glmark2 \
     && apt-get -y autoremove \
     && apt-get clean
