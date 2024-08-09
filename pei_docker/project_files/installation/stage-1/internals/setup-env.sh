@@ -106,6 +106,10 @@ fi
 if [ -n "$APT_NUM_RETRY" ]; then
   echo "Setting APT::Acquire::Retries \"$APT_NUM_RETRY\";"
   echo "APT::Acquire::Retries \"$APT_NUM_RETRY\";" >> /etc/apt/apt.conf.d/80-retries
+
+  # set timeout to 20s
+  echo "Acquire::http::Timeout \"20\";" >> /etc/apt/apt.conf.d/80-retries
+  echo "Acquire::ftp::Timeout \"20\";" >> /etc/apt/apt.conf.d/80-retries
 fi
 
 # if ENABLE_GLOBAL_PROXY is true, set up proxy for all users

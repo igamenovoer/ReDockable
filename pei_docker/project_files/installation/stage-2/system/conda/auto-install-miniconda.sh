@@ -78,7 +78,7 @@ EOM
 # tuna pip mirror
 read -r -d '' PIP_TUNA << EOM
 [global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple/
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 
 [install]
 trusted-host=pypi.tuna.tsinghua.edu.cn
@@ -87,7 +87,7 @@ EOM
 # aliyun pypi mirror, use it if tuna is slow
 read -r -d '' PIP_ALIYUN << EOM
 [global]
-index-url = https://mirrors.aliyun.com/pypi/simple/
+index-url = https://mirrors.aliyun.com/pypi/simple
 
 [install]
 trusted-host=mirrors.aliyun.com

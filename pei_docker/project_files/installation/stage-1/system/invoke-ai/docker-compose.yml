@@ -1,0 +1,57 @@
+# Copyright (c) 2023 Eugene Brodsky https://github.com/ebr
+
+x-invokeai: &invokeai
+    image: "local/invokeai:latest"
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+
+    # variables without a default will automatically inherit from the host environment
+    # environment:
+      # if set, CONTAINER_INVOKEAI_ROOT will override the Invoke runtime directory location *inside* the container
+    environment:
+      - INVOKEAI_MODELS_DIR=/invokeai-parts/models
+      - INVOKEAI_DOWNLOAD_CACHE_DIR=/invokeai-parts/download-cache
+      - INVOKEAI_OUTPUT_DIR=/invokeai-parts/output
+      - INVOKEAI_RAM=12.0
+      - INVOKEAI_VRAM=12.0
+      - CUDA_VISIBLE_DEVICES=0,1,2
+      - INVOKEAI_DEVICE=cuda
+      - INVOKEAI_CLEAR_QUEUE_ON_STARTUP=true
+      - HTTP_PROXY=http://host.docker.internal:30080
+      - HTTPS_PROXY=http://host.docker.internal:30080
+    ports:
+      - "60000:9090"
+      - "60022:22"
+    volumes:
+      - invokeai-root:/invokeai
+      - invokeai-models-processed:/invokeai-parts/models
+      - invokeai-download-cache:/invokeai-parts/download-cache
+      - invokeai-output:/invokeai-parts/output
+      - invokeai-cache:/root/.cache
+      - invokeai-models-raw:/invokeai-parts/raw-models
+    tty: true
+    stdin_open: true
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+
+services:
+  invokeai-cuda:
+    <<: *invokeai
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  invokeai-root:
+  invokeai-output:
+  invokeai-download-cache:
+  invokeai-cache:
+  invokeai-models-raw:  
+  invokeai-models-processed:  
+    
