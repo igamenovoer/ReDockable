@@ -59,19 +59,23 @@ ENV PEI_DOCKER_DIR="/pei-docker"
 ADD ${INSTALL_DIR_HOST_1}/internals ${INSTALL_DIR_CONTAINER_1}/internals
 ADD ${INSTALL_DIR_HOST_1}/system ${INSTALL_DIR_CONTAINER_1}/system
 
-# for any script in INSTALL_DIR_CONTAINER_1, including subdirs, except for packages folder
-# convert CRLF to LF
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -not -path "$INSTALL_DIR_CONTAINER_1/tmp/*" -exec sed -i 's/\r$//' {} \;
-
-# add chmod+x to all scripts, including all subdirs
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
-
-# set up container environment
-RUN $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh
+# convert $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh from CRLF to LF
+# do not use dos2unix, as it is not available in the base image
+# and then run the script
+RUN sed -i 's/\r$//' $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh && \
+    chmod +x $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh && \
+    $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh
 
 # prepare apt
 RUN apt update
-RUN apt-get install --reinstall -y ca-certificates
+RUN apt-get install --reinstall -y ca-certificates dos2unix
+
+# for any .sh in INSTALL_DIR_CONTAINER_1, including subdirs
+# convert CRLF to LF using dos2unix, replace the original
+RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec dos2unix {} \;
+
+# add chmod+x to all scripts, including all subdirs
+RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
 
 # show env
 RUN env
@@ -89,8 +93,8 @@ RUN $INSTALL_DIR_CONTAINER_1/internals/setup-profile-d.sh
 # ADD ${INSTALL_DIR_HOST_1}/tmp ${INSTALL_DIR_CONTAINER_1}/tmp
 ADD ${INSTALL_DIR_HOST_1} ${INSTALL_DIR_CONTAINER_1}
 
-# convert CRLF to LF
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -not -path "$INSTALL_DIR_CONTAINER_1/tmp/*" -exec sed -i 's/\r$//' {} \;
+# convert CRLF to LF 
+RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
 RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;

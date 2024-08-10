@@ -120,10 +120,10 @@ if [ "$ENABLE_GLOBAL_PROXY" = "true" ]; then
     echo "PEI_HTTP_PROXY_1 and PEI_HTTPS_PROXY_1 must be set if ENABLE_PROXY_IN_BUILD is true"
     echo "Skipping proxy setup for build"
   else
-    echo "Setting up proxy for build, write to profile.d"
-    echo "export http_proxy=$PEI_HTTP_PROXY_1" >> /etc/profile.d/proxy.sh
-    echo "export https_proxy=$PEI_HTTPS_PROXY_1" >> /etc/profile.d/proxy.sh
-    echo "export HTTP_PROXY=$PEI_HTTP_PROXY_1" >> /etc/profile.d/proxy.sh
-    echo "export HTTPS_PROXY=$PEI_HTTPS_PROXY_1" >> /etc/profile.d/proxy.sh
+    echo "Setting up proxy for build, write to /etc/environment"
+    echo "http_proxy=$PEI_HTTP_PROXY_1" >> /etc/environment
+    echo "https_proxy=$PEI_HTTPS_PROXY_1" >> /etc/environment
+    echo "HTTP_PROXY=$PEI_HTTP_PROXY_1" >> /etc/environment
+    echo "HTTPS_PROXY=$PEI_HTTPS_PROXY_1" >> /etc/environment
   fi
 fi

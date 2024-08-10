@@ -26,21 +26,21 @@ apt install -y --no-install-recommends \
 
 apt-get clean && apt-get autoclean
 
-read -r -d '' PIP_ALIYUN << EOM
-[global]
-index-url = https://mirrors.aliyun.com/pypi/simple
+# read -r -d '' PIP_ALIYUN << EOM
+# [global]
+# index-url = https://mirrors.aliyun.com/pypi/simple
 
-[install]
-trusted-host=mirrors.aliyun.com
-EOM
+# [install]
+# trusted-host=mirrors.aliyun.com
+# EOM
 
-read -r -d '' PIP_TUNA << EOM
-[global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+# read -r -d '' PIP_TUNA << EOM
+# [global]
+# index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 
-[install]
-trusted-host=pypi.tuna.tsinghua.edu.cn
-EOM
+# [install]
+# trusted-host=pypi.tuna.tsinghua.edu.cn
+# EOM
 
-mkdir -p /root/.pip
-echo "$PIP_TUNA" > /root/.pip/pip.conf
+# mkdir -p /root/.pip
+# echo "$PIP_TUNA" > /root/.pip/pip.conf

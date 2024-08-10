@@ -41,7 +41,7 @@ CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 # if the file does not exist, wget it from tuna
 if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL --show-progress
 fi
 
 # install miniconda3 unattended

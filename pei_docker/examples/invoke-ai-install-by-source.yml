@@ -1,0 +1,103 @@
+# install invoke ai automatically from source
+
+stage_1:
+  # input/output image settings
+  image:
+    base: nvidia/cuda:12.3.2-cudnn9-runtime-ubuntu22.04
+    output: invoke-ai:stage-1
+
+  # ssh settings
+  ssh:
+    enable: true
+    port: 22  # port in container
+    host_port: 60022  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: '123456'
+      root:
+        password: root
+
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 30080  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
+
+  # apt settings
+  apt:
+    # replace the default apt source with a custom one, use empty string to disable this
+    # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    # special values that refer to well known apt sources:
+    # 'tuna' : 'http://mirrors.tuna.tsinghua.edu.cn/ubuntu/'
+    # 'aliyun' : 'http://mirrors.aliyun.com/ubuntu/'
+    # '163' : 'http://mirrors.163.com/ubuntu/'
+    # 'ustc' : 'http://mirrors.ustc.edu.cn/ubuntu/'
+    # 'cn' : 'http://cn.archive.ubuntu.com/ubuntu/
+    repo_source: 'tuna'
+    keep_repo_after_build: true # keep the apt source file after build?
+
+  # additional environment variables
+  # see https://docs.docker.com/compose/environment-variables/set-environment-variables/
+  environment:
+    - CUDA_VISIBLE_DEVICES=0
+
+  # additional port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports: []
+
+  # device settings
+  device:
+    type: gpu # can be cpu or gpu
+
+  # mount external volumes to container
+  # the volumes can be given any names, mounted anywhere
+  # mount section does NOT transfer to the next stage, so you need to define them again in stage-2
+  mount:
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
+      host_path: null
+      volume_name: null
+    
+stage_2:
+
+  # input/output image settings
+  image:
+    output: invoke-ai:stage-1
+
+  # port mapping, will be appended to the stage-1 port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports: []    
+
+  # device settings, will override the stage-1 device settings
+  device:
+    type: gpu # can be cpu or gpu
+
+  # storage configurations
+  storage:
+    app:
+      type: auto-volume # auto-volume, manual-volume, host, image
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+
+  # mount external volumes to container
+  # the volumes can be given any names, mounted anywhere
+  # the volume type cannot be 'image', or otherwise it will be ignored
+  mount:
+    myhome:
+      type: auto-volume   # auto-volume, manual-volume, host
+      dst_path: /home/me
+    apt_cache:
+      type: auto-volume
+      dst_path: /var/cache/apt
+  
+  custom:
+    on_first_run:
+      - stage-2/system/conda/auto-install-miniconda.sh
+      - stage-2/system/invoke-ai/get-invoke-ai.sh

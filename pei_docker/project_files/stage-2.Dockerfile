@@ -55,8 +55,12 @@ ENV INSTALL_DIR_CONTAINER_2=${INSTALL_DIR_CONTAINER_2}
 ADD ${INSTALL_DIR_HOST_2}/internals ${INSTALL_DIR_CONTAINER_2}/internals
 ADD ${INSTALL_DIR_HOST_2}/system ${INSTALL_DIR_CONTAINER_2}/system
 
+# install dos2unix, needed for converting CRLF to LF
+RUN apt install -y dos2unix
+
 # convert CRLF to LF for scripts in internals and system
-RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+# RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
 RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
@@ -84,7 +88,8 @@ RUN $INSTALL_DIR_CONTAINER_2/internals/setup-profile-d.sh
 ADD ${INSTALL_DIR_HOST_2} ${INSTALL_DIR_CONTAINER_2}
 
 # convert CRLF to LF
-RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+# RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
 RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
