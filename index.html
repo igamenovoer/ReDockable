@@ -192,7 +192,7 @@ docker tag ubuntu:24.04 my-ubuntu:24.04
 stage-1.Dockerfile      # the Dockerfile for stage-1 image, do not modify this file
 stage-2.Dockerfile      # the Dockerfile for stage-2 image, do not modify this file
 user_config.yml         # the configuration file, edit this file to customize
-installation/           # this directory will be copied into the image under /pei-init
+installation/           # this directory will be copied into the image under /pei-from-host
     stage-1/            # the scripts to run during stage-1 image building
         custom/         # the custom scripts to run during stage-1 image building, you need to explicitly list them in user_config.yml
         tmp/            # the temporary directory to store downloaded packages, like .deb, .whl, etc.
@@ -440,5 +440,5 @@ stage_2:
 
 <!--
 MkDocs version : 1.6.0
-Build Date UTC : 2024-08-01 14:09:49.078312+00:00
+Build Date UTC : 2024-08-10 09:23:04.865226+00:00
 -->

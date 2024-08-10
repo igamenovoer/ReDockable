@@ -365,7 +365,7 @@ stage_2:
 <ul>
 <li>The script is placed in the <code>project_dir/installation/stage-2/custom</code> directory.</li>
 <li>The package files are placed in the <code>project_dir/installation/stage-2/tmp</code> directory.</li>
-<li>You can access the installation directory of the <code>stage-2</code> image using the <code>INSTALL_DIR_CONTAINER_2</code> environment variable, likewise for <code>stage-1</code>. Note it will try to use external storage <code>\hard\volume\app</code> first, but because you have not mounted any external storage, it will use the image storage <code>\hard\image\app</code>.</li>
+<li>You can access the installation directory of the <code>stage-2</code> image using the <code>PEI_STAGE_DIR_2</code> environment variable, likewise for <code>stage-1</code>. Note it will try to use external storage <code>\hard\volume\app</code> first, but because you have not mounted any external storage, it will use the image storage <code>\hard\image\app</code>.</li>
 <li>During build, you are root, so you shall execute commands for other users using <code>su - $user -c</code>.</li>
 <li>Remember to set DEBIAN_FRONTEND=noninteractive to prevent interactive prompts.</li>
 </ul>
@@ -374,8 +374,8 @@ stage_2:
 # prevent interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
-# INSTALL_DIR_CONTAINER_2 points to where the installation/stage-2 is inside container
-STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
+# PEI_STAGE_DIR_2 points to where the installation/stage-2 is inside container
+STAGE_2_DIR_IN_CONTAINER=$PEI_STAGE_DIR_2
 echo &quot;STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER&quot;
 
 # the installation directory of miniconda3
@@ -458,7 +458,7 @@ EOM
 # aliyun pypi mirror, use it if tuna is slow
 read -r -d '' PIP_ALIYUN &lt;&lt; EOM
 [global]
-index-url = http://mirrors.aliyun.com/pypi/simple/
+index-url = https://mirrors.aliyun.com/pypi/simple/
 
 [install]
 trusted-host=mirrors.aliyun.com
@@ -486,28 +486,13 @@ for user in $USER_LIST; do
 
     # to use tuna mirror, replace the .condarc file with the pre-configured CONDA_TUNA
     echo &quot;setting conda mirror for $user ...&quot;    
-    su - $user -c &quot;echo \&quot;$CONDA_TUNA\&quot; &gt; $home_dir/.condarc&quot;
+    su - $user -c &quot;echo \&quot;$CONDA_TUNA\&quot; &gt;&gt; $home_dir/.condarc&quot;
 
     # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
     echo &quot;setting pip mirror for $user ...&quot;
     su - $user -c &quot;mkdir -p $home_dir/.pip&quot;
-    su - $user -c &quot;echo \&quot;$PIP_TUNA\&quot; &gt; $home_dir/.pip/pip.conf&quot;
+    su - $user -c &quot;echo \&quot;$PIP_ALIYUN\&quot; &gt; $home_dir/.pip/pip.conf&quot;
 done
-
-# create a app-config directory in conda installation directory to save .condarc and .pip directory
-# because when conda is installed in external storage, these files will be lost after container restart
-# we can recover them from app-config if needed
-echo &quot;creating app-config directory in $CONDA_INSTALL_DIR ...&quot;
-mkdir -p $CONDA_INSTALL_DIR/app-config
-
-# copy .condarc and .pip directory to app-config
-echo &quot;copying .condarc and .pip directory to app-config ...&quot;
-cp /root/.condarc $CONDA_INSTALL_DIR/app-config
-cp -r /root/.pip $CONDA_INSTALL_DIR/app-config
-
-# make it accessible to all users
-echo &quot;setting permissions for $CONDA_INSTALL_DIR/app-config ...&quot;
-chmod -R 777 $CONDA_INSTALL_DIR/app-config
 </code></pre>
 <h2 id="install-miniconda-to-external-storage">Install miniconda to external storage</h2>
 <p>To install miniconda to external storage, you can mount external storage (<a class="autorefs autorefs-internal" href="#using-docker-volume-as-external-storage">How to use external storage?</a>) to the <code>/hard/volume/app</code>, so that the miniconda installation will be saved there. The following example demonstrates how to install miniconda to the external storage.</p>
