@@ -5,7 +5,7 @@ version: '3'
 x-paths:
   # paths for the installation
   installation_root_host: '???'
-  installation_root_image: '/pei-init'
+  installation_root_image: '/pei-from-host'
 
   # prefixes for the in-container paths
   dir_prefix:
@@ -45,7 +45,7 @@ x-cfg-stage-1:
     root_password: ''
 
     flags:
-      # install essential apps, by executing /pei-init/stage-1/internals/install-essentials.sh
+      # install essential apps, by executing /pei-from-host/stage-1/internals/install-essentials.sh
       with_essential_apps: true
 
     # ssh configurations
@@ -163,8 +163,8 @@ services:
         WITH_ESSENTIAL_APPS: ${x-cfg-stage-2.build.flags.with_essential_apps}
 
         # installation dirs
-        INSTALL_DIR_HOST_2: ${x-cfg-stage-2.paths._installation_root_host}
-        INSTALL_DIR_CONTAINER_2: ${x-cfg-stage-2.paths._installation_root_image}
+        PEI_STAGE_HOST_DIR_2: ${x-cfg-stage-2.paths._installation_root_host}
+        PEI_STAGE_DIR_2: ${x-cfg-stage-2.paths._installation_root_image}
 
         # prefixes and paths
         PEI_PREFIX_APPS: ${x-paths.dir_prefix.app}
@@ -235,8 +235,8 @@ services:
         REMOVE_GLOBAL_PROXY_AFTER_BUILD: ${x-cfg-stage-1.build.proxy.remove_after_build}
 
         # installation dirs
-        INSTALL_DIR_HOST_1: ${x-cfg-stage-1.paths._installation_root_host}
-        INSTALL_DIR_CONTAINER_1: ${x-cfg-stage-1.paths._installation_root_image}
+        PEI_STAGE_HOST_DIR_1: ${x-cfg-stage-1.paths._installation_root_host}
+        PEI_STAGE_DIR_1: ${x-cfg-stage-1.paths._installation_root_image}
 
         # ssh port in container
         ROOT_PASSWORD: ${x-cfg-stage-1.build.root_password}

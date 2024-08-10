@@ -11,12 +11,12 @@ CONDA_INSTALL_DIR="$PEI_SOFT_APPS/miniconda3"
 # check if the cpu is arm64, if yes, use tmp/Miniconda3-latest-Linux-aarch64.sh
 # else use tmp/Miniconda3-latest-Linux-x86_64.sh
 if [ "$(uname -m)" = "aarch64" ]; then
-  CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/tmp/Miniconda3-latest-Linux-aarch64.sh"
+  CONDA_PACKAGE_PATH="$PEI_STAGE_DIR_2/tmp/Miniconda3-latest-Linux-aarch64.sh"
 else
-  CONDA_PACKAGE_PATH="$INSTALL_DIR_CONTAINER_2/tmp/Miniconda3-latest-Linux-x86_64.sh"
+  CONDA_PACKAGE_PATH="$PEI_STAGE_DIR_2/tmp/Miniconda3-latest-Linux-x86_64.sh"
 fi
 
-CONDA_SCRIPT_DIR="$INSTALL_DIR_CONTAINER_2/system/conda"
+CONDA_SCRIPT_DIR="$PEI_STAGE_DIR_2/system/conda"
 INSTALL_FOR_ROOT="false"
 
 # install miniconda3 to /app/miniconda3
@@ -54,6 +54,6 @@ for user in $USER_LIST; do
   su - $user -c "cp $CONDA_SCRIPT_DIR/conda-tsinghua.txt $home_dir/.condarc"
 
   # activate conda and call configure-pip-repo.sh
-  su - $user -c "source $CONDA_INSTALL_DIR/bin/activate && bash $CONDA_SCRIPT_DIR/configure-pip-repo.sh"
+  su - $user -c "source $CONDA_INSTALL_DIR/bin/activate && bash $CONDA_SCRIPT_DIR/configure-pip-repo.sh aliyun"
 
 done

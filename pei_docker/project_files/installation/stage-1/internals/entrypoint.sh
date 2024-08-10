@@ -1,6 +1,6 @@
 #!/bin/bash
 
-script_dir=$INSTALL_DIR_CONTAINER_1/internals
+script_dir=$PEI_STAGE_DIR_1/internals
 
 # run on-entry tasks
 bash "$script_dir/on-entry.sh"

@@ -5,9 +5,9 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source $DIR/_setup-cuda.sh
 
 # add the following env variables to env-stage-1.sh
-# INSTALL_DIR_CONTAINER_1
+# PEI_STAGE_DIR_1
 # PEI_HTTP_PROXY_1, PEI_HTTPS_PROXY_1, PEI_DOCKER_DIR
-echo "INSTALL_DIR_CONTAINER_1=$INSTALL_DIR_CONTAINER_1" >> /etc/environment
+echo "PEI_STAGE_DIR_1=$PEI_STAGE_DIR_1" >> /etc/environment
 echo "PEI_HTTP_PROXY_1=$PEI_HTTP_PROXY_1" >> /etc/environment
 echo "PEI_HTTPS_PROXY_1=$PEI_HTTPS_PROXY_1" >> /etc/environment
 echo "PEI_DOCKER_DIR=$PEI_DOCKER_DIR" >> /etc/environment

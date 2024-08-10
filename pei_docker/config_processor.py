@@ -43,7 +43,7 @@ class Defaults:
     OutputComposeTemplateName = 'compose-template.yml'
     OutputComposeName='docker-compose.yml'
     BuildDir='build'
-    ContainerInstallationDir='/pei-init'
+    ContainerInstallationDir='/pei-from-host'
     ProjectDirectory='./project_files'
     HostInstallationDir='./installation' # relative to the project directory
     Stage1_ImageName='pei-image:stage-1'

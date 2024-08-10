@@ -2,8 +2,8 @@
 
 # stage 2 entrypoint, part of the content is from stage 1 entrypoint
 
-script_dir_1=$INSTALL_DIR_CONTAINER_1/internals
-script_dir_2=$INSTALL_DIR_CONTAINER_2/internals
+script_dir_1=$PEI_STAGE_DIR_1/internals
+script_dir_2=$PEI_STAGE_DIR_2/internals
 
 # run on-entry tasks for stage 1
 bash $script_dir_1/on-entry.sh

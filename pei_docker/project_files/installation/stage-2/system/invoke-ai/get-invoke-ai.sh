@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# if INSTALL_DIR_CONTAINER_1 is not empty, use it as stage dir
-if [ -n "$INSTALL_DIR_CONTAINER_1" ]; then
-    stage_dir=$INSTALL_DIR_CONTAINER_1
+# if PEI_STAGE_DIR_1 is not empty, use it as stage dir
+if [ -n "$PEI_STAGE_DIR_1" ]; then
+    stage_dir=$PEI_STAGE_DIR_1
 fi
 
-# if INSTALL_DIR_CONTAINER_2 is not empty, use it as stage dir
-if [ -n "$INSTALL_DIR_CONTAINER_2" ]; then
-    stage_dir=$INSTALL_DIR_CONTAINER_2
+# if PEI_STAGE_DIR_2 is not empty, use it as stage dir
+if [ -n "$PEI_STAGE_DIR_2" ]; then
+    stage_dir=$PEI_STAGE_DIR_2
 fi
 
 echo "stage dir is set to $stage_dir"
@@ -24,10 +24,10 @@ echo "app_dir is set to $app_dir"
 install_dst_dir=$app_dir/invokeai-src
 echo "install_dst_dir is set to $install_dst_dir"
 
-# install dst dir exists? delete it
+# install dst dir exists? exit
 if [ -d $install_dst_dir ]; then
-    echo "install_dst_dir exists, remove it"
-    rm -rf $install_dst_dir
+    echo "install_dst_dir exists, exiting"
+    exit 0    
 fi
 
 # InvokeAI dir exists?

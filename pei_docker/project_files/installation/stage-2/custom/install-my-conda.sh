@@ -3,8 +3,8 @@
 # prevent interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
-# INSTALL_DIR_CONTAINER_2 points to where the installation/stage-2 is inside container
-STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
+# PEI_STAGE_DIR_2 points to where the installation/stage-2 is inside container
+STAGE_2_DIR_IN_CONTAINER=$PEI_STAGE_DIR_2
 echo "STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER"
 
 # the installation directory of miniconda3

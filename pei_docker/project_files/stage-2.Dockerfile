@@ -8,8 +8,8 @@ ARG BASE_IMAGE
 FROM ${BASE_IMAGE} AS default
 
 # paths
-ARG INSTALL_DIR_HOST_2
-ARG INSTALL_DIR_CONTAINER_2
+ARG PEI_STAGE_HOST_DIR_2
+ARG PEI_STAGE_DIR_2
 ARG WITH_ESSENTIAL_APPS=false
 ARG WITH_CUSTOM_APPS=false
 
@@ -46,64 +46,64 @@ ENV PEI_SOFT_APPS=${PEI_PATH_SOFT}/${PEI_PREFIX_APPS}
 ENV PEI_SOFT_WORKSPACE=${PEI_PATH_SOFT}/${PEI_PREFIX_WORKSPACE}
 ENV PEI_SOFT_DATA=${PEI_PATH_SOFT}/${PEI_PREFIX_DATA}
 
-ENV INSTALL_DIR_CONTAINER_2=${INSTALL_DIR_CONTAINER_2}
+ENV PEI_STAGE_DIR_2=${PEI_STAGE_DIR_2}
 
 # -------------------------------------------
 # install essentials
 
 # copy installation/internals and installation/system to the image, do apt installs first
-ADD ${INSTALL_DIR_HOST_2}/internals ${INSTALL_DIR_CONTAINER_2}/internals
-ADD ${INSTALL_DIR_HOST_2}/system ${INSTALL_DIR_CONTAINER_2}/system
+ADD ${PEI_STAGE_HOST_DIR_2}/internals ${PEI_STAGE_DIR_2}/internals
+ADD ${PEI_STAGE_HOST_DIR_2}/system ${PEI_STAGE_DIR_2}/system
 
 # install dos2unix, needed for converting CRLF to LF
 RUN apt install -y dos2unix
 
 # convert CRLF to LF for scripts in internals and system
-# RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
-RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec dos2unix {} \;
+# RUN find $PEI_STAGE_DIR_2 -type f -not -path "$PEI_STAGE_DIR_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+RUN find $PEI_STAGE_DIR_2 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
-RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
+RUN find $PEI_STAGE_DIR_2 -type f -name "*.sh" -exec chmod +x {} \;
 
 # setup and show env
-RUN $INSTALL_DIR_CONTAINER_2/internals/setup-env.sh && env
+RUN $PEI_STAGE_DIR_2/internals/setup-env.sh && env
 
 # create soft and hard directories
-RUN $INSTALL_DIR_CONTAINER_2/internals/create-dirs.sh
+RUN $PEI_STAGE_DIR_2/internals/create-dirs.sh
 
 # install things
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_2/internals/install-essentials.sh
+    $PEI_STAGE_DIR_2/internals/install-essentials.sh
 
 # setup profile d
-RUN $INSTALL_DIR_CONTAINER_2/internals/setup-profile-d.sh
+RUN $PEI_STAGE_DIR_2/internals/setup-profile-d.sh
 
 # -------------------------------------------
 # run custom scripts
 
 # copy the installation scripts to the image
-# ADD ${INSTALL_DIR_HOST_2}/custom ${INSTALL_DIR_CONTAINER_2}/custom
-# ADD ${INSTALL_DIR_HOST_2}/generated ${INSTALL_DIR_CONTAINER_2}/generated
-# ADD ${INSTALL_DIR_HOST_2}/tmp ${INSTALL_DIR_CONTAINER_2}/tmp
-ADD ${INSTALL_DIR_HOST_2} ${INSTALL_DIR_CONTAINER_2}
+# ADD ${PEI_STAGE_HOST_DIR_2}/custom ${PEI_STAGE_DIR_2}/custom
+# ADD ${PEI_STAGE_HOST_DIR_2}/generated ${PEI_STAGE_DIR_2}/generated
+# ADD ${PEI_STAGE_HOST_DIR_2}/tmp ${PEI_STAGE_DIR_2}/tmp
+ADD ${PEI_STAGE_HOST_DIR_2} ${PEI_STAGE_DIR_2}
 
 # convert CRLF to LF
-# RUN find $INSTALL_DIR_CONTAINER_2 -type f -not -path "$INSTALL_DIR_CONTAINER_2/tmp/*" -exec sed -i 's/\r$//' {} \;
-RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec dos2unix {} \;
+# RUN find $PEI_STAGE_DIR_2 -type f -not -path "$PEI_STAGE_DIR_2/tmp/*" -exec sed -i 's/\r$//' {} \;
+RUN find $PEI_STAGE_DIR_2 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
-RUN find $INSTALL_DIR_CONTAINER_2 -type f -name "*.sh" -exec chmod +x {} \;
+RUN find $PEI_STAGE_DIR_2 -type f -name "*.sh" -exec chmod +x {} \;
 
 # install custom apps
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_2/internals/custom-on-build.sh
+    $PEI_STAGE_DIR_2/internals/custom-on-build.sh
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_2/internals/setup-users.sh &&\
-    $INSTALL_DIR_CONTAINER_2/internals/cleanup.sh
+    $PEI_STAGE_DIR_2/internals/setup-users.sh &&\
+    $PEI_STAGE_DIR_2/internals/cleanup.sh
 
 # override the entrypoint
-RUN cp $INSTALL_DIR_CONTAINER_2/internals/entrypoint.sh /entrypoint.sh &&\
+RUN cp $PEI_STAGE_DIR_2/internals/entrypoint.sh /entrypoint.sh &&\
     chmod +x /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
 

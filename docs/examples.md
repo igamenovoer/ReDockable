@@ -301,7 +301,7 @@ In the above example, the script `install-my-conda.sh` is placed in the `project
 
 - The script is placed in the `project_dir/installation/stage-2/custom` directory.
 - The package files are placed in the `project_dir/installation/stage-2/tmp` directory.
-- You can access the installation directory of the `stage-2` image using the `INSTALL_DIR_CONTAINER_2` environment variable, likewise for `stage-1`. Note it will try to use external storage `\hard\volume\app` first, but because you have not mounted any external storage, it will use the image storage `\hard\image\app`.
+- You can access the installation directory of the `stage-2` image using the `PEI_STAGE_DIR_2` environment variable, likewise for `stage-1`. Note it will try to use external storage `\hard\volume\app` first, but because you have not mounted any external storage, it will use the image storage `\hard\image\app`.
 - During build, you are root, so you shall execute commands for other users using `su - $user -c`.
 - Remember to set DEBIAN_FRONTEND=noninteractive to prevent interactive prompts.
 
@@ -311,8 +311,8 @@ In the above example, the script `install-my-conda.sh` is placed in the `project
 # prevent interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
-# INSTALL_DIR_CONTAINER_2 points to where the installation/stage-2 is inside container
-STAGE_2_DIR_IN_CONTAINER=$INSTALL_DIR_CONTAINER_2
+# PEI_STAGE_DIR_2 points to where the installation/stage-2 is inside container
+STAGE_2_DIR_IN_CONTAINER=$PEI_STAGE_DIR_2
 echo "STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER"
 
 # the installation directory of miniconda3

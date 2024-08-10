@@ -26,7 +26,7 @@ apt install debhelper
 # push current directory
 pushd .
 
-cd $INSTALL_DIR_CONTAINER_2/tmp
+cd $PEI_STAGE_DIR_2/tmp
 
 # create a temporary directory and download corrade
 echo "Downloading Corrade ..."

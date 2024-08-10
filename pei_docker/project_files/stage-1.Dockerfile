@@ -43,71 +43,71 @@ ARG ENABLE_GLOBAL_PROXY=false
 ARG REMOVE_GLOBAL_PROXY_AFTER_BUILD=false
 
 # path to installation directory
-ARG INSTALL_DIR_HOST_1
-ARG INSTALL_DIR_CONTAINER_1
+ARG PEI_STAGE_HOST_DIR_1
+ARG PEI_STAGE_DIR_1
 
 # -------------------------------------------
 ENV PEI_HTTP_PROXY_1=${PEI_HTTP_PROXY_1}
 ENV PEI_HTTPS_PROXY_1=${PEI_HTTPS_PROXY_1}
-ENV INSTALL_DIR_CONTAINER_1=${INSTALL_DIR_CONTAINER_1}
+ENV PEI_STAGE_DIR_1=${PEI_STAGE_DIR_1}
 
 # create a dir called pei-docker in root, to store logs
-RUN mkdir -p /pei-docker
-ENV PEI_DOCKER_DIR="/pei-docker"
+RUN mkdir -p /pei-init
+ENV PEI_DOCKER_DIR="/pei-init"
 
 # copy installation/internals and installation/system to the image, do apt installs first
-ADD ${INSTALL_DIR_HOST_1}/internals ${INSTALL_DIR_CONTAINER_1}/internals
-ADD ${INSTALL_DIR_HOST_1}/system ${INSTALL_DIR_CONTAINER_1}/system
+ADD ${PEI_STAGE_HOST_DIR_1}/internals ${PEI_STAGE_DIR_1}/internals
+ADD ${PEI_STAGE_HOST_DIR_1}/system ${PEI_STAGE_DIR_1}/system
 
-# convert $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh from CRLF to LF
+# convert $PEI_STAGE_DIR_1/internals/setup-env.sh from CRLF to LF
 # do not use dos2unix, as it is not available in the base image
 # and then run the script
-RUN sed -i 's/\r$//' $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh && \
-    chmod +x $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh && \
-    $INSTALL_DIR_CONTAINER_1/internals/setup-env.sh
+RUN sed -i 's/\r$//' $PEI_STAGE_DIR_1/internals/setup-env.sh && \
+    chmod +x $PEI_STAGE_DIR_1/internals/setup-env.sh && \
+    $PEI_STAGE_DIR_1/internals/setup-env.sh
 
 # prepare apt
 RUN apt update
 RUN apt-get install --reinstall -y ca-certificates dos2unix
 
-# for any .sh in INSTALL_DIR_CONTAINER_1, including subdirs
+# for any .sh in PEI_STAGE_DIR_1, including subdirs
 # convert CRLF to LF using dos2unix, replace the original
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec dos2unix {} \;
+RUN find $PEI_STAGE_DIR_1 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
+RUN find $PEI_STAGE_DIR_1 -type f -name "*.sh" -exec chmod +x {} \;
 
 # show env
 RUN env
 
 # install things
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_1/internals/install-essentials.sh &&\
-    $INSTALL_DIR_CONTAINER_1/internals/setup-ssh.sh
+    $PEI_STAGE_DIR_1/internals/install-essentials.sh &&\
+    $PEI_STAGE_DIR_1/internals/setup-ssh.sh
 
-RUN $INSTALL_DIR_CONTAINER_1/internals/setup-profile-d.sh
+RUN $PEI_STAGE_DIR_1/internals/setup-profile-d.sh
 
 # copy the everything to the image
-# ADD ${INSTALL_DIR_HOST_1}/custom ${INSTALL_DIR_CONTAINER_1}/custom
-# ADD ${INSTALL_DIR_HOST_1}/generated ${INSTALL_DIR_CONTAINER_1}/generated
-# ADD ${INSTALL_DIR_HOST_1}/tmp ${INSTALL_DIR_CONTAINER_1}/tmp
-ADD ${INSTALL_DIR_HOST_1} ${INSTALL_DIR_CONTAINER_1}
+# ADD ${PEI_STAGE_HOST_DIR_1}/custom ${PEI_STAGE_DIR_1}/custom
+# ADD ${PEI_STAGE_HOST_DIR_1}/generated ${PEI_STAGE_DIR_1}/generated
+# ADD ${PEI_STAGE_HOST_DIR_1}/tmp ${PEI_STAGE_DIR_1}/tmp
+ADD ${PEI_STAGE_HOST_DIR_1} ${PEI_STAGE_DIR_1}
 
 # convert CRLF to LF 
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec dos2unix {} \;
+RUN find $PEI_STAGE_DIR_1 -type f -name "*.sh" -exec dos2unix {} \;
 
 # add chmod+x to all scripts, including all subdirs
-RUN find $INSTALL_DIR_CONTAINER_1 -type f -name "*.sh" -exec chmod +x {} \;
+RUN find $PEI_STAGE_DIR_1 -type f -name "*.sh" -exec chmod +x {} \;
 
 # install custom apps and clean up
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_1/internals/custom-on-build.sh
+    $PEI_STAGE_DIR_1/internals/custom-on-build.sh
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-    $INSTALL_DIR_CONTAINER_1/internals/setup-users.sh &&\
-    $INSTALL_DIR_CONTAINER_1/internals/cleanup.sh
+    $PEI_STAGE_DIR_1/internals/setup-users.sh &&\
+    $PEI_STAGE_DIR_1/internals/cleanup.sh
 
 # setup entrypoint
-RUN cp $INSTALL_DIR_CONTAINER_1/internals/entrypoint.sh /entrypoint.sh &&\
+RUN cp $PEI_STAGE_DIR_1/internals/entrypoint.sh /entrypoint.sh &&\
     chmod +x /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]

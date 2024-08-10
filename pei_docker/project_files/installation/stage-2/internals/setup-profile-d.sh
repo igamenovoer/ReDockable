@@ -5,13 +5,13 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 source $DIR/_setup-cuda.sh
 
 # add the following env variables to env-stage-2.sh using echo
-# INSTALL_DIR_CONTAINER_2
+# PEI_STAGE_DIR_2
 # PEI_PREFIX_DATA, PEI_PREFIX_APPS, PEI_PREFIX_WORKSPACE, PEI_PREFIX_VOLUME, PEI_PREFIX_IMAGE
 # PEI_PATH_HARD, PEI_PATH_SOFT, PEI_SOFT_APPS, PEI_SOFT_DATA, PEI_SOFT_WORKSPACE, PEI_SOFT_VOLUME, PEI_SOFT_IMAGE
 
 echo "PEI_HTTP_PROXY_2=$PEI_HTTP_PROXY_2" >> /etc/environment
 echo "PEI_HTTPS_PROXY_2=$PEI_HTTPS_PROXY_2" >> /etc/environment
-echo "INSTALL_DIR_CONTAINER_2=$INSTALL_DIR_CONTAINER_2" >> /etc/environment
+echo "PEI_STAGE_DIR_2=$PEI_STAGE_DIR_2" >> /etc/environment
 echo "PEI_PREFIX_DATA=$PEI_PREFIX_DATA" >> /etc/environment
 echo "PEI_PREFIX_APPS=$PEI_PREFIX_APPS" >> /etc/environment
 echo "PEI_PREFIX_WORKSPACE=$PEI_PREFIX_WORKSPACE" >> /etc/environment

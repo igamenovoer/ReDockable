@@ -116,8 +116,8 @@ services:
       args:
         BASE_IMAGE: pei-opengl:stage-1
         WITH_ESSENTIAL_APPS: true
-        INSTALL_DIR_HOST_2: ./installation/stage-2
-        INSTALL_DIR_CONTAINER_2: /pei-init/stage-2
+        PEI_STAGE_HOST_DIR_2: ./installation/stage-2
+        PEI_STAGE_DIR_2: /pei-from-host/stage-2
         PEI_PREFIX_APPS: app
         PEI_PREFIX_DATA: data
         PEI_PREFIX_WORKSPACE: workspace
@@ -177,8 +177,8 @@ services:
         PEI_HTTPS_PROXY_1: http://host.docker.internal:7890
         ENABLE_GLOBAL_PROXY: false
         REMOVE_GLOBAL_PROXY_AFTER_BUILD: false
-        INSTALL_DIR_HOST_1: ./installation/stage-1
-        INSTALL_DIR_CONTAINER_1: /pei-init/stage-1
+        PEI_STAGE_HOST_DIR_1: ./installation/stage-1
+        PEI_STAGE_DIR_1: /pei-from-host/stage-1
         ROOT_PASSWORD: ''
     ports:
     - '2222:22'

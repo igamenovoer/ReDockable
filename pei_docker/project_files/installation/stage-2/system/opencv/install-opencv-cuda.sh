@@ -22,10 +22,10 @@ else
 fi
 
 
-# do we have INSTALL_DIR_CONTAINER_2 set?
-# if yes, set tmp_dir to INSTALL_DIR_CONTAINER_2/tmp
+# do we have PEI_STAGE_DIR_2 set?
+# if yes, set tmp_dir to PEI_STAGE_DIR_2/tmp
 # otherwise, set tmp_dir to ~/tmp
-if [ -z "$INSTALL_DIR_CONTAINER_2" ]; then
+if [ -z "$PEI_STAGE_DIR_2" ]; then
     tmp_dir=~/tmp
 
     # mkdir ~/tmp if it doesn't exist
@@ -33,7 +33,7 @@ if [ -z "$INSTALL_DIR_CONTAINER_2" ]; then
         mkdir $tmp_dir
     fi
 else
-    tmp_dir=$INSTALL_DIR_CONTAINER_2/tmp
+    tmp_dir=$PEI_STAGE_DIR_2/tmp
 
     # do we have write-permission to $tmp_dir? if not, sudo to add read/write permission
     if [ ! -w $tmp_dir ]; then

@@ -114,7 +114,7 @@ Inside your project directory, you will find the following files and directories
     stage-1.Dockerfile      # the Dockerfile for stage-1 image, do not modify this file
     stage-2.Dockerfile      # the Dockerfile for stage-2 image, do not modify this file
     user_config.yml         # the configuration file, edit this file to customize
-    installation/           # this directory will be copied into the image under /pei-init
+    installation/           # this directory will be copied into the image under /pei-from-host
         stage-1/            # the scripts to run during stage-1 image building
             custom/         # the custom scripts to run during stage-1 image building, you need to explicitly list them in user_config.yml
             tmp/            # the temporary directory to store downloaded packages, like .deb, .whl, etc.
