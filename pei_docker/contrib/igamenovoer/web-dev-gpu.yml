@@ -70,6 +70,10 @@ stage_2:
 
   device:
     type: gpu
+  
+  ports:
+    - '4200:4200' # for angular
+    - '8080:80' # for http service
 
   # storage configurations
   storage:
