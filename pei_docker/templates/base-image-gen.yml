@@ -1,5 +1,3 @@
-version: '3'
-
 # this is designed to be used with omegaconf
 
 x-paths:

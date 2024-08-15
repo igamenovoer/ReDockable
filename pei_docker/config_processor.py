@@ -405,7 +405,12 @@ class PeiConfigProcessor:
             if stage_config.ssh is not None and stage_config.ssh.host_port is not None:
                 port_dict[stage_config.ssh.host_port] = stage_config.ssh.port
             port_strings = port_mapping_dict_to_str(port_dict)
+            
+            # from rich import print as pprint
+            # logging.info(f'Port mappings: {port_strings}')
+            # pprint(oc.OmegaConf.to_yaml(stage_compose))
             oc.OmegaConf.update(stage_compose, 'ports', port_strings)
+            # pprint(oc.OmegaConf.to_yaml(stage_compose))
             
             # environment variables
             if stage_config.environment is not None:

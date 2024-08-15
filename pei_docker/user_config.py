@@ -21,14 +21,87 @@ __all__ = [
 
 def port_mapping_str_to_dict(port_mapping : list[str]) -> dict[int, int]:
     ''' get port mapping from a list of strings in the format 'host:container' to a dict,
-    mapping host port to container port
+    mapping host port to container port.
     '''
-    return {int(x.split(':')[0]): int(x.split(':')[1]) for x in port_mapping}
+    output : dict[int, int] = {}
+    
+    for ent in port_mapping:
+        # split the string into host and container port
+        host_port, container_port = ent.split(':')
+        
+        # are we mapping a range of ports? in the format 'host_start-host_end:container_start-container_end'
+        if '-' in host_port:
+            # find the range of host ports
+            host_port_start, host_port_end = host_port.split('-')
+            host_port_start = int(host_port_start)
+            host_port_end = int(host_port_end)
+            
+            # find the range of container ports
+            container_port_start, container_port_end = container_port.split('-')
+            container_port_start = int(container_port_start)
+            container_port_end = int(container_port_end)
+            
+            # check if the ranges are of the same length
+            if host_port_end - host_port_start != container_port_end - container_port_start:
+                raise ValueError('Port ranges must be of the same length')
+            
+            # add the port mappings to the output
+            for u, v in zip(range(host_port_start, host_port_end + 1), range(container_port_start, container_port_end + 1)):
+                output[u] = v
+        else:
+            output[int(host_port)] = int(container_port)
+    return output
     
 def port_mapping_dict_to_str(port_mapping: dict[int, int]) -> list[str]:
     ''' get port mapping from a dict mapping host port to container port to a list of strings in the format 'host:container'
     '''
-    return [f'{k}:{v}' for k, v in port_mapping.items()]
+    
+    output : list[str] = []
+    
+    if len(port_mapping) == 0:
+        return output
+    
+    port_from_range_start : int = -1
+    port_to_range_start : int = -1
+    port_from_prev : int = -1
+    port_to_prev : int = -1
+    
+    for port_from, port_to in sorted(port_mapping.items()):
+        # first port, initialize the range
+        if port_from_prev == -1:
+            port_from_range_start = port_from
+            port_to_range_start = port_to
+        elif port_from_prev == port_from - 1 and port_to_prev == port_to - 1:
+            # we are in a range, no need to do anything
+            pass
+        else:
+            # the previous range has ended, add it to the output
+            if port_from_range_start == port_from_prev: # single port
+                port_mapping_entry : str = f'{port_from_range_start}:{port_to_range_start}'
+                output.append(port_mapping_entry)
+            else:
+                port_mapping_entry : str = f'{port_from_range_start}-{port_from_prev}:{port_to_range_start}-{port_to_prev}'
+                output.append(port_mapping_entry)
+            
+            # start a new range
+            port_from_range_start = port_from
+            port_to_range_start = port_to
+            
+        # update prev
+        port_from_prev = port_from
+        port_to_prev = port_to
+        
+    # output the last range
+    if port_from_range_start == port_from_prev: # single port
+        port_mapping_entry : str = f'{port_from_range_start}:{port_to_range_start}'
+        output.append(port_mapping_entry)
+    else:
+        port_mapping_entry : str = f'{port_from_range_start}-{port_from_prev}:{port_to_range_start}-{port_to_prev}'
+        output.append(port_mapping_entry)
+            
+    return output
+    
+    # return [f'{k}:{v}' for k, v in port_mapping.items()]
 
 def env_str_to_dict(env_list: list[str]) -> dict[str, str]:
     ''' get environment variables from a list of strings in the format 'key=value' to a dict
