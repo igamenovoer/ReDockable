@@ -294,12 +294,12 @@ stage_2:
       type: image
   custom:
     on_build:
-    - stage-2/custom/install-my-conda.sh
+    - stage-2/system/conda/auto-install-miniconda.sh
 ```
 
-In the above example, the script `install-my-conda.sh` is placed in the `project_dir/installation/stage-2/custom` directory. The script will be executed during the build of the `stage-2` image. Below is the content of the script. It first checks if the miniconda installation file exists in the `/tmp` directory, and if not, downloads it from the tuna mirror. Then it installs miniconda to `/hard/image/app/miniconda3`, and initializes conda for all users. The conda and pip mirrors are set to the tuna mirror. Important points to note:
+In the above example, the script `auto-install-miniconda.sh` is placed in the `project_dir/installation/stage-2/system/conda` directory. The script will be executed during the build of the `stage-2` image. Below is the content of the script. It first checks if the miniconda installation file exists in the `/tmp` directory, and if not, downloads it from the tuna mirror. Then it installs miniconda to `/hard/image/app/miniconda3`, and initializes conda for all users. The conda and pip mirrors are set to the tuna mirror. Important points to note:
 
-- The script is placed in the `project_dir/installation/stage-2/custom` directory.
+- Custom script can be placed anywhere in the project directory, but it is recommended to put them in the `project_dir/installation/stage-<1,2>/custom` directory. Locations like `xxx/system` are managed by official developers, and may be overwritten in future updates.
 - The package files are placed in the `project_dir/installation/stage-2/tmp` directory.
 - You can access the installation directory of the `stage-2` image using the `PEI_STAGE_DIR_2` environment variable, likewise for `stage-1`. Note it will try to use external storage `\hard\volume\app` first, but because you have not mounted any external storage, it will use the image storage `\hard\image\app`.
 - During build, you are root, so you shall execute commands for other users using `su - $user -c`.
@@ -349,7 +349,7 @@ CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 # if the file does not exist, wget it from tuna
 if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL --show-progress
 fi
 
 # install miniconda3 unattended
@@ -386,7 +386,7 @@ EOM
 # tuna pip mirror
 read -r -d '' PIP_TUNA << EOM
 [global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple/
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 
 [install]
 trusted-host=pypi.tuna.tsinghua.edu.cn
@@ -395,7 +395,7 @@ EOM
 # aliyun pypi mirror, use it if tuna is slow
 read -r -d '' PIP_ALIYUN << EOM
 [global]
-index-url = https://mirrors.aliyun.com/pypi/simple/
+index-url = https://mirrors.aliyun.com/pypi/simple
 
 [install]
 trusted-host=mirrors.aliyun.com
@@ -406,6 +406,10 @@ USER_LIST="root"
 for user in $(ls /home); do
     USER_LIST="$USER_LIST $user"
 done
+
+# remove duplicated user names, preventing install for root twice
+USER_LIST=$(echo $USER_LIST | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+echo "conda config for users: $USER_LIST"
 
 # for each user in USERS, initialize conda.
 # remember to execute commands in the user context using su - $user -c
@@ -477,7 +481,7 @@ stage_2:
       type: auto-volume
   custom:
     on_first_run:
-    - stage-2/custom/install-my-conda.sh
+    - stage-2/system/conda/auto-install-miniconda.sh
 ```
 
 The example is based on [Install miniconda in image][miniconda-in-image], with the following changes:

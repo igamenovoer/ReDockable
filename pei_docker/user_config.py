@@ -126,6 +126,9 @@ class SSHUserConfig:
     def __attrs_post_init__(self):
         if self.password is None and self.pubkey_file is None:
             raise ValueError('Either password or pubkey_file must be provided')
+        if self.password is not None:
+            # password cannot contain space and comma
+            assert ' ' not in self.password and ',' not in self.password, f'Password cannot contain space or comma: {self.password}'
     
 @define(kw_only=True)
 class SSHConfig:

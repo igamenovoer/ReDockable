@@ -1,7 +1,7 @@
 stage_1:
   image:
-    base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
-    output: pei-image:stage-1
+    base: ubuntu:22.04
+    output: pei-test:stage-1
   ssh:
     enable: true
     port: 22
@@ -13,20 +13,17 @@ stage_1:
         password: root
   apt:
     repo_source: tuna
-  device:
-    type: gpu
+
 stage_2:
   image:
-    output: pei-image:stage-2
-  device:
-    type: gpu
+    output: pei-test:stage-2
   storage:
     app:
-      type: image
+      type: auto-volume
     data:
-      type: image
+      type: auto-volume
     workspace:
-      type: image
+      type: auto-volume
   custom:
     on_build:
-    - stage-2/custom/install-my-conda.sh
+    - stage-2/system/conda/auto-install-miniconda.sh

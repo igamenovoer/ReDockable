@@ -30,4 +30,4 @@ stage_2:
       type: auto-volume
   custom:
     on_first_run:
-    - stage-2/custom/install-my-conda.sh
+    - stage-2/system/conda/auto-install-miniconda.sh

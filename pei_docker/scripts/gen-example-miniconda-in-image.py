@@ -46,7 +46,7 @@ pu.retain_ssh_users(cfg_obj.stage_1.ssh, ['me', 'root'])
 # cfg_obj.pop('stage_2')
 cfg_obj.stage_2.device.type='gpu'
 cfg_obj.stage_2.custom = oc.OmegaConf.create({
-    'on_build':['stage-2/custom/install-my-conda.sh']
+    'on_build':['stage-2/system/conda/auto-install-miniconda.sh']
     })
 
 # set storage

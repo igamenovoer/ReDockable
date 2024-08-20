@@ -41,7 +41,7 @@ CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 # if the file does not exist, wget it from tuna
 if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL --show-progress
 fi
 
 # install miniconda3 unattended
@@ -78,7 +78,7 @@ EOM
 # tuna pip mirror
 read -r -d '' PIP_TUNA << EOM
 [global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple/
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 
 [install]
 trusted-host=pypi.tuna.tsinghua.edu.cn
@@ -87,7 +87,7 @@ EOM
 # aliyun pypi mirror, use it if tuna is slow
 read -r -d '' PIP_ALIYUN << EOM
 [global]
-index-url = https://mirrors.aliyun.com/pypi/simple/
+index-url = https://mirrors.aliyun.com/pypi/simple
 
 [install]
 trusted-host=mirrors.aliyun.com
@@ -98,6 +98,10 @@ USER_LIST="root"
 for user in $(ls /home); do
     USER_LIST="$USER_LIST $user"
 done
+
+# remove duplicated user names, preventing install for root twice
+USER_LIST=$(echo $USER_LIST | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+echo "conda config for users: $USER_LIST"
 
 # for each user in USERS, initialize conda.
 # remember to execute commands in the user context using su - $user -c
@@ -117,7 +121,7 @@ for user in $USER_LIST; do
     echo "setting conda mirror for $user ..."    
     su - $user -c "echo \"$CONDA_TUNA\" >> $home_dir/.condarc"
 
-    # to use pip mirror, create a .pip directory and write the mirror to pip.conf
+    # to use pip mirror, create a .pip directory and write the PIP_TUNA to pip.conf
     echo "setting pip mirror for $user ..."
     su - $user -c "mkdir -p $home_dir/.pip"
     su - $user -c "echo \"$PIP_ALIYUN\" > $home_dir/.pip/pip.conf"

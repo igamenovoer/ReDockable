@@ -99,6 +99,10 @@ for user in $(ls /home); do
     USER_LIST="$USER_LIST $user"
 done
 
+# remove duplicated user names, preventing install for root twice
+USER_LIST=$(echo $USER_LIST | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+echo "conda config for users: $USER_LIST"
+
 # for each user in USERS, initialize conda.
 # remember to execute commands in the user context using su - $user -c
 # otherwise the file will be owned by root
