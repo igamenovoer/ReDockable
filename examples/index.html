@@ -359,11 +359,11 @@ stage_2:
       type: image
   custom:
     on_build:
-    - stage-2/custom/install-my-conda.sh
+    - stage-2/system/conda/auto-install-miniconda.sh
 </code></pre>
-<p>In the above example, the script <code>install-my-conda.sh</code> is placed in the <code>project_dir/installation/stage-2/custom</code> directory. The script will be executed during the build of the <code>stage-2</code> image. Below is the content of the script. It first checks if the miniconda installation file exists in the <code>/tmp</code> directory, and if not, downloads it from the tuna mirror. Then it installs miniconda to <code>/hard/image/app/miniconda3</code>, and initializes conda for all users. The conda and pip mirrors are set to the tuna mirror. Important points to note:</p>
+<p>In the above example, the script <code>auto-install-miniconda.sh</code> is placed in the <code>project_dir/installation/stage-2/system/conda</code> directory. The script will be executed during the build of the <code>stage-2</code> image. Below is the content of the script. It first checks if the miniconda installation file exists in the <code>/tmp</code> directory, and if not, downloads it from the tuna mirror. Then it installs miniconda to <code>/hard/image/app/miniconda3</code>, and initializes conda for all users. The conda and pip mirrors are set to the tuna mirror. Important points to note:</p>
 <ul>
-<li>The script is placed in the <code>project_dir/installation/stage-2/custom</code> directory.</li>
+<li>Custom script can be placed anywhere in the project directory, but it is recommended to put them in the <code>project_dir/installation/stage-&lt;1,2&gt;/custom</code> directory. Locations like <code>xxx/system</code> are managed by official developers, and may be overwritten in future updates.</li>
 <li>The package files are placed in the <code>project_dir/installation/stage-2/tmp</code> directory.</li>
 <li>You can access the installation directory of the <code>stage-2</code> image using the <code>PEI_STAGE_DIR_2</code> environment variable, likewise for <code>stage-1</code>. Note it will try to use external storage <code>\hard\volume\app</code> first, but because you have not mounted any external storage, it will use the image storage <code>\hard\image\app</code>.</li>
 <li>During build, you are root, so you shall execute commands for other users using <code>su - $user -c</code>.</li>
@@ -412,7 +412,7 @@ CONDA_DOWNLOAD_DST=&quot;$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME&quot;
 # if the file does not exist, wget it from tuna
 if [ ! -f $CONDA_DOWNLOAD_DST ]; then
     echo &quot;downloading miniconda3 installation file ...&quot;
-    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL
+    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL --show-progress
 fi
 
 # install miniconda3 unattended
@@ -449,7 +449,7 @@ EOM
 # tuna pip mirror
 read -r -d '' PIP_TUNA &lt;&lt; EOM
 [global]
-index-url = https://pypi.tuna.tsinghua.edu.cn/simple/
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
 
 [install]
 trusted-host=pypi.tuna.tsinghua.edu.cn
@@ -458,7 +458,7 @@ EOM
 # aliyun pypi mirror, use it if tuna is slow
 read -r -d '' PIP_ALIYUN &lt;&lt; EOM
 [global]
-index-url = https://mirrors.aliyun.com/pypi/simple/
+index-url = https://mirrors.aliyun.com/pypi/simple
 
 [install]
 trusted-host=mirrors.aliyun.com
@@ -469,6 +469,10 @@ USER_LIST=&quot;root&quot;
 for user in $(ls /home); do
     USER_LIST=&quot;$USER_LIST $user&quot;
 done
+
+# remove duplicated user names, preventing install for root twice
+USER_LIST=$(echo $USER_LIST | tr ' ' '\n' | sort | uniq | tr '\n' ' ')
+echo &quot;conda config for users: $USER_LIST&quot;
 
 # for each user in USERS, initialize conda.
 # remember to execute commands in the user context using su - $user -c
@@ -532,7 +536,7 @@ stage_2:
       type: auto-volume
   custom:
     on_first_run:
-    - stage-2/custom/install-my-conda.sh
+    - stage-2/system/conda/auto-install-miniconda.sh
 </code></pre>
 <p>The example is based on <a class="autorefs autorefs-internal" href="#install-miniconda-in-image">Install miniconda in image</a>, with the following changes:
 - <code>app</code> is a <strong>manual-volume</strong>, which means it is created manually with the name <code>my_app</code>, and then mounted to the container. To create it, use <code>docker volume create my_app</code>.
