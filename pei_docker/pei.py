@@ -86,7 +86,14 @@ def configure(project_dir:str, config:str, full_compose:bool):
     logging.info(f'Configuring PeiDocker project from {project_dir}/{config}')
     
     # read the config file
-    config_path : str = os.path.join(project_dir, config)
+    # config_path : str = os.path.join(project_dir, config)
+    config_path = config
+    
+    # file exists?
+    if not os.path.exists(config_path):
+        logging.error(f'Config file {config_path} does not exist')
+        return
+    
     in_config = oc.OmegaConf.load(config_path)
     
     # read the compose template file
