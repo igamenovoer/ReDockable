@@ -57,7 +57,8 @@ stage_2:
 
   # port mapping, will be appended to the stage-1 port mapping
   # see https://docs.docker.com/compose/networking/
-  ports: []    
+  ports:
+    - "9090:9090"
 
   # device settings, will override the stage-1 device settings
   device:

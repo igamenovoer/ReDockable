@@ -55,4 +55,5 @@ deactivate
 source .venv/bin/activate
 
 echo "Done, use invokeai-web to start the web interface"
-echo "If your host is Windows, set CUDA_VISIBLE_DEVICES correctly before run!!"
+echo "NOTE: Set INVOKEAI_HOST to 0.0.0.0 to allow external access"
+echo "NOTE: If your host is Windows, set CUDA_VISIBLE_DEVICES correctly before run!!"
