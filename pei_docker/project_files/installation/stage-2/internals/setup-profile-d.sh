@@ -23,7 +23,8 @@ echo "PEI_SOFT_APPS=$PEI_SOFT_APPS" >> /etc/environment
 echo "PEI_SOFT_DATA=$PEI_SOFT_DATA" >> /etc/environment
 echo "PEI_SOFT_WORKSPACE=$PEI_SOFT_WORKSPACE" >> /etc/environment
 
-# if CUDA_VISIBLE_DEVICES it not empty, add it to /etc/environment
+# if CUDA_VISIBLE_DEVICES exists and it not empty, add it to /etc/environment
+# FIXME: this is not working
 if [ -n "$CUDA_VISIBLE_DEVICES" ]; then
     echo "CUDA_VISIBLE_DEVICES=$CUDA_VISIBLE_DEVICES" >> /etc/environment
 fi
