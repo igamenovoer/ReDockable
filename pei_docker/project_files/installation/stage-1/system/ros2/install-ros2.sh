@@ -6,5 +6,8 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+export DEBIAN_FRONTEND=noninteractive
+export TZ=Asia/Shanghai
+
 apt update
 apt install -y ros-dev-tools ros-iron-desktop

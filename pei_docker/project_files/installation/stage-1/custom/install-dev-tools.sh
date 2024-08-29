@@ -15,5 +15,8 @@ export TZ=Asia/Shanghai
 apt-get install python3 python3-pip -y
 apt-get install cmake cmake-curses-gui pkg-config -y
 
+# install this to avoid tzdata asking for timezone in the future
+apt-get install tzdata -y
+
 # you need these to make opencv work
 apt-get install ffmpeg libsm6 libxext6 -y
