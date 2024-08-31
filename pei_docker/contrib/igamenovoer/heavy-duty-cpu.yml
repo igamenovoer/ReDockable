@@ -46,7 +46,7 @@ stage_1:
 
   # custom scripts
   custom:
-    # scripts run during build
+    # using on_first_run instead of on_build so that you can run it again if apt fails
     on_first_run: 
       - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
       - 'stage-1/contrib/igamenovoer/install-cpp-libs.sh'
