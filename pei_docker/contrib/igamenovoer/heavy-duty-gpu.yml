@@ -50,9 +50,11 @@ stage_1:
 
   # custom scripts
   custom:
-    # scripts run after first run, to make use of apt cache
+    # run twice, in case of failure
     on_first_run: 
-      - 'stage-1/custom/install-dev-tools.sh' # just an example, you can safely remove this
+      - 'stage-1/custom/install-dev-tools.sh' 
+      - 'stage-1/contrib/igamenovoer/install-cpp-libs.sh'
+      - 'stage-1/custom/install-dev-tools.sh'
       - 'stage-1/contrib/igamenovoer/install-cpp-libs.sh'
 
   mount:
