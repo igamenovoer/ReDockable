@@ -2,13 +2,9 @@
 
 # prepare conda env for invoke ai
 
-# if conda is not activated, activate it
-if [ -z "$CONDA_EXE" ]; then
-    conda activate
-fi
-
 conda_root=$(conda info --base)
 target_python_version=3.11
+source $conda_root/etc/profile.d/conda.sh
 
 # create python 3.10 env
 # get env_name from argument, if not provided, use invoke-ai
@@ -20,7 +16,6 @@ fi
 
 echo "Creating conda env $env_name"
 conda create -n $env_name python=$target_python_version -y
-source $conda_root/etc/profile.d/conda.sh
 
 # Deactivate any active conda environments
 echo "Deactivating any active conda environments"
@@ -54,6 +49,11 @@ echo "InvokeAI installed, deactivating venv and activating again"
 deactivate
 source .venv/bin/activate
 
-echo "Done, use invokeai-web to start the web interface"
+# prevent conda from automatically activating base env
+# conda config --set auto_activate_base false
+# echo "Disabled conda auto activation, this is required to run InvokeAI in clean venv"
+
+echo "use 'source $invokeai_root/.venv/bin/activate' to activate InvokeAI venv"
+echo "then, use $invokeai_root/invokeai-web.sh to start InvokeAI web server"
 echo "NOTE: Set INVOKEAI_HOST to 0.0.0.0 to allow external access"
 echo "NOTE: If your host is Windows, set CUDA_VISIBLE_DEVICES correctly before run!!"

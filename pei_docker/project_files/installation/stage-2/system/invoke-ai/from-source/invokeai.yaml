@@ -1,0 +1,11 @@
+schema_version: 4
+
+# Put user settings here - see https://invoke-ai.github.io/InvokeAI/features/CONFIGURATION/:
+host: 0.0.0.0 # serve the app on your local network
+patchmatch: false # use patchmatch for image inpainting
+precision: float16 # always use fp16 precision
+
+models_dir: /soft/data/invokeai/models # store models on an external drive
+download_cache_dir: /soft/data/invokeai/download_cache # store downloaded files on an external drive
+db_dir: /soft/data/invokeai/db # store the database on an external drive
+outputs_dir: /soft/data/invokeai/outputs # store outputs on an external drive

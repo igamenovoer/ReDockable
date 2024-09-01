@@ -3,7 +3,7 @@
 stage_1:
   # input/output image settings
   image:
-    base: nvidia/cuda:12.1.1-runtime-ubuntu20.04
+    base: nvidia/cuda:12.1.1-runtime-ubuntu22.04
     output: invoke-ai-pip:stage-1
 
   # ssh settings
@@ -16,6 +16,8 @@ stage_1:
     users:
       me:
         password: '123456'
+      root:
+        password: 'root'
 
   # proxy settings
   # inside the container, the proxy will accessed as http://{address}:{port}
@@ -46,8 +48,9 @@ stage_1:
 
   # custom scripts
   custom:
-    # scripts run after first run, to make use of apt cache
+    # run twice, make sure installation is successful
     on_build: 
+      - 'stage-1/system/invoke-ai/install-invoke-ai-deps.sh'
       - 'stage-1/system/invoke-ai/install-invoke-ai-deps.sh'
 
 stage_2:
@@ -58,7 +61,7 @@ stage_2:
   # port mapping, will be appended to the stage-1 port mapping
   # see https://docs.docker.com/compose/networking/
   ports:
-    - "9090:9090"
+    - '9090-9099:9090-9099'
 
   # device settings, will override the stage-1 device settings
   device:
@@ -83,8 +86,11 @@ stage_2:
     apt_cache:
       type: auto-volume
       dst_path: /var/cache/apt
+    pei_init:
+      type: auto-volume
+      dst_path: /pei-init
   
   custom:
     on_first_run:
       - stage-2/system/conda/auto-install-miniconda.sh
-      - stage-2/system/invoke-ai/install-invoke-ai-conda.sh
+      # - stage-2/system/invoke-ai/install-invoke-ai-conda.sh

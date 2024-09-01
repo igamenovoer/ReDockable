@@ -6,9 +6,7 @@ export DEBIAN_FRONTEND=noninteractive
 apt update
 apt install -y git python3 python3-pip python3-venv build-essential
 
-apt install -y --no-install-recommends \
-        git \
-        curl \
+apt install -y curl \
         vim \
         tmux \
         ncdu \
@@ -18,9 +16,6 @@ apt install -y --no-install-recommends \
         magic-wormhole \
         libglib2.0-0 \
         libgl1-mesa-glx \
-        python3-venv \
-        python3-pip \
-        build-essential \
         libopencv-dev \
         libstdc++-10-dev
 

@@ -18,7 +18,7 @@ ARG APT_USE_PROXY
 ARG APT_KEEP_PROXY
 
 # number of retries for apt
-ARG APT_NUM_RETRY=10
+ARG APT_NUM_RETRY=20
 
 # use other apt source?
 ARG APT_SOURCE_FILE
@@ -106,6 +106,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     $PEI_STAGE_DIR_1/internals/setup-users.sh &&\
     $PEI_STAGE_DIR_1/internals/cleanup.sh
+
+# allow access to /mnt for all users, so that you can make your own mounts
+RUN chmod 777 /mnt
 
 # setup entrypoint
 RUN cp $PEI_STAGE_DIR_1/internals/entrypoint.sh /entrypoint.sh &&\
