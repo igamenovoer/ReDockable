@@ -27,10 +27,20 @@ done
 echo "Activating $env_name"
 conda activate $env_name
 
-# setup INVOKEAI_ROOT
-invokeai_root=/soft/app/invokeai
-export INVOKEAI_ROOT=$invokeai_root
+# do we have INVOKEAI_ROOT set?
+if [ -z "$INVOKEAI_ROOT" ]; then
+    invokeai_root=/soft/app/invokeai
+    echo "INVOKEAI_ROOT not set, setting it to $invokeai_root"
+    export INVOKEAI_ROOT=$invokeai_root
+else
+    echo "INVOKEAI_ROOT already set to $INVOKEAI_ROOT, use it"
+    invokeai_root=$INVOKEAI_ROOT
+fi
+
 mkdir -p $invokeai_root
+
+# push current dir
+pushd $(pwd)
 
 # cd into INVOKEAI_ROOT
 cd $invokeai_root
@@ -44,10 +54,14 @@ source .venv/bin/activate
 echo "Installing InvokeAI with pip"
 pip install InvokeAI --use-pep517 --extra-index-url  https://mirrors.aliyun.com/pytorch-wheels/cu121
 
-echo "InvokeAI installed, deactivating venv and activating again"
-# deactivate venv and activate again
+# deactivate conda and venv
+conda deactivate
 deactivate
-source .venv/bin/activate
+
+echo "InvokeAI installed"
+# deactivate venv
+
+# source .venv/bin/activate
 
 # prevent conda from automatically activating base env
 # conda config --set auto_activate_base false
@@ -57,3 +71,6 @@ echo "use 'source $invokeai_root/.venv/bin/activate' to activate InvokeAI venv"
 echo "then, use $invokeai_root/invokeai-web.sh to start InvokeAI web server"
 echo "NOTE: Set INVOKEAI_HOST to 0.0.0.0 to allow external access"
 echo "NOTE: If your host is Windows, set CUDA_VISIBLE_DEVICES correctly before run!!"
+
+# pop back to original dir
+popd
