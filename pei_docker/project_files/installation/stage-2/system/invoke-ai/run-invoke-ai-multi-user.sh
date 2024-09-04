@@ -5,18 +5,38 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 # start invoke ai services for multiple users
 # parameters are given as environment variables
-# AI_INSTALL_DIR is the directory where invoke ai's .venv is installed, $AI_INSTALL_DIR/.venv must exist
+# AI_INSTALL_DIR is the directory where invoke ai's .venv is installed, $AI_INSTALL_DIR/.venv must exist, otherwise check for INVOKEAI_ROOT
 # AI_USERS is a list of users, separated by comma
 # AI_PORTS is a list of ports, separated by comma, each port corresponds to a user
 # AI_DEVICES is a list of devices, separated by comma, each device corresponds to a user
 # devices can be cuda, cuda:<device_id>, cpu, mps
 
-# check if AI_INSTALL_DIR is set
+venv_dir=""
+
+# check if AI_INSTALL_DIR is set, use it as the directory where invoke ai's .venv is installed
+# otherwise, check if INVOKEAI_ROOT is set, use it as the directory where invoke ai's .venv is installed
+# otherwise, raise error
+
 if [ -z "$AI_INSTALL_DIR" ]; then
-    echo "AI_INSTALL_DIR is not set"
-    exit 1
+    echo "AI_INSTALL_DIR is not set, trying to use INVOKEAI_ROOT"
+    if [ -z "$INVOKEAI_ROOT" ]; then
+        echo "INVOKEAI_ROOT is not set, exit"
+        exit 1
+    else
+        echo "INVOKEAI_ROOT is set, using it as the directory where invoke ai's .venv is installed"
+        venv_dir=$INVOKEAI_ROOT/.venv
+    fi
+else
+    echo "AI_INSTALL_DIR is set, using it as the directory where invoke ai's .venv is installed"
+    venv_dir=$AI_INSTALL_DIR/.venv
 fi
-venv_dir=$AI_INSTALL_DIR/.venv
+
+# check if AI_INSTALL_DIR is set
+# if [ -z "$AI_INSTALL_DIR" ]; then
+#     echo "AI_INSTALL_DIR is not set"
+#     exit 1
+# fi
+# venv_dir=$AI_INSTALL_DIR/.venv
 
 # check if AI_USERS is set
 if [ -z "$AI_USERS" ]; then

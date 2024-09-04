@@ -70,7 +70,7 @@ stage_2:
   environment:
     - 'AI_USERS=user_9090,user_9091,user_9092'
     - 'AI_PORTS=9090,9091,9092'
-    - 'AI_DEVICES=cuda:1, cuda:2, cuda:3'
+    - 'AI_DEVICES=cuda:1,cuda:2,cuda:3'
     - 'AI_DATA_DIR=/invokeai-data'
     - 'INVOKEAI_ROOT=/soft/app/invokeai'
 
