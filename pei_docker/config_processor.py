@@ -490,6 +490,55 @@ class PeiConfigProcessor:
             
         return '\n'.join(cmds)
     
+    def _generate_etc_environment(self, user_config : UserConfig):
+        ''' generate the etc/environment file that will be copied to the container
+        
+        parameters
+        ------------
+        user_config : UserConfig
+            the user configuration object
+        '''
+        import os
+        
+        # stage 1
+        # write to file
+        filename = f'{self.m_project_dir}/{self.m_host_dir}/stage-1/generated/_etc_environment.sh'
+        
+        # if directory does not exist, create it
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        if user_config.stage_1 is not None and user_config.stage_1.environment:
+            env_dict = user_config.stage_1.get_environment_as_dict()
+            
+            logging.info(f'Writing env to {filename}')
+            with open(filename, 'w+') as f:
+                for k, v in env_dict.items():
+                    f.write(f'{k}={v}\n')
+        else:
+            # write an empty file
+            logging.info(f'Writing empty env file to {filename}')
+            with open(filename, 'w+') as f:
+                f.write('')
+        
+        # stage 2
+        # write to file
+        filename = f'{self.m_project_dir}/{self.m_host_dir}/stage-2/generated/_etc_environment.sh'
+        
+        # if directory does not exist, create it
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        
+        if user_config.stage_2 is not None and user_config.stage_2.environment:
+            env_dict = user_config.stage_2.get_environment_as_dict()
+            
+            logging.info(f'Writing env to {filename}')
+            with open(filename, 'w+') as f:
+                for k, v in env_dict.items():
+                    f.write(f'{k}={v}\n')
+        else:
+            # write an empty file
+            logging.info(f'Writing empty env file to {filename}')
+            with open(filename, 'w+') as f:
+                f.write('')
+    
     def _generate_script_files(self, user_config : UserConfig):
         ''' generate the script files that will run all user scripts
         
@@ -596,6 +645,9 @@ class PeiConfigProcessor:
         # generate script files
         if generate_custom_script_files:
             self._generate_script_files(user_config)
+            
+        # generate etc/environment files
+        self._generate_etc_environment(user_config)
         
         # strip the x-? from the compose template
         if remove_extra:

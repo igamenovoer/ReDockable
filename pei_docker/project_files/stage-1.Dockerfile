@@ -18,7 +18,7 @@ ARG APT_USE_PROXY
 ARG APT_KEEP_PROXY
 
 # number of retries for apt
-ARG APT_NUM_RETRY=20
+ARG APT_NUM_RETRY=3
 
 # use other apt source?
 ARG APT_SOURCE_FILE
@@ -57,6 +57,7 @@ ENV PEI_DOCKER_DIR="/pei-init"
 
 # copy installation/internals and installation/system to the image, do apt installs first
 ADD ${PEI_STAGE_HOST_DIR_1}/internals ${PEI_STAGE_DIR_1}/internals
+ADD ${PEI_STAGE_HOST_DIR_1}/generated ${PEI_STAGE_DIR_1}/generated
 ADD ${PEI_STAGE_HOST_DIR_1}/system ${PEI_STAGE_DIR_1}/system
 
 # convert $PEI_STAGE_DIR_1/internals/setup-env.sh from CRLF to LF

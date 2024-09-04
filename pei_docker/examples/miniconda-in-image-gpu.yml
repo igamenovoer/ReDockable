@@ -15,6 +15,10 @@ stage_1:
     repo_source: tuna
   device:
     type: gpu
+  environment:
+    - CUDA_VISIBLE_DEVICES=0
+    - NVIDIA_DRIVER_CAPABILITIES=all
+
 stage_2:
   image:
     output: pei-image:stage-2

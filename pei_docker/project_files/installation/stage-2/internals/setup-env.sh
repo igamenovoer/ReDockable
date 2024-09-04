@@ -10,18 +10,27 @@ if [ "$ENABLE_GLOBAL_PROXY" = "true" ]; then
     echo "PEI_HTTP_PROXY_2 and PEI_HTTPS_PROXY_2 must be set if ENABLE_PROXY_IN_BUILD is true"
     echo "Skipping proxy setup for build"
   else
-    echo "Setting up proxy for build, write to profile.d"
-    echo "export http_proxy=$PEI_HTTP_PROXY_2" >> /etc/profile.d/proxy.sh
-    echo "export https_proxy=$PEI_HTTPS_PROXY_2" >> /etc/profile.d/proxy.sh
-    echo "export HTTP_PROXY=$PEI_HTTP_PROXY_2" >> /etc/profile.d/proxy.sh
-    echo "export HTTPS_PROXY=$PEI_HTTPS_PROXY_2" >> /etc/profile.d/proxy.sh
+    echo "Setting up proxy for build, write to /etc/environment"
+    echo "http_proxy=$PEI_HTTP_PROXY_2" >> /etc/environment
+    echo "https_proxy=$PEI_HTTPS_PROXY_2" >> /etc/environment
+    echo "HTTP_PROXY=$PEI_HTTP_PROXY_2" >> /etc/environment
+    echo "HTTPS_PROXY=$PEI_HTTPS_PROXY_2" >> /etc/environment
   fi
-elif [ "$ENABLE_GLOBAL_PROXY" = "false" ]; then
-  # check if the proxy settings file exists, if yes, remove it
-  if [ -f /etc/profile.d/proxy.sh ]; then
-    echo "Removing proxy settings from /etc/profile.d/proxy.sh..."
-    
-    # remove the proxy settings file
-    rm -f /etc/profile.d/proxy.sh
-  fi
+fi
+
+# get directory of this script
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+
+# if DIR/../generated/_etc_environment.sh exists, append it to /etc/environment
+echo "Checking $DIR/../generated/_etc_environment.sh"
+if [ -f "$DIR/../generated/_etc_environment.sh" ]; then
+  echo "Appending $DIR/../generated/_etc_environment.sh to /etc/environment"
+
+  # add a new line first
+  echo "" >> /etc/environment
+
+  # append the file
+  cat $DIR/../generated/_etc_environment.sh >> /etc/environment
+else
+  echo "$DIR/../generated/_etc_environment.sh not found"
 fi

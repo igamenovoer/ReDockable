@@ -18,7 +18,20 @@ else
     cache_gpu_ram_gb=10.0
 
     # set env variables
-    base_dir=/soft/data/invokeai-data
+
+    # if AI_DATA_DIR is set, use it
+    if [ -z "$AI_DATA_DIR" ]; then
+        base_dir=/soft/data/invokeai-data
+    else
+        base_dir=$AI_DATA_DIR
+    fi
+
+    # base_dir exists? if not, mkdir it
+    echo "InvokeAI data directory: $base_dir"
+    if [ ! -d "$base_dir" ]; then
+        echo "$base_dir not found, creating it"
+        mkdir -p $base_dir
+    fi
 
     # variables independent of user
     export INVOKEAI_HOST="0.0.0.0"

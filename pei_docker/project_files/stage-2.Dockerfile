@@ -53,6 +53,7 @@ ENV PEI_STAGE_DIR_2=${PEI_STAGE_DIR_2}
 
 # copy installation/internals and installation/system to the image, do apt installs first
 ADD ${PEI_STAGE_HOST_DIR_2}/internals ${PEI_STAGE_DIR_2}/internals
+ADD ${PEI_STAGE_HOST_DIR_2}/generated ${PEI_STAGE_DIR_2}/generated
 ADD ${PEI_STAGE_HOST_DIR_2}/system ${PEI_STAGE_DIR_2}/system
 
 # install dos2unix, needed for converting CRLF to LF
