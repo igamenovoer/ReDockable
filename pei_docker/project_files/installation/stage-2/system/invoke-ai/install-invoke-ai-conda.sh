@@ -31,6 +31,9 @@ fi
 target_python_version=3.11
 source $conda_root/etc/profile.d/conda.sh
 
+# make sure conda will NOT be activated automatically in the future
+conda config --set auto_activate_base false
+
 # create python env
 # get env_name from argument, if not provided, use invoke-ai
 # env_name=invoke-ai

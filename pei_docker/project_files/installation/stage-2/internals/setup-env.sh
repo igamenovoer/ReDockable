@@ -18,19 +18,25 @@ if [ "$ENABLE_GLOBAL_PROXY" = "true" ]; then
   fi
 fi
 
-# get directory of this script
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-# if DIR/../generated/_etc_environment.sh exists, append it to /etc/environment
-echo "Checking $DIR/../generated/_etc_environment.sh"
-if [ -f "$DIR/../generated/_etc_environment.sh" ]; then
-  echo "Appending $DIR/../generated/_etc_environment.sh to /etc/environment"
+# if PEI_BAKE_ENV_STAGE_2 is true, bake the environment variables to /etc/environment
+if [ "$PEI_BAKE_ENV_STAGE_2" = "true" ]; then
+  echo "Baking environment variables to /etc/environment"
 
-  # add a new line first
-  echo "" >> /etc/environment
+  # get directory of this script
+  DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
-  # append the file
-  cat $DIR/../generated/_etc_environment.sh >> /etc/environment
-else
-  echo "$DIR/../generated/_etc_environment.sh not found"
+  # if DIR/../generated/_etc_environment.sh exists, append it to /etc/environment
+  echo "Checking $DIR/../generated/_etc_environment.sh"
+  if [ -f "$DIR/../generated/_etc_environment.sh" ]; then
+    echo "Appending $DIR/../generated/_etc_environment.sh to /etc/environment"
+
+    # add a new line first
+    echo "" >> /etc/environment
+
+    # append the file
+    cat $DIR/../generated/_etc_environment.sh >> /etc/environment
+  else
+    echo "$DIR/../generated/_etc_environment.sh not found"
+  fi
 fi

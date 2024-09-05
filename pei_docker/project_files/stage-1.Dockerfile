@@ -46,6 +46,9 @@ ARG REMOVE_GLOBAL_PROXY_AFTER_BUILD=false
 ARG PEI_STAGE_HOST_DIR_1
 ARG PEI_STAGE_DIR_1
 
+# bake environment variables into the image?
+ARG PEI_BAKE_ENV_STAGE_1=false
+
 # -------------------------------------------
 ENV PEI_HTTP_PROXY_1=${PEI_HTTP_PROXY_1}
 ENV PEI_HTTPS_PROXY_1=${PEI_HTTPS_PROXY_1}
