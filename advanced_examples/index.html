@@ -280,6 +280,7 @@ volumes:
 <h2 id="invokeai-installation-behind-gfw">InvokeAI Installation (behind GFW)</h2>
 <p><a href="https://github.com/invoke-ai/InvokeAI">InvokeAI</a> is a professional AIGC tool that has many nice GUI features, and the developers have provided simple installation scripts for Linux and Windows. However, installing behind GFW is hard, as it requires installing many components as well as models to work. Here we provide an example to install it behind GFW, as well as how to configure the app to make it more performant.</p>
 <h3 id="using-pip">using pip</h3>
+<p><strong>IMPORTANT</strong>: To make it easier to download models in the future, we have enabled global proxy and assumed that you have a proxy running in your host over port <code>30080</code>. If you don't have a proxy, you can disable it by setting <code>enable_globally</code> to <code>false</code> in the <code>proxy</code> section of the config file.</p>
 <p>The <a href="https://invoke-ai.github.io/InvokeAI/installation/020_INSTALL_MANUAL/#installation-walkthrough">official guide</a> provides details about how to install it via pip. We automate the process here using China mainland mirrors. We use <code>root</code> to install and run InvokeAI.</p>
 <p>Here is the config file, you can find it in <code>pei_docker/examples/invoke-ai-by-pip.yml</code>:</p>
 <pre><code class="language-yaml"># create a docker for latest invoke ai
@@ -308,8 +309,8 @@ stage_1:
   # note that whether the proxy is used or not depends on the applications
   proxy:
     address: host.docker.internal # default value, this will map to the host machine
-    port: 30080  # if address==host.docker.internal, this will be the proxy port on host machine
-    enable_globally: true  # enable proxy for all shell commands during build and run?
+    port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
     remove_after_build: false # remove global proxy after build?
 
   device:
