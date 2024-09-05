@@ -198,35 +198,6 @@ volumes:
 
 The [official guide](https://invoke-ai.github.io/InvokeAI/installation/020_INSTALL_MANUAL/#installation-walkthrough) provides details about how to install it via pip. We automate the process here using China mainland mirrors. We use `root` to install and run InvokeAI.
 
-To run InvokeAI, we need some information through environment variables, for more environment variables, see `stage-2/system/invoke-ai/setup-invoke-ai-envs.sh`. Note that these environment variables are NOT directly available to SSH logins, they are only available to the container itself, so you need to attach to the container to run InvokeAI.
-
-```bash
-# find out the container id
-docker ps -a
-
-# you get something like this
-# CONTAINER ID   IMAGE   NAMES
-# fdf2953454f2   invoke-ai-pip:stage-2 build-invokeai-stage-2-1
-
-# then, attach to the container
-docker container attach build-invokeai-stage-2-1
-
-# now you are inside the container, you can run InvokeAI with
-/pei-from-host/stage-2/system/invoke-ai/run-invoke-ai-mutli-user.sh
-
-# after that, you can detach from the container by pressing `Ctrl+P` and `Ctrl+Q`
-```
-
-Here are the most important environment variables:
-- AI_USERS: the users that will run InvokeAI, separated by `,`
-- AI_PORTS: the ports that will be used by each user, separated by `,`
-- AI_DEVICES: the devices that will be used by each user, separated by `,`
-- AI_DATA_DIR: the directory where the data is stored inside the container
-- INVOKEAI_ROOT: the directory where InvokeAI is installed inside the container
-- INVOKEAI_RAM: the per-user CPU memory cache size in GB
-- INVOKEAI_VRAM: the per-user GPU memory cache size in GB
-
-
 Here is the config file, you can find it in `pei_docker/examples/invoke-ai-by-pip.yml`:
 
 ```yaml
@@ -345,12 +316,39 @@ stage_2:
       - stage-2/system/invoke-ai/invoke-ai-entrypoint.sh
 ```
 
-After build, ssh into it using root, and then run 
+To run InvokeAI, we need some information through environment variables, for more environment variables, see `stage-2/system/invoke-ai/setup-invoke-ai-envs.sh`. 
+
+Here are the most important environment variables:
+
+- AI_USERS: the users that will run InvokeAI, separated by `,`
+- AI_PORTS: the ports that will be used by each user, separated by `,`
+- AI_DEVICES: the devices that will be used by each user, separated by `,`
+- AI_DATA_DIR: the directory where the data is stored inside the container
+- INVOKEAI_ROOT: the directory where InvokeAI is installed inside the container
+- INVOKEAI_RAM: the per-user CPU memory cache size in GB
+- INVOKEAI_VRAM: the per-user GPU memory cache size in GB
+
+Note that these environment variables are NOT directly available to SSH logins, they are only available to the `root` that starts by `docker compose`, so you need to attach to the container to run InvokeAI.
 
 ```bash
+# find out the container id
+docker ps -a
+
+# you get something like this
+# CONTAINER ID   IMAGE   NAMES
+# fdf2953454f2   invoke-ai-pip:stage-2 build-invokeai-stage-2-1
+
+# then, attach to the container
+docker container attach build-invokeai-stage-2-1
+
+# now you are inside the container, you can run InvokeAI with
 /pei-from-host/stage-2/system/invoke-ai/run-invoke-ai-mutli-user.sh
+
+# after that, you can detach from the container by pressing `Ctrl+P` and `Ctrl+Q`
 ```
 
-It will creates processes in tmux for each user, and you can access the GUI using the ports you specified in the environment variables. To see InvokeAI logs, use `tmux` to attach to the corresponding session ([how to use tmux](https://tmuxcheatsheet.com/)).
+If you ssh into the container, you need to set the environment variables manually, or you can create a script to set them automatically. Then you can again use `run-invoke-ai-mutli-user.sh` to start InvokeAI.
+
+The `run-invoke-ai-mutli-user.sh` script will create a process in tmux for each user, and you can access the GUI using the ports you specified in the environment variables. To see InvokeAI logs, use `tmux` to attach to the corresponding session ([how to use tmux](https://tmuxcheatsheet.com/)).
 
 To find out the installation details and where models are downloaded, outputs are kept, check the scripts in `stage-2/system/invoke-ai`
