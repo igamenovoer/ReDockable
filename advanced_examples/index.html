@@ -424,6 +424,8 @@ docker container attach build-invokeai-stage-2-1
 
 # after that, you can detach from the container by pressing `Ctrl+P` and `Ctrl+Q`
 </code></pre>
+<p>If successful, you can access InvokeAI by visiting <code>http://localhost:9090</code> in your browser,
+or <code>http://localhost:9091</code>, <code>http://localhost:9092</code> for different InvokeAI users, they have their own data but share the same models.</p>
 <p>If you ssh into the container, you need to set the environment variables manually, or you can create a script to set them automatically. Then you can again use <code>run-invoke-ai-mutli-user.sh</code> to start InvokeAI.</p>
 <p>The <code>run-invoke-ai-mutli-user.sh</code> script will create a process in tmux for each user, and you can access the GUI using the ports you specified in the environment variables. To see InvokeAI logs, use <code>tmux</code> to attach to the corresponding session (<a href="https://tmuxcheatsheet.com/">how to use tmux</a>).</p>
 <p>To find out the installation details and where models are downloaded, outputs are kept, check the scripts in <code>stage-2/system/invoke-ai</code></p>
