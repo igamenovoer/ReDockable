@@ -277,7 +277,7 @@ stage_2:
     - 'AI_DATA_DIR=/invokeai-data'  # where the data is stored inside the container, different users will have different subdir there
     - 'INVOKEAI_ROOT=/soft/app/invokeai'  # where invokeai is installed, inside the container
     - 'INVOKEAI_RAM=12'  # per-user CPU memory cache size in GB, larger size leads to faster running by avoiding data reload
-    - 'INVOKEAI_VRAM=8' # per-user GPU memory cache size, in GB, larger size leads to faster running by avoiding data reload
+    - 'INVOKEAI_VRAM=2' # per-user GPU memory cache size, in GB, larger size leads to faster running by avoiding data reload
 
   # storage configurations
   storage:
