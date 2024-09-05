@@ -187,3 +187,139 @@ volumes:
   data: {}
   workspace: {}
 ```
+
+## InvokeAI Installation (behind GFW)
+
+[InvokeAI](https://github.com/invoke-ai/InvokeAI) is a professional AIGC tool that has many nice GUI features, and the developers have provided simple installation scripts for Linux and Windows. However, installing behind GFW is hard, as it requires installing many components as well as models to work. Here we provide an example to install it behind GFW, as well as how to configure the app to make it more performant.
+
+### using pip
+
+The [official guide](https://invoke-ai.github.io/InvokeAI/installation/020_INSTALL_MANUAL/#installation-walkthrough) provides details about how to install it via pip. We automate the process here using China mainland mirrors. We use `root` to install and run InvokeAI.
+
+Here is the config file, you can find it in `pei_docker/examples/invoke-ai-by-pip.yml`:
+
+```yaml
+# create a docker for latest invoke ai
+
+stage_1:
+  # input/output image settings
+  image:
+    base: nvidia/cuda:12.1.1-runtime-ubuntu22.04
+    output: invoke-ai-pip:stage-1
+
+  # ssh settings
+  ssh:
+    enable: true
+    port: 22  # port in container
+    host_port: 3333  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      me:
+        password: '123456'
+      root:
+        password: 'root'
+
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 30080  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: true  # enable proxy for all shell commands during build and run?
+    remove_after_build: false # remove global proxy after build?
+
+  device:
+    type: gpu
+
+  # apt settings
+  apt:
+    # replace the default apt source with a custom one, use empty string to disable this
+    # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    # special values that refer to well known apt sources:
+    # 'tuna' : 'http://mirrors.tuna.tsinghua.edu.cn/ubuntu/'
+    # 'aliyun' : 'http://mirrors.aliyun.com/ubuntu/'
+    # '163' : 'http://mirrors.163.com/ubuntu/'
+    # 'ustc' : 'http://mirrors.ustc.edu.cn/ubuntu/'
+    # 'cn' : 'http://cn.archive.ubuntu.com/ubuntu/
+    repo_source: 'tuna'
+    keep_repo_after_build: true # keep the apt source file after build?
+    use_proxy: false  # use proxy for apt?
+    keep_proxy_after_build: false # keep proxy settings after build?
+
+  # custom scripts
+  custom:
+    # run twice, make sure installation is successful
+    on_build: 
+      - 'stage-1/system/invoke-ai/install-invoke-ai-deps.sh'
+      - 'stage-1/system/invoke-ai/install-invoke-ai-deps.sh'
+
+stage_2:
+  # input/output image settings
+  image:
+    output: invoke-ai-pip:stage-2
+
+  # port mapping, will be appended to the stage-1 port mapping
+  # see https://docs.docker.com/compose/networking/
+  ports:
+    - '9090-9099:9090-9099'
+
+  # device settings, will override the stage-1 device settings
+  device:
+    type: gpu # can be cpu or gpu
+
+  environment:
+    - 'AI_USERS=user_9090,user_9091,user_9092'
+    - 'AI_PORTS=9090,9091,9092'
+    - 'AI_DEVICES=cuda:0,cuda:1,cuda:2' # device for each user, DO NOT ADD SPACE here
+    - 'AI_DATA_DIR=/invokeai-data'  # where the data is stored inside the container, different users will have different subdir there
+    - 'INVOKEAI_ROOT=/soft/app/invokeai'  # where invokeai is installed, inside the container
+    - 'INVOKEAI_RAM=12'  # per-user CPU memory cache size in GB, larger size leads to faster running by avoiding data reload
+    - 'INVOKEAI_VRAM=8' # per-user GPU memory cache size, in GB, larger size leads to faster running by avoiding data reload
+
+  # storage configurations
+  storage:
+    app:
+      type: auto-volume # auto-volume, manual-volume, host, image
+    data:
+      type: auto-volume
+    workspace:
+      type: auto-volume
+
+  # mount external volumes to container
+  # the volumes can be given any names, mounted anywhere
+  # the volume type cannot be 'image', or otherwise it will be ignored
+  mount:
+    home-root:
+      type: auto-volume   # auto-volume, manual-volume, host
+      dst_path: /root
+    invokeai-data:
+      type: auto-volume
+      dst_path: /invokeai-data
+    models: # for external models
+      type: auto-volume
+      dst_path: /models
+    pei_init:
+      type: auto-volume
+      dst_path: /pei-init
+  
+  custom:
+    on_first_run:
+      - stage-2/system/conda/auto-install-miniconda.sh
+      - stage-2/system/invoke-ai/install-invoke-ai-conda.sh
+
+    on_every_run:
+      # normally, you can start InvokeAI manually using stage-2/system/invoke-ai/run-invoke-ai-mutli-user.sh
+      # if you want to run invoke-ai on startup, create stage-2/custom/start-invokeai.sh, and run the above there
+      - stage-2/system/invoke-ai/invoke-ai-entrypoint.sh
+```
+
+After build, ssh into it using root, and then run 
+
+```bash
+/pei-from-host/stage-2/system/invoke-ai/run-invoke-ai-mutli-user.sh
+```
+
+It will creates processes in tmux for each user, and you can access the GUI using the ports you specified in the environment variables. To see InvokeAI logs, use `tmux` to attach to the corresponding session ([how to use tmux](https://tmuxcheatsheet.com/)).
+
+To find out the installation details and where models are downloaded, outputs are kept, check the scripts in `stage-2/system/invoke-ai`
