@@ -194,6 +194,8 @@ volumes:
 
 ### using pip
 
+**IMPORTANT**: To make it easier to download models in the future, we have enabled global proxy and assumed that you have a proxy running in your host over port `30080`. If you don't have a proxy, you can disable it by setting `enable_globally` to `false` in the `proxy` section of the config file.
+
 The [official guide](https://invoke-ai.github.io/InvokeAI/installation/020_INSTALL_MANUAL/#installation-walkthrough) provides details about how to install it via pip. We automate the process here using China mainland mirrors. We use `root` to install and run InvokeAI.
 
 Here is the config file, you can find it in `pei_docker/examples/invoke-ai-by-pip.yml`:
@@ -225,8 +227,8 @@ stage_1:
   # note that whether the proxy is used or not depends on the applications
   proxy:
     address: host.docker.internal # default value, this will map to the host machine
-    port: 30080  # if address==host.docker.internal, this will be the proxy port on host machine
-    enable_globally: true  # enable proxy for all shell commands during build and run?
+    port: 7890  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
     remove_after_build: false # remove global proxy after build?
 
   device:
