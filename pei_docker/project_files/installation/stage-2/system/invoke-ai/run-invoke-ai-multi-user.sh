@@ -67,6 +67,9 @@ if [ ${#users[@]} -ne ${#ports[@]} ] || [ ${#users[@]} -ne ${#devices[@]} ]; the
     exit 1
 fi
 
+# these env variables should be inherited by the tmux session
+env_inherit="HTTP_PROXY HTTPS_PROXY NO_PROXY http_proxy https_proxy no_proxy"
+
 # start invoke ai services for each user
 for i in "${!users[@]}"; do
     user=${users[$i]}
@@ -79,8 +82,9 @@ for i in "${!users[@]}"; do
     # if tmux session already exists, kill it
     tmux kill-session -t $tmux_session_name
 
-    # create a new tmux session
+    # create a new tmux session, inherit the environment variables
     tmux new-session -d -s $tmux_session_name
+    # tmux new-session -d -s $tmux_session_name
 
     # if device is cuda, assume device 0
     if [ $device == "cuda" ]; then
@@ -106,6 +110,13 @@ for i in "${!users[@]}"; do
     if [ $device == "cuda" ]; then
         tmux send-keys -t $tmux_session_name "export CUDA_VISIBLE_DEVICES=$device_id" Enter
     fi
+
+    # for each env variable in env_inherit, check if it is set, if so, set it in the tmux session
+    for env_var in $env_inherit; do
+        if [ ! -z "${!env_var}" ]; then
+            tmux send-keys -t $tmux_session_name "export $env_var=${!env_var}" Enter
+        fi
+    done
 
     # start invoke ai in tmux
     tmux send-keys -t $tmux_session_name "source $venv_dir/bin/activate" Enter
