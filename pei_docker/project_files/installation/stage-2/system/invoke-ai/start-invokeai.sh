@@ -8,6 +8,9 @@ if [ -z "$INVOKEAI_AUTO_START" ]; then
     export INVOKEAI_AUTO_START=1
 fi
 
+# export all etc variables
+export $(cat /etc/environment | grep -v ^# | xargs)
+
 # if INVOKEAI_AUTO_START is set to 0 or false, exit
 if [ $INVOKEAI_AUTO_START -eq 0 ]; then
     echo "INVOKEAI_AUTO_START is set to 0, exit"
