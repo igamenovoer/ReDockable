@@ -75,6 +75,7 @@ stage_2:
     - 'INVOKEAI_ROOT=/soft/app/invokeai'  # where invokeai is installed, inside the container
     - 'INVOKEAI_RAM=12'  # per-user CPU memory cache size in GB, larger size leads to faster running by avoiding data reload
     - 'INVOKEAI_VRAM=2' # per-user GPU memory cache size, in GB, larger size leads to faster running by avoiding data reload
+    - 'INVOKEAI_AUTO_START=1'  # start invokeai automatically
 
   # storage configurations
   storage:
@@ -101,6 +102,9 @@ stage_2:
     pei_init:
       type: auto-volume
       dst_path: /pei-init
+    pei_from_host:  # use this so that we can modify the scripts without commiting to the image
+      type: auto-volume
+      dst_path: /pei-from-host
   
   custom:
     on_first_run:
@@ -108,6 +112,5 @@ stage_2:
       - stage-2/system/invoke-ai/install-invoke-ai-conda.sh
 
     on_every_run:
-      # normally, you can start InvokeAI manually using stage-2/system/invoke-ai/run-invoke-ai-mutli-user.sh
-      # if you want to run invoke-ai on startup, create stage-2/custom/start-invokeai.sh, and run the above there
+      # use INVOKEAI_AUTO_START=1 to start invokeai automatically
       - stage-2/system/invoke-ai/invoke-ai-entrypoint.sh

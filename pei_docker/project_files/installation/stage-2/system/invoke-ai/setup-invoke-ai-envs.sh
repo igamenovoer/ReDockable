@@ -45,7 +45,17 @@ else
     fi
 
     export INVOKEAI_DOWNLOAD_CACHE_DIR="$base_dir/common/download_cache"
+    export INVOKEAI_LEGACY_CONF_DIR="$base_dir/common/legacy_conf"
     export INVOKEAI_CUSTOM_NODES_DIR="$base_dir/common/custom_nodes"
+
+    # do we have INVOKEAI_HF_HOME set?
+    if [ -z "$INVOKEAI_HF_HOME" ]; then
+        # if not, set it
+        export INVOKEAI_HF_HOME="$base_dir/common/hf_home"
+    else
+        export INVOKEAI_HF_HOME="$base_dir/common/hf_home"
+    fi
+    export HF_HOME="$INVOKEAI_HF_HOME"
 
     # do we have INVOKEAI_RAM set?
     if [ -z "$INVOKEAI_RAM" ]; then
@@ -67,6 +77,7 @@ else
     export INVOKEAI_DB_DIR="$base_dir/users/$username/db"
     export INVOKEAI_OUTPUTS_DIR="$base_dir/users/$username/outputs"
     export INVOKEAI_STYLE_PRESETS_DIR="$base_dir/users/$username/style_presets"
+    export INVOKEAI_PROFILES_DIR="$base_dir/users/$username/profiles"
 
     # show it 
     echo "InvokeAI environment variables:"

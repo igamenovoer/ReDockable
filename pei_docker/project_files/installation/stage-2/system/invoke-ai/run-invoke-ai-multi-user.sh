@@ -3,6 +3,9 @@
 # get directory of this script
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
+# allow access to all environment variables in /etc/environment
+export $(cat /etc/environment | grep -v ^# | xargs)
+
 # start invoke ai services for multiple users
 # parameters are given as environment variables
 # AI_INSTALL_DIR is the directory where invoke ai's .venv is installed, $AI_INSTALL_DIR/.venv must exist, otherwise check for INVOKEAI_ROOT
