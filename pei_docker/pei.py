@@ -19,9 +19,9 @@ def cli():
 @click.command()
 @click.option('--project-dir', '-p', help='project directory', required=True, 
               type=click.Path(exists=False, file_okay=False))
-@click.option('--with-examples', '-e', is_flag=True, default=False, 
+@click.option('--with-examples', '-e', is_flag=True, default=True, 
               help='copy example files to the project dir')
-@click.option('--with-contrib', is_flag=True, default=False, help='copy contrib directory to the project dir')
+@click.option('--with-contrib', is_flag=True, default=True, help='copy contrib directory to the project dir')
 def create(project_dir : str, with_examples : bool, with_contrib : bool):
     logging.info(f'Creating PeiDocker project in {project_dir}')
     os.makedirs(project_dir, exist_ok=True)

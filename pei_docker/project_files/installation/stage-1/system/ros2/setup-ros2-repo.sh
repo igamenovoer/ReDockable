@@ -6,6 +6,13 @@ if [ "$EUID" -ne 0 ]
   exit
 fi
 
+# Check if PEI_HTTP_PROXY_1 is set and use it if available
+if [ -n "$PEI_HTTP_PROXY_1" ]; then
+    echo "PEI_HTTP_PROXY_1 is set, using it as HTTP proxy"
+    export http_proxy="$PEI_HTTP_PROXY_1"
+    export https_proxy="$PEI_HTTP_PROXY_1"
+fi
+
 # default to tuna repository
 default_ros2_repo_url="http://mirrors.tuna.tsinghua.edu.cn/ros2"
 
