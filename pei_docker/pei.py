@@ -85,13 +85,15 @@ def create(project_dir : str, with_examples : bool, with_contrib : bool):
 def configure(project_dir:str, config:str, full_compose:bool):
     logging.info(f'Configuring PeiDocker project from {project_dir}/{config}')
     
-    # read the config file
-    if config == Defaults.OutputConfigName:
-        # default? then append to project dir
+    import os
+    # is config file a relative path?
+    # if yes, then append to project dir
+    # if no, then use as is
+    if not os.path.isabs(config) or config == Defaults.OutputConfigName:
         config_path = os.path.join(project_dir, config)
     else:
-        # given? then use as is
         config_path = config
+
     
     # file exists?
     if not os.path.exists(config_path):

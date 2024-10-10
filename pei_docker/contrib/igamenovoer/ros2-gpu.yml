@@ -1,0 +1,102 @@
+# heavy duty cpp development, install a lot of things
+
+stage_1:
+  # input/output image settings
+  image:
+    # base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    base: nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+    output: ig-ros2-gpu:stage-1
+
+  # ssh settings
+  ssh:
+    enable: true
+    port: 22  # port in container
+    host_port: 2233  # port in host
+
+    # ssh users, the key is user name, value is user info
+    users:
+      igamenovoer:
+        password: '123456'
+      root: # you can configure root user here
+        password: root
+        pubkey_file: null
+
+  # proxy settings
+  # inside the container, the proxy will accessed as http://{address}:{port}
+  # note that whether the proxy is used or not depends on the applications
+  proxy:
+    address: host.docker.internal # default value, this will map to the host machine
+    port: 30080  # if address==host.docker.internal, this will be the proxy port on host machine
+    enable_globally: false  # enable proxy for all shell commands during build and run?
+    remove_after_build: false # remove global proxy after build?
+
+  device:
+    type: gpu
+
+  # apt settings
+  apt:
+    # replace the default apt source with a custom one, use empty string to disable this
+    # repo_source: 'stage-1/system/apt/ubuntu-22.04-tsinghua-x64.list'
+    # special values that refer to well known apt sources:
+    # 'tuna' : 'http://mirrors.tuna.tsinghua.edu.cn/ubuntu/'
+    # 'aliyun' : 'http://mirrors.aliyun.com/ubuntu/'
+    # '163' : 'http://mirrors.163.com/ubuntu/'
+    # 'ustc' : 'http://mirrors.ustc.edu.cn/ubuntu/'
+    # 'cn' : 'http://cn.archive.ubuntu.com/ubuntu/
+    repo_source: 'aliyun'
+    keep_repo_after_build: true # keep the apt source file after build?
+    use_proxy: false  # use proxy for apt?
+    keep_proxy_after_build: false # keep proxy settings after build?
+
+  # custom scripts
+  custom:
+    # run twice, in case of failure
+    on_first_run:
+      - 'stage-1/system/apt/enable-external-cache.sh' # this will save cache to /apt-ext-store
+      - 'stage-1/custom/install-dev-tools.sh'
+      - 'stage-1/system/ros2/setup-locale.sh'
+      - 'stage-1/system/ros2/setup-ros2-repo.sh'
+      - 'stage-1/system/ros2/install-ros2.sh'
+
+  mount:
+    apt_external_cache:
+      type: auto-volume
+      dst_path: /apt-ext-store
+    
+stage_2:
+
+  # input/output image settings
+  image:
+    base: null  # if not specified, use the output image of stage-1
+    output: ig-ros2-gpu:stage-2
+
+  device:
+    type: gpu
+
+  # storage configurations
+  storage:
+    app:
+      type: manual-volume # auto-volume, manual-volume, host, image
+      host_path: null # host directory to be mounted, in effect when type=host
+      volume_name: ig-app # volume name, in effect when type=manual-volume
+    data:
+      type: manual-volume
+      host_path: null
+      volume_name: ig-data
+    workspace:
+      type: manual-volume
+      host_path: null
+      volume_name: ig-workspace
+
+  custom:
+    on_first_run: 
+      - 'stage-2/system/conda/auto-install-miniconda.sh'  # install miniconda
+
+  # additional mounts
+  mount:
+    home_me:
+      type: auto-volume
+      dst_path: /home/igamenovoer
+    apt_external_cache:
+      type: auto-volume
+      dst_path: /apt-ext-store
