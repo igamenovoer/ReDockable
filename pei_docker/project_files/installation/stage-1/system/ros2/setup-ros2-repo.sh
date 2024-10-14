@@ -1,10 +1,38 @@
 #!/bin/bash
 
+# Function to print usage
+print_usage() {
+    echo "Usage: $0 [--repo <repository_name>]"
+    echo "Options:"
+    echo "  --repo    Specify the ROS2 repository to use (default: tuna)"
+    echo "            Valid options: tuna, ros2"
+    echo "Example:"
+    echo "  $0 --repo ros2"
+}
+
 # require sudo permission
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
   exit
 fi
+
+# Parse command line arguments
+ROS2_REPO_NAME="tuna"
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+        --repo)
+        ROS2_REPO_NAME="$2"
+        shift # past argument
+        shift # past value
+        ;;
+        *)    # unknown option
+        shift # past argument
+        ;;
+    esac
+done
+
+echo "Using ROS2 repository: $ROS2_REPO_NAME"
 
 # Check if PEI_HTTP_PROXY_1 is set and use it if available
 if [ -n "$PEI_HTTP_PROXY_1" ]; then
