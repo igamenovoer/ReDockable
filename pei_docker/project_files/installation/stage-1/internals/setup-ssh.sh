@@ -24,6 +24,12 @@ cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
 echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 # printf "\nPermitRootLogin yes\n" >> /etc/ssh/sshd_config
 
+# Set custom SSH port if SSH_CONTAINER_PORT is defined
+if [ -n "$SSH_CONTAINER_PORT" ]; then
+    echo "Port $SSH_CONTAINER_PORT" >> /etc/ssh/sshd_config
+    sed -i "s/^#Port 22/Port $SSH_CONTAINER_PORT/" /etc/ssh/sshd_config
+fi
+
 # permit password authentication
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 

@@ -219,6 +219,7 @@ services:
         SSH_USER_NAME: ${x-cfg-stage-1.build.ssh.username} # default ssh user name
         SSH_USER_PASSWORD: ${x-cfg-stage-1.build.ssh.password}  # default ssh user password
         SSH_PUBKEY_FILE: ${x-cfg-stage-1.build.ssh.pubkey_file} # ssh public key file, if not set, password will be used
+        SSH_CONTAINER_PORT: ${x-cfg-stage-1.build.ssh.port}  # ssh port in container
 
         # replace apt source file?
         APT_SOURCE_FILE: ${x-cfg-stage-1.build.apt.source_file}

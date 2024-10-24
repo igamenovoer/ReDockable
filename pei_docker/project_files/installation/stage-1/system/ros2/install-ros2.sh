@@ -79,4 +79,6 @@ apt update
 apt install -y --no-install-recommends ros-dev-tools \
  ros-$ROS_DISTRO-ros-base \
  ros-$ROS_DISTRO-rviz2 \
- ros-$ROS_DISTRO-rqt
+ ros-$ROS_DISTRO-rqt \
+ ros-$ROS_DISTRO-demo-nodes-cpp \
+ ros-$ROS_DISTRO-demo-nodes-py

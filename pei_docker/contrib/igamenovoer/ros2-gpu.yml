@@ -73,6 +73,9 @@ stage_2:
   device:
     type: gpu
 
+  ports:
+    - '7400-7599:7400-7599' # for ROS2 DDS communication
+
   # storage configurations
   storage:
     app:
