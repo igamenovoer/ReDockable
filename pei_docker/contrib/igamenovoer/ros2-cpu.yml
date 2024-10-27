@@ -67,6 +67,9 @@ stage_2:
     base: null  # if not specified, use the output image of stage-1
     output: ig-ros2-cpu:stage-2
 
+  ports:
+    - '18888:8888' # required by rosboard
+
   # storage configurations
   storage:
     app:

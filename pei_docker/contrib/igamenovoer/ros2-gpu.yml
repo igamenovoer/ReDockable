@@ -74,7 +74,7 @@ stage_2:
     type: gpu
 
   ports:
-    - '8888:8888' # required by rosboard
+    - '18888:8888' # required by rosboard
 
   # storage configurations
   storage:
