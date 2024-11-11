@@ -9,7 +9,7 @@ stage_1:
   # ssh settings
   ssh:
     enable: true
-    port: 22  # port in container
+    port: 2233  # port in container
     host_port: 2233  # port in host
 
     # ssh users, the key is user name, value is user info
@@ -54,6 +54,7 @@ stage_1:
       - 'stage-1/system/ros2/setup-locale.sh'
       - 'stage-1/system/ros2/setup-ros2-repo.sh'
       - 'stage-1/system/ros2/install-ros2.sh'
+      - 'stage-1/system/ros2/init-rosdep.sh'
 
   mount:
     apt_external_cache:
@@ -85,9 +86,9 @@ stage_2:
       host_path: null
       volume_name: ig-workspace
 
-  custom:
-    on_first_run: 
-      - 'stage-2/system/conda/auto-install-miniconda.sh'  # install miniconda
+  # custom:
+  #   on_first_run: 
+  #     - 'stage-2/system/conda/auto-install-miniconda.sh'  # install miniconda
 
   # additional mounts
   mount:
