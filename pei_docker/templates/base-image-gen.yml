@@ -124,6 +124,7 @@ x-sections:
     # use in deploy.resources.reservations.devices
     gpu:
       - driver: nvidia
+        count: all
         capabilities: [gpu]
     cpu:  []
 
