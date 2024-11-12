@@ -10,7 +10,7 @@ stage_1:
   # ssh settings
   ssh:
     enable: true
-    port: 22  # port in container
+    port: 2233  # port in container
     host_port: 2233  # port in host
 
     # ssh users, the key is user name, value is user info
@@ -74,7 +74,7 @@ stage_2:
     type: gpu
 
   ports:
-    - '7400-7599:7400-7599' # for ROS2 DDS communication
+    - '18888:8888' # required by rosboard
 
   # storage configurations
   storage:
