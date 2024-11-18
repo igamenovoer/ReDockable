@@ -1,10 +1,10 @@
 stage_1:
   image:
     base: ubuntu:24.04
-    output: pei-image:stage-1
+    output: pei-minimal:stage-1
   ssh:
     enable: true
-    port: 22
+    port: 2222
     host_port: 2222
     users:
       me:
@@ -14,4 +14,4 @@ stage_1:
       root:
         password: root
   apt:
-    repo_source: tuna
+    repo_source: aliyun

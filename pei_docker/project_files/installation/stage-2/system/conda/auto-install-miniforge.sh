@@ -11,41 +11,46 @@ echo "STAGE_2_DIR_IN_CONTAINER: $STAGE_2_DIR_IN_CONTAINER"
 # first check for volume storage at /hard/volume/app, if not found, use /hard/image/app
 if [ -d "/hard/volume/app" ]; then
   # volume storage takes precedence, note that it only exists in stage-2
-  CONDA_INSTALL_DIR="/hard/volume/app/miniconda3"
+  CONDA_INSTALL_DIR="/hard/volume/app/miniforge"
 else
   # otherwise, use the image storage
-  CONDA_INSTALL_DIR="/hard/image/app/miniconda3"
+  CONDA_INSTALL_DIR="/hard/image/app/miniforge"
 fi
 
 # already installed? skip
 if [ -d $CONDA_INSTALL_DIR ]; then
-    echo "miniconda3 is already installed in $CONDA_INSTALL_DIR, skipping ..."
+    echo "miniforge is already installed in $CONDA_INSTALL_DIR, skipping ..."
     exit 0
 fi
 
 # download the miniconda3 installation file yourself, and put it in the tmp directory
 # it will be copied to the container during the build process
-CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-x86_64.sh"
+url_x64="https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease/Miniforge3-Linux-x86_64.sh"
+url_aarch64="https://mirrors.tuna.tsinghua.edu.cn/github-release/conda-forge/miniforge/LatestRelease/Miniforge3-Linux-aarch64.sh"
 
-# are you in arm64 platform? If so, use the arm64 version of miniconda3
-if [ "$(uname -m)" = "aarch64" ]; then
-    CONDA_PACKAGE_NAME="Miniconda3-latest-Linux-aarch64.sh"
+# download miniforge based on architecture
+if [ "$(uname -m)" == "aarch64" ]; then
+    url="${url_aarch64}"
+    echo "Detected aarch64 architecture"
+else
+    url="${url_x64}"
+    echo "Detected x86_64 architecture"
 fi
 
-# download from
-CONDA_DOWNLOAD_URL="https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/$CONDA_PACKAGE_NAME"
+# Extract filename from the URL
+CONDA_PACKAGE_NAME=$(basename "$url")
 
 # download to
 CONDA_DOWNLOAD_DST="$STAGE_2_DIR_IN_CONTAINER/tmp/$CONDA_PACKAGE_NAME"
 
 # if the file does not exist, wget it from tuna
 if [ ! -f $CONDA_DOWNLOAD_DST ]; then
-    echo "downloading miniconda3 installation file ..."
-    wget -O $CONDA_DOWNLOAD_DST $CONDA_DOWNLOAD_URL --show-progress
+    echo "downloading miniforge installation file ..."
+    wget -O $CONDA_DOWNLOAD_DST $url --show-progress
 fi
 
-# install miniconda3 unattended
-echo "installing miniconda3 to $CONDA_INSTALL_DIR ..."
+# install miniforge unattended
+echo "installing miniforge to $CONDA_INSTALL_DIR ..."
 bash $CONDA_DOWNLOAD_DST -b -p $CONDA_INSTALL_DIR
 
 # make conda installation read/write for all users
