@@ -105,3 +105,11 @@ stage_2:
     apt_external_cache:
       type: auto-volume
       dst_path: /apt-ext-store
+    data_1:
+      type: host
+      dst_path: /data1
+      host_path: /data1
+    data_2:
+      type: host
+      dst_path: /data2
+      host_path: /data2
