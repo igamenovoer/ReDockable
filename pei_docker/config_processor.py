@@ -250,6 +250,7 @@ class PeiConfigProcessor:
         _ssh_names : list[str] = []
         _ssh_pwds : list[str] = []
         _ssh_pubkeys : list[str] = []
+        _ssh_uids : list[int] = []
         for name, info in ssh_users.items():
             _ssh_names.append(name)
             
@@ -272,12 +273,19 @@ class PeiConfigProcessor:
                     _ssh_pubkeys.append('')
                 else:
                     _ssh_pubkeys.append(self.m_container_dir + '/' + pubkey_file)
+            
+            uid = info.uid
+            if uid is not None:
+                _ssh_uids.append(str(uid))
+            else:
+                _ssh_uids.append('')
                 
         # set config
         oc_set(build_compose, 'ssh.username', ','.join(_ssh_names))
         oc_set(build_compose, 'ssh.password', ','.join(_ssh_pwds))
         oc_set(build_compose, 'ssh.pubkey_file', ','.join(_ssh_pubkeys))
-                
+        oc_set(build_compose, 'ssh.uid', ','.join(_ssh_uids))
+        
     def _apply_device(self, device_config : DeviceConfig, run_compose : DictConfig):
         ''' process the device configuration and update the compose template
         

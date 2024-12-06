@@ -30,6 +30,7 @@ ARG KEEP_APT_SOURCE_FILE=false
 # can be a list of users and passwords, separated by comma
 ARG SSH_USER_NAME
 ARG SSH_USER_PASSWORD
+ARG SSH_USER_UID
 ARG SSH_CONTAINER_PORT
 
 # path to the public key file for the ssh user

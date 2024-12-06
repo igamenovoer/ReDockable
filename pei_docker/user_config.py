@@ -122,6 +122,7 @@ class ImageConfig:
 class SSHUserConfig:
     password : str | None = field(default=None)
     pubkey_file : str | None = field(default=None)
+    uid : int | None = field(default=None)
     
     def __attrs_post_init__(self):
         if self.password is None and self.pubkey_file is None:

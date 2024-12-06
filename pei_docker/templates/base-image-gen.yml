@@ -53,6 +53,7 @@ x-cfg-stage-1:
       # multiple ssh users and passwords can be set, separated by comma
       username: 'me,you'
       password: '123456,654321'
+      uid: '1000,1001' # default ssh user uid, comma separated list
       port : 22 # ssh port in container
       host_port : 2222 # ssh port in host, if null, no port mapping
 
@@ -217,8 +218,9 @@ services:
 
         # install openssh-server, and set up ssh user, password, public key (optional)
         WITH_SSH: ${x-cfg-stage-1.build.ssh.enable}
-        SSH_USER_NAME: ${x-cfg-stage-1.build.ssh.username} # default ssh user name
-        SSH_USER_PASSWORD: ${x-cfg-stage-1.build.ssh.password}  # default ssh user password
+        SSH_USER_NAME: ${x-cfg-stage-1.build.ssh.username} # default ssh user name, comma separated list
+        SSH_USER_PASSWORD: ${x-cfg-stage-1.build.ssh.password}  # default ssh user password, comma separated list (your password should not contain comma)
+        SSH_USER_UID: ${x-cfg-stage-1.build.ssh.uid} # default ssh user uid, comma separated list
         SSH_PUBKEY_FILE: ${x-cfg-stage-1.build.ssh.pubkey_file} # ssh public key file, if not set, password will be used
         SSH_CONTAINER_PORT: ${x-cfg-stage-1.build.ssh.port}  # ssh port in container
 

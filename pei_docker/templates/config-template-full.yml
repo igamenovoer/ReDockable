@@ -20,12 +20,15 @@ stage_1:
         # public key file path, relative to the installation directory
         # e.g., 'stage-1/system/ssh/keys/mykey.rsa.pub'
         pubkey_file: null
+        uid: 1000
       you:
         password: '654321'
         pubkey_file: null
+        uid: 1001
       root: # you can configure root user here
         password: root
         pubkey_file: null
+        uid: 0  # root uid, always 0 regardless of what you put here
 
   # proxy settings
   # inside the container, the proxy will accessed as http://{address}:{port}
