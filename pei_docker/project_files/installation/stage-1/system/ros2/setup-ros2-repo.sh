@@ -59,7 +59,7 @@ apt install -y software-properties-common curl wget
 
 # use wget to download https://raw.githubusercontent.com/ros/rosdistro/master/ros.key
 # and output to /usr/share/keyrings/ros-archive-keyring.gpg
-wget https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O /usr/share/keyrings/ros-archive-keyring.gpg
+wget --proxy=on https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -O /usr/share/keyrings/ros-archive-keyring.gpg
 
 # add ros2 apt repository
 

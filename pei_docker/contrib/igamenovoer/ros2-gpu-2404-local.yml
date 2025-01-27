@@ -3,8 +3,10 @@
 stage_1:
   # input/output image settings
   image:
-    base: nvcr.io/nvidia/tensorrt:24.04-py3
-    output: ig-ros2-gpu-trt:stage-1
+    # base: nvidia/cuda:12.3.2-runtime-ubuntu22.04
+    # base: nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04
+    base: nvidia/cuda:12.6.3-cudnn-devel-ubuntu24.04
+    output: ig-ros2-gpu:stage-1
 
   # ssh settings
   ssh:
@@ -16,6 +18,7 @@ stage_1:
     users:
       igamenovoer:
         password: '123456'
+        uid: 3100
       root: # you can configure root user here
         password: root
         pubkey_file: null
@@ -61,22 +64,19 @@ stage_1:
     apt_external_cache:
       type: auto-volume
       dst_path: /apt-ext-store
-
-  environment:
-    - ROS2_PREFER_DISTRO=jazzy
     
 stage_2:
 
   # input/output image settings
   image:
     base: null  # if not specified, use the output image of stage-1
-    output: ig-ros2-gpu-trt:stage-2
+    output: ig-ros2-gpu:stage-2
 
   device:
     type: gpu
 
   ports:
-    - '8888:8888' # required by rosboard
+    - '18888:8888' # required by rosboard
 
   # storage configurations
   storage:
@@ -93,15 +93,19 @@ stage_2:
       host_path: null
       volume_name: ig-workspace
 
-  # custom:
-  #   on_first_run: 
-  #     - 'stage-2/system/conda/auto-install-miniconda.sh'  # install miniconda
+  custom:
+    on_first_run: 
+      - 'stage-2/system/conda/auto-install-miniforge.sh'  # install miniconda
 
   # additional mounts
   mount:
-    home_me:
+    home_igamenovoer:
       type: auto-volume
       dst_path: /home/igamenovoer
+    ssh_igamenovoer:
+      type: host
+      dst_path: /home/igamenovoer/.ssh
+      host_path: /home/igamenovoer/.ssh
     apt_external_cache:
       type: auto-volume
       dst_path: /apt-ext-store

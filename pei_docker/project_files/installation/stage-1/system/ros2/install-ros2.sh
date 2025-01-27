@@ -83,4 +83,7 @@ apt install -y --no-install-recommends ros-dev-tools \
  ros-$ROS_DISTRO-demo-nodes-cpp \
  ros-$ROS_DISTRO-demo-nodes-py \
  ros-$ROS_DISTRO-rmw-cyclonedds-cpp \
- ros-$ROS_DISTRO-cyclonedds
+ ros-$ROS_DISTRO-cyclonedds \
+ ros-$ROS_DISTRO-navigation2 \
+ ros-$ROS_DISTRO-nav2-bringup \
+ ros-$ROS_DISTRO-nav2-minimal-tb*
