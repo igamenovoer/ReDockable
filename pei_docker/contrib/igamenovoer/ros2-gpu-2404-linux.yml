@@ -59,7 +59,10 @@ stage_1:
       - 'stage-1/system/ros2/setup-locale.sh'
       - 'stage-1/system/ros2/setup-ros2-repo.sh'
       - 'stage-1/system/ros2/install-ros2.sh'
-
+      - 'stage-1/contrib/igamenovoer/config-video-permission.bash'
+      - 'stage-1/contrib/igamenovoer/config-git.sh'
+      - 'stage-1/contrib/igamenovoer/install-cpp-libs.sh'
+      - 'stage-1/contrib/igamenovoer/install-python-pkgs.bash'
   mount:
     apt_external_cache:
       type: auto-volume
@@ -85,13 +88,11 @@ stage_2:
       host_path: null # host directory to be mounted, in effect when type=host
       volume_name: ig-app # volume name, in effect when type=manual-volume
     data:
-      type: manual-volume
-      host_path: null
-      volume_name: ig-data
+      type: host
+      host_path: /workspace/docker-shared/data
     workspace:
-      type: manual-volume
-      host_path: null
-      volume_name: ig-workspace
+      type: host
+      host_path: /workspace/docker-shared/workspace
 
   custom:
     on_first_run: 
@@ -102,10 +103,6 @@ stage_2:
     home_igamenovoer:
       type: auto-volume
       dst_path: /home/igamenovoer
-    ssh_igamenovoer:
-      type: host
-      dst_path: /home/igamenovoer/.ssh
-      host_path: /home/igamenovoer/.ssh
     apt_external_cache:
       type: auto-volume
       dst_path: /apt-ext-store

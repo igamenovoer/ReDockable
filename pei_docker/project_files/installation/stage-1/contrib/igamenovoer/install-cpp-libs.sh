@@ -17,10 +17,10 @@ apt-get -y install libopencv-dev libeigen3-dev libssl-dev ffmpeg libsm6 libxext6
 apt-get -y install libnanoflann-dev libxtensor-dev libflann-dev libglm-dev
 
 # utilities
-apt-get -y install libspdlog-dev libmsgpack-dev libzstd-dev
+apt-get -y install libspdlog-dev libmsgpack-dev libzstd-dev libtbb-dev xtensor-dev
 
 # file and serialization
 apt-get -y install libcereal-dev nlohmann-json3-dev libflatbuffers-dev libyaml-cpp-dev libprotobuf-dev libtinyobjloader-dev
 
 # visualization
-apt-get -y install qimgv qt6-base-dev
+apt-get -y install qimgv qt6-base-dev v4l-utils
